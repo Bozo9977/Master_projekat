@@ -144,7 +144,6 @@
   </rdf:Description>
   <rdf:Description rdf:about="#SignalDirection">
     <cims:belongsToCategory rdf:resource="#Package_OMS_extensions"/>
-    <cims:stereotype rdf:resource="http://langdale.com.au/2005/UML#enum"/>
     <cims:stereotype rdf:resource="http://langdale.com.au/2005/UML#enumeration"/>
     <rdfs:label>SignalDirection</rdfs:label>
     <rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
@@ -320,7 +319,6 @@
   <rdf:Description rdf:about="#ConsumerClass">
     <cims:belongsToCategory rdf:resource="#Package_OMS_extensions"/>
     <cims:stereotype rdf:resource="http://langdale.com.au/2005/UML#enumeration"/>
-    <cims:stereotype rdf:resource="http://langdale.com.au/2005/UML#enum"/>
     <rdfs:label>ConsumerClass</rdfs:label>
     <rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
   </rdf:Description>
@@ -504,5 +502,29 @@
     <cims:stereotype rdf:resource="http://langdale.com.au/2005/UML#byreference"/>
     <rdfs:label>BaseVoltage</rdfs:label>
     <rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="#ConsumerClass.Residential">
+	 <rdfs:label>Residential</rdfs:label>
+	 <rdf:type rdf:resource="#ConsumerClass"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="#ConsumerClass.Industrial">
+	 <rdfs:label>Industrial</rdfs:label>
+	 <rdf:type rdf:resource="#ConsumerClass"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="#ConsumerClass.Administrative">
+	 <rdfs:label>Administrative</rdfs:label>
+	 <rdf:type rdf:resource="#ConsumerClass"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="#SignalDirection.Read">
+	 <rdfs:label>Read</rdfs:label>
+	 <rdf:type rdf:resource="#SignalDirection"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="#SignalDirection.Write">
+	 <rdfs:label>Write</rdfs:label>
+	 <rdf:type rdf:resource="#SignalDirection"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="#SignalDirection.ReadWrite">
+	 <rdfs:label>ReadWrite</rdfs:label>
+	 <rdf:type rdf:resource="#SignalDirection"/>
   </rdf:Description>
 </rdf:RDF>
