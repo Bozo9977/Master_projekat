@@ -48,15 +48,24 @@ namespace GUI.ViewModels
 
         public ShellViewModel()
         {
+            // Define SRC element!
             //ProcessGraph();
         }
 
         private void ProcessGraph(Dictionary<string, Entity> D)
         {
+            // custom initial value
             int srcColumn = 50;
             int srcRow = 0;
 
-            DFS(D, GetFirstEntity(D), srcColumn, srcRow);
+            try
+            {
+                DFS(D, GetFirstEntity(D), srcColumn, srcRow);
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
         }
 
         private void DFS(Dictionary<string, Entity> D, Entity u, int column, int row)
@@ -66,14 +75,14 @@ namespace GUI.ViewModels
             u.Row = row;
             Children.Add(u);
 
-            if (D[u.Up].Visited == false)
-                DFS(D, D[u.Up], u.Column, u.Row--);
-            else if (D[u.Left].Visited == false)
-                DFS(D, D[u.Left], u.Column--, u.Row);
-            else if (D[u.Right].Visited == false)
-                DFS(D, D[u.Right], u.Column++, u.Row);
-            else if (D[u.Down].Visited == false)
-                DFS(D, D[u.Down], u.Column, u.Row++);
+            if (D.ContainsKey(u.Up) && D[u.Up].Visited == false)
+                DFS(D, D[u.Up], u.Column, u.Row - 1);
+            else if (D.ContainsKey(u.Left) && D[u.Left].Visited == false)
+                DFS(D, D[u.Left], u.Column - 1, u.Row);
+            else if (D.ContainsKey(u.Right) && D[u.Right].Visited == false)
+                DFS(D, D[u.Right], u.Column + 1, u.Row);
+            else if (D.ContainsKey(u.Down) && D[u.Down].Visited == false)
+                DFS(D, D[u.Down], u.Column, u.Row + 1);
         }
 
         private Entity GetFirstEntity(Dictionary<string, Entity> D)
