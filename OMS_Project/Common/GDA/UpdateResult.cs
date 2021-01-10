@@ -11,35 +11,32 @@ namespace Common.GDA
 	public class UpdateResult
 	{
 		[DataMember]
-		private Dictionary<long, long> globalIdPairs;
+		Dictionary<long, long> globalIdPairs;
 		[DataMember]
-		private string message;
+		string message;
 		[DataMember]
-		private ResultType result;
+		ResultType result;
 
-		public UpdateResult()
+		public UpdateResult(Dictionary<long, long> ids, string msg, ResultType res)
 		{
-			globalIdPairs = new Dictionary<long, long>();
-			message = string.Empty;
-			result = ResultType.Succeeded;
+			globalIdPairs = ids;
+			message = msg;
+			result = res;
 		}
 
-		public Dictionary<long, long> GlobalIdPairs
+		public IReadOnlyDictionary<long, long> GlobalIdPairs
 		{
 			get { return globalIdPairs; }
-			set { globalIdPairs = value; }
 		}
 		
 		public string Message
 		{
 			get { return message; }
-			set { message = value; }
 		}
 
 		public ResultType Result
 		{
 			get { return result; }
-			set { result = value; }
 		}
 
 		public override string ToString()
@@ -48,11 +45,11 @@ namespace Common.GDA
 
 			sb.AppendFormat("Update result: {0}\n", result);
 			sb.AppendFormat("Message: {0}\n", message);
-			sb.AppendLine("GlobalId pairs:");
+			sb.AppendLine("GID pairs:");
 
 			foreach(KeyValuePair<long, long> kvp in globalIdPairs)
 			{
-				sb.AppendFormat("Client globalId: 0x{0:x16}\t - Server globalId: 0x{1:x16}\n", kvp.Key, kvp.Value);
+				sb.AppendFormat("Client GID: 0x{0:x16}\t -> Server GID: 0x{1:x16}\n", kvp.Key, kvp.Value);
 			}
 
 			return sb.ToString();
@@ -61,7 +58,7 @@ namespace Common.GDA
 
 	public enum ResultType : byte
 	{
-		Succeeded = 0,
-		Failed = 1
+		Success = 0,
+		Failure = 1
 	}
 }

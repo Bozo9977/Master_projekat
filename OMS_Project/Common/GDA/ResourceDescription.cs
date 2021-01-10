@@ -25,6 +25,8 @@ namespace Common.GDA
 		public ResourceDescription(ResourceDescription toCopy)
 		{
 			id = toCopy.id;
+			properties = new Dictionary<ModelCode, Property>();
+
 			foreach(KeyValuePair<ModelCode, Property> kvp in toCopy.properties)
 			{
 				AddProperty(kvp.Value.Clone());

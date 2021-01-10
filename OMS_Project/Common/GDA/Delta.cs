@@ -7,22 +7,17 @@ using System.Threading.Tasks;
 
 namespace Common.GDA
 {
-	public enum DeltaOpType : byte
-	{
-		Insert = 0,
-		Update = 1,
-		Delete = 2
-	}
-
 	[DataContract]
 	public class Delta
 	{
 		[DataMember]
-		private List<ResourceDescription> insertOps;
+		List<ResourceDescription> insertOps;	//GIDs must have negative entity IDs
 		[DataMember]
-		private List<ResourceDescription> deleteOps;
+		List<ResourceDescription> deleteOps;
 		[DataMember]
-		private List<ResourceDescription> updateOps;
+		List<ResourceDescription> updateOps;
+		
+		public string Message { get; private set; }
 
 		public Delta()
 		{
@@ -66,7 +61,7 @@ namespace Common.GDA
 			}
 		}
 
-		public Dictionary<long, long> ResolveIds(Dictionary<short, int> typesCounters)
+		public Dictionary<long, long> ResolveIds(Func<DMSType, int> idGenerator)
 		{
 			Dictionary<long, long> d = new Dictionary<long, long>();
 
@@ -77,17 +72,26 @@ namespace Common.GDA
 				int oldId = ModelCodeHelper.GetEntityIdFromGID(oldGid);
 
 				if(oldId >= 0)
-					throw new Exception("Inserted GID " + oldGid + " has a positive entity ID.");
+				{
+					Message = "Inserted GID " + oldGid + " has a positive entity ID.";
+					return null;
+				}
 
 				if(d.ContainsKey(oldGid))
-					throw new Exception("Inserted GID " + oldGid + " is a duplicate.");
+				{
+					Message = "Inserted GID " + oldGid + " is a duplicate.";
+					return null;
+				}
 
-				short type = ModelCodeHelper.GetTypeFromGID(rd.Id);
+				DMSType type = (DMSType)ModelCodeHelper.GetTypeFromGID(rd.Id);
 
-				if(!typesCounters.ContainsKey(type))
-					throw new Exception("Inserted GID " + oldGid + " has an invalid DMSType.");
+				int newId = idGenerator(type);
 
-				int newId = typesCounters[type]++;
+				if(newId < 0)
+				{
+					Message = "Inserted GID " + oldGid + " has an invalid DMSType.";
+					return null;
+				}
 
 				long newGid = ModelCodeHelper.SetEntityIdInGID(oldGid, newId);
 				newGid = ModelCodeHelper.SetSystemIdInGID(newGid, 0);
@@ -109,7 +113,10 @@ namespace Common.GDA
 						if(oldId < 0)
 						{
 							if(!d.ContainsKey(oldGid))
-								throw new Exception("Referenced inserted GID " + oldGid + " not found.");
+							{
+								Message = "Referenced inserted GID " + oldGid + " not found.";
+								return null;
+							}
 
 							((ReferenceProperty)p).Value = d[oldGid];
 						}
@@ -118,8 +125,8 @@ namespace Common.GDA
 					{
 						bool changed = false;
 
-						long[] gids = ((ReferencesProperty)p).Value;
-						for(int i = 0; i < gids.Length; ++i)
+						List<long> gids = ((ReferencesProperty)p).Value;
+						for(int i = 0; i < gids.Count; ++i)
 						{
 							long oldGid = gids[i];
 							int oldId = ModelCodeHelper.GetEntityIdFromGID(oldGid);
@@ -127,7 +134,10 @@ namespace Common.GDA
 							if(oldId < 0)
 							{
 								if(!d.ContainsKey(oldGid))
-									throw new Exception("Referenced inserted GID " + oldGid + " not found.");
+								{
+									Message = "Referenced inserted GID " + oldGid + " not found.";
+									return null;
+								}
 
 								gids[i] = d[oldGid];
 								changed = true;
@@ -152,7 +162,10 @@ namespace Common.GDA
 					if(oldId < 0)
 					{
 						if(!d.ContainsKey(oldGid))
-							throw new Exception("Referenced inserted GID " + oldGid + " not found.");
+						{
+							Message = "Referenced inserted GID " + oldGid + " not found.";
+							return null;
+						}
 
 						rd.Id = d[oldGid];
 					}
@@ -168,7 +181,10 @@ namespace Common.GDA
 						if(idOldRef < 0)
 						{
 							if(!d.ContainsKey(gidOldRef))
-								throw new Exception("Referenced inserted GID " + gidOldRef + " not found.");
+							{
+								Message = "Referenced inserted GID " + gidOldRef + " not found.";
+								return null;
+							}
 
 							((ReferenceProperty)p).Value = d[gidOldRef];
 						}
@@ -177,8 +193,8 @@ namespace Common.GDA
 					{
 						bool changed = false;
 
-						long[] gids = ((ReferencesProperty)p).Value;
-						for(int i = 0; i < gids.Length; ++i)
+						List<long> gids = ((ReferencesProperty)p).Value;
+						for(int i = 0; i < gids.Count; ++i)
 						{
 							long gidOldRef = gids[i];
 							int idOldRef = ModelCodeHelper.GetEntityIdFromGID(gidOldRef);
@@ -186,7 +202,10 @@ namespace Common.GDA
 							if(idOldRef < 0)
 							{
 								if(!d.ContainsKey(gidOldRef))
-									throw new Exception("Referenced inserted GID " + gidOldRef + " not found.");
+								{
+									Message = "Referenced inserted GID " + gidOldRef + " not found.";
+									return null;
+								}
 
 								gids[i] = d[gidOldRef];
 								changed = true;
@@ -209,7 +228,10 @@ namespace Common.GDA
 				if(oldId < 0)
 				{
 					if(!d.ContainsKey(oldGid))
-						throw new Exception("Referenced inserted GID " + oldGid + " not found.");
+					{
+						Message = "Referenced inserted GID " + oldGid + " not found.";
+						return null;
+					}
 
 					rd.Id = d[oldGid];
 				}
@@ -222,9 +244,9 @@ namespace Common.GDA
 		{
 			int insertSorted = 0;
 
-			for(int i = 0; i < Delta.ResourceDescs.TypeIdsInInsertOrder.Count; ++i)
+			for(int i = 0; i < ModelResourcesDesc.TypeIdsInInsertOrder.Length; ++i)
 			{
-				DMSType type = ModelCodeHelper.GetTypeFromModelCode(Delta.ResourceDescs.TypeIdsInInsertOrder[i]);
+				DMSType type = ModelCodeHelper.GetTypeFromModelCode(ModelResourcesDesc.TypeIdsInInsertOrder[i]);
 
 				for(int j = insertSorted; j < insertOps.Count; ++j)
 				{
@@ -243,9 +265,9 @@ namespace Common.GDA
 			//deleted in reverse
 			int deleteSorted = 0;
 
-			for(int i = 0; i < Delta.ResourceDescs.TypeIdsInInsertOrder.Count; ++i)
+			for(int i = 0; i < ModelResourcesDesc.TypeIdsInInsertOrder.Length; ++i)
 			{
-				DMSType type = ModelCodeHelper.GetTypeFromModelCode(Delta.ResourceDescs.TypeIdsInInsertOrder[i]);
+				DMSType type = ModelCodeHelper.GetTypeFromModelCode(ModelResourcesDesc.TypeIdsInInsertOrder[i]);
 
 				for(int j = deleteOps.Count - 1 - deleteSorted; j >= 0; --j)
 				{
@@ -261,7 +283,12 @@ namespace Common.GDA
 				}
 			}
 
-			//... handle RDs with invalid types (insertSorted < insertOps.Count || deleteSorted < deleteOps.Count)
+			//handle RDs with invalid types (insertSorted < insertOps.Count || deleteSorted < deleteOps.Count)
+			if(insertSorted < insertOps.Count)
+				insertOps.RemoveRange(insertSorted, insertOps.Count - insertSorted);
+
+			if(deleteSorted < deleteOps.Count)
+				deleteOps.RemoveRange(0, deleteOps.Count - deleteSorted);
 		}
 	}
 }

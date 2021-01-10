@@ -43,11 +43,45 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataModel\ACLineSegment.cs" />
+    <Compile Include="DataModel\Analog.cs" />
+    <Compile Include="DataModel\BaseVoltage.cs" />
+    <Compile Include="DataModel\Breaker.cs" />
+    <Compile Include="DataModel\ConductingEquipment.cs" />
+    <Compile Include="DataModel\Conductor.cs" />
+    <Compile Include="DataModel\ConnectivityNode.cs" />
+    <Compile Include="DataModel\Disconnector.cs" />
+    <Compile Include="DataModel\Discrete.cs" />
+    <Compile Include="DataModel\DistributionGenerator.cs" />
+    <Compile Include="DataModel\EnergyConsumer.cs" />
+    <Compile Include="DataModel\EnergySource.cs" />
+    <Compile Include="DataModel\Equipment.cs" />
+    <Compile Include="DataModel\IdentifiedObject.cs" />
+    <Compile Include="DataModel\Measurement.cs" />
+    <Compile Include="DataModel\PowerSystemResource.cs" />
+    <Compile Include="DataModel\PowerTransformer.cs" />
+    <Compile Include="DataModel\ProtectedSwitch.cs" />
+    <Compile Include="DataModel\RatioTapChanger.cs" />
+    <Compile Include="DataModel\Recloser.cs" />
+    <Compile Include="DataModel\Switch.cs" />
+    <Compile Include="DataModel\TapChanger.cs" />
+    <Compile Include="DataModel\Terminal.cs" />
+    <Compile Include="DataModel\TransformerWinding.cs" />
+    <Compile Include="GenericDataAccess.cs" />
+    <Compile Include="NetworkModel.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ResourceIterator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj">
+      <Project>{41f506dd-503a-4de8-9c46-1d8c0bd8ff68}</Project>
+      <Name>Common</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

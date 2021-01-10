@@ -16,11 +16,11 @@ namespace Common.GDA
 			}
 		}
 
-		public static short GetTypeFromGID(long gid)
+		public static DMSType GetTypeFromGID(long gid)
 		{
 			unchecked
 			{
-				return (short)((gid >> 32) & 0xFFFF);
+				return (DMSType)(short)((gid >> 32) & 0xFFFF);
 			}
 		}
 
@@ -32,7 +32,7 @@ namespace Common.GDA
 			}
 		}
 
-		public static long CreateGID(short systemId, short type, int entityId)
+		public static long CreateGID(short systemId, DMSType type, int entityId)
 		{
 			unchecked
 			{
@@ -42,7 +42,12 @@ namespace Common.GDA
 
 		public static DMSType GetTypeFromModelCode(ModelCode code)
 		{
-			return (DMSType)(((long)code & (long)ModelCodeMask.MASK_TYPE) >> 16);
+			return (DMSType)(((long)code & (long)0x00000000ffff0000) >> 16);
+		}
+
+		public static PropertyType GetPropertyTypeFromModelCode(ModelCode code)
+		{
+			return (PropertyType)((long)code & (long)0xff);
 		}
 
 		public static bool GetModelCodeFromString(string strModelCode, out ModelCode modelCode)

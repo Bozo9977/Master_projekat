@@ -49,12 +49,9 @@
   <ItemGroup>
     <Compile Include="GDA\Association.cs" />
     <Compile Include="GDA\Delta.cs" />
-    <Compile Include="GDA\EnumDescs.cs" />
-    <Compile Include="GDA\Enums.cs" />
     <Compile Include="GDA\INetworkModelGDAContract.cs" />
     <Compile Include="GDA\ModelCodeHelper.cs" />
-    <Compile Include="GDA\ModelDefines.cs" />
-    <Compile Include="GDA\ModelResourcesDesc.cs" />
+    <Compile Include="GDA\Profile.cs" />
     <Compile Include="GDA\Property.cs" />
     <Compile Include="GDA\ResourceDescription.cs" />
     <Compile Include="GDA\UpdateResult.cs" />

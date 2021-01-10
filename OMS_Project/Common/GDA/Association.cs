@@ -11,82 +11,17 @@ namespace Common.GDA
 	public class Association
 	{
 		[DataMember]
-		private bool inverse;
+		bool inverse;
 		[DataMember]
-		private ModelCode propertyId;
+		ModelCode propertyId;
 		[DataMember]
-		private ModelCode type;
-
-		public Association()
-		{
-			this.inverse = false;
-			this.propertyId = 0;
-			this.type = 0;
-		}
-
-		public Association(ModelCode property)
-		{
-			this.inverse = false;
-			this.propertyId = property;
-			this.type = 0;
-		}
-
-		public Association(ModelCode property, bool inverse)
-		{
-			this.inverse = inverse;
-			this.propertyId = property;
-			this.type = 0;
-		}
-
-		public Association(ModelCode property, ModelCode type)
-		{
-			this.inverse = false;
-			this.propertyId = property;
-			this.type = type;
-		}
+		ModelCode type;
 
 		public Association(ModelCode property, ModelCode type, bool inverse)
 		{
 			this.inverse = inverse;
 			this.propertyId = property;
 			this.type = type;
-		}
-
-		public Association(string property, string type)
-		{
-			if((property != "") && (type != ""))
-			{
-				this.propertyId = (ModelCode)Enum.Parse(typeof(ModelCode), property);
-				this.type = (ModelCode)Enum.Parse(typeof(ModelCode), type);
-			}
-			else if((property != "") && (type == ""))
-			{
-				this.propertyId = (ModelCode)Enum.Parse(typeof(ModelCode), property);
-			}
-		}
-
-		public Association(string property, string type, string inverse)
-		{
-			if(type != null && type != "")
-			{
-				this.type = (ModelCode)Enum.Parse(typeof(ModelCode), type);
-			}
-
-			if(property != null && property != "")
-			{
-				this.propertyId = (ModelCode)Enum.Parse(typeof(ModelCode), property);
-			}
-
-			if(inverse != null && inverse != "")
-			{
-				this.inverse = Boolean.Parse(inverse);
-			}
-			else if((property == "") && (type == "") && (inverse == ""))
-			{
-				this.inverse = false;
-				this.propertyId = 0;
-				this.type = 0;
-			}
 		}
 
 		public bool Inverse

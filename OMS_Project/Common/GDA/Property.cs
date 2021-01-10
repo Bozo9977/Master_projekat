@@ -14,7 +14,7 @@ namespace Common.GDA
 		Bool		= 0x01,
 		//Byte		= 0x02,
 		Int32		= 0x03,
-		//Int64		= 0x04,
+		Int64		= 0x04,
 		Float		= 0x05,
 		//Double		= 0x06,
 		String		= 0x07,
@@ -41,6 +41,7 @@ namespace Common.GDA
 	[DataContract]
 	[KnownType(typeof(BoolProperty))]
 	[KnownType(typeof(Int32Property))]
+	[KnownType(typeof(Int64Property))]
 	[KnownType(typeof(FloatProperty))]
 	[KnownType(typeof(StringProperty))]
 	[KnownType(typeof(ReferenceProperty))]
@@ -73,19 +74,11 @@ namespace Common.GDA
 		{
 			get
 			{
-				return (PropertyType)((long)id & (long)ModelCodeMask.MASK_ATTRIBUTE_TYPE);
+				return ModelCodeHelper.GetPropertyTypeFromModelCode(id);
 			}
 		}
 
 		public abstract Property Clone();
-
-		public virtual float AsFloat() { throw new Exception("Not a float."); }
-		public virtual long AsLong() { throw new Exception("Not a long."); }
-		public virtual short AsEnum() { throw new Exception("Not an enum."); }
-		public virtual long AsReference() { throw new Exception("Not a reference."); }
-		public virtual string AsString() { throw new Exception("Not a string."); }
-		public virtual long[] AsLongs() { throw new Exception("Not a long vector."); }
-		public virtual long[] AsReferences() { throw new Exception("Not a reference vector."); }
 	}
 
 	[DataContract]
@@ -113,11 +106,6 @@ namespace Common.GDA
 		public override Property Clone()
 		{
 			return new BoolProperty(this);
-		}
-
-		public override long AsLong()
-		{
-			return Value ? 1 : 0;
 		}
 	}
 
@@ -147,10 +135,33 @@ namespace Common.GDA
 		{
 			return new Int32Property(this);
 		}
+	}
 
-		public override long AsLong()
+	[DataContract]
+	public class Int64Property : Property
+	{
+		[DataMember]
+		long val;
+
+		public Int64Property(ModelCode id, long value) : base(id, PropertyType.Int64)
 		{
-			return Value;
+			Value = value;
+		}
+
+		public Int64Property(Int64Property p) : base(p)
+		{
+			Value = p.val;
+		}
+
+		public long Value
+		{
+			get { return val; }
+			set { val = value; }
+		}
+
+		public override Property Clone()
+		{
+			return new Int64Property(this);
 		}
 	}
 
@@ -180,11 +191,6 @@ namespace Common.GDA
 		{
 			return new FloatProperty(this);
 		}
-
-		public override float AsFloat()
-		{
-			return Value;
-		}
 	}
 
 	[DataContract]
@@ -212,11 +218,6 @@ namespace Common.GDA
 		public override Property Clone()
 		{
 			return new StringProperty(this);
-		}
-
-		public override string AsString()
-		{
-			return Value;
 		}
 	}
 
@@ -246,11 +247,6 @@ namespace Common.GDA
 		{
 			return new ReferenceProperty(this);
 		}
-
-		public override long AsReference()
-		{
-			return Value;
-		}
 	}
 
 	[DataContract]
@@ -279,20 +275,15 @@ namespace Common.GDA
 		{
 			return new EnumProperty(this);
 		}
-
-		public override short AsEnum()
-		{
-			return Value;
-		}
 	}
 
 	[DataContract]
 	public class ReferencesProperty : Property
 	{
 		[DataMember]
-		long[] val;
+		List<long> val;
 
-		public ReferencesProperty(ModelCode id, long[] value) : base(id, PropertyType.ReferenceVector)
+		public ReferencesProperty(ModelCode id, List<long> value) : base(id, PropertyType.ReferenceVector)
 		{
 			Value = value;
 		}
@@ -302,25 +293,15 @@ namespace Common.GDA
 			Value = p.val;
 		}
 
-		public long[] Value
+		public List<long> Value
 		{
-			get { return (long[])val.Clone(); }
-			set { val = (long[])value.Clone(); }
+			get { return new List<long>(val); }
+			set { val = new List<long>(value); }
 		}
 
 		public override Property Clone()
 		{
 			return new ReferencesProperty(this);
-		}
-
-		public override long[] AsLongs()
-		{
-			return Value;
-		}
-
-		public override long[] AsReferences()
-		{
-			return Value;
 		}
 	}
 }

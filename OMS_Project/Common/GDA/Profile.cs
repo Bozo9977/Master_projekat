@@ -8,8 +8,6 @@ namespace Common.GDA
 {
 	public enum DMSType : short
 	{
-		MASK_TYPE = unchecked((short)0xFFFF),
-
 		ANALOG = 0x0001,
 		DISCRETE = 0x0002,
 		CONNECTIVITYNODE = 0x0003,
@@ -86,7 +84,7 @@ namespace Common.GDA
 
 		TRANSFORMERWINDING = 0x1111100000070000,
 		TRANSFORMERWINDING_POWERTRANSFORMER = 0x1111100000070109,
-		TRANSFORMERWINDING_RATIOTAPCHANGER = 0x1111100000070209,
+		TRANSFORMERWINDING_RATIOTAPCHANGER = 0x1111100000070219,
 
 		ENERGYSOURCE = 0x1111200000090000,
 
@@ -117,15 +115,12 @@ namespace Common.GDA
 		DISCONNECTOR = 0x11116200000F0000,
 	}
 
-	[Flags]
-	public enum ModelCodeMask : long
-	{
-		MASK_TYPE = 0x00000000ffff0000,
-		MASK_ATTRIBUTE_INDEX = 0x000000000000ff00,
-		MASK_ATTRIBUTE_TYPE = 0x00000000000000ff,
+	public enum MeasurementType { }
+	public enum SignalDirection { Read, ReadWrite, Write }
+	public enum ConsumerClass { Administrative, Industrial, Residential }
 
-		MASK_INHERITANCE_ONLY = unchecked((long)0xffffffff00000000),
-		MASK_FIRSTNBL = unchecked((long)0xf000000000000000),
-		MASK_DELFROMNBL8 = unchecked((long)0xfffffff000000000),
+	public class ModelResourcesDesc
+	{
+		public static readonly ModelCode[] TypeIdsInInsertOrder = { ModelCode.CONNECTIVITYNODE, ModelCode.BASEVOLTAGE, ModelCode.ENERGYCONSUMER, ModelCode.ACLINESEGMENT, ModelCode.DISCONNECTOR, ModelCode.BREAKER, ModelCode.RECLOSER, ModelCode.DISTRIBUTIONGENERATOR, ModelCode.POWERTRANSFORMER, ModelCode.TRANSFORMERWINDING, ModelCode.RATIOTAPCHANGER, ModelCode.ENERGYSOURCE, ModelCode.TERMINAL, ModelCode.ANALOG, ModelCode.DISCRETE };
 	}
 }
