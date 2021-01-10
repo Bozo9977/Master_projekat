@@ -1,4 +1,15 @@
 {
+  "001": {
+    "ID": "001",
+    "Type": "terminal",
+    "Visited": false,
+    "Up": "SRC",
+    "Right": "none",
+    "Down": "002",
+    "Left": "none",
+    "Row": 0,
+    "Column": 0
+  },
   "002": {
     "ID": "002",
     "Type": "connectivityNode",
@@ -147,7 +158,7 @@
     "Type": "terminal",
     "Visited": false,
     "Up": "none",
-    "Right": "tba",
+    "Right": "032",
     "Down": "none",
     "Left": "014",
     "Row": 0,
@@ -204,6 +215,17 @@
     "Up": "019",
     "Right": "none",
     "Down": "021",
+    "Left": "none",
+    "Row": 0,
+    "Column": 0
+  },
+  "021": {
+    "ID": "021",
+    "Type": "ACLineSegment",
+    "Visited": false,
+    "Up": "020",
+    "Right": "none",
+    "Down": "022",
     "Left": "none",
     "Row": 0,
     "Column": 0

@@ -48,8 +48,19 @@ namespace GUI.ViewModels
 
         public ShellViewModel()
         {
-            // Define SRC element!
-            //ProcessGraph();
+            Dictionary<string, Entity> D = new Dictionary<string, Entity>();
+            
+            using(JSONParser jp = new JSONParser())
+            {
+                D = jp.Import("../../mock_network.json");
+            }
+            
+            // testing src entity
+            Entity src = new Entity("000", "source", "", "", "001", "", 0, 50);
+            src.Visited = true;
+            D.Add("SRC", src);
+
+            ProcessGraph(D);
         }
 
         private void ProcessGraph(Dictionary<string, Entity> D)
@@ -77,11 +88,11 @@ namespace GUI.ViewModels
 
             if (D.ContainsKey(u.Up) && D[u.Up].Visited == false)
                 DFS(D, D[u.Up], u.Column, u.Row - 1);
-            else if (D.ContainsKey(u.Left) && D[u.Left].Visited == false)
+            if (D.ContainsKey(u.Left) && D[u.Left].Visited == false)
                 DFS(D, D[u.Left], u.Column - 1, u.Row);
-            else if (D.ContainsKey(u.Right) && D[u.Right].Visited == false)
+            if (D.ContainsKey(u.Right) && D[u.Right].Visited == false)
                 DFS(D, D[u.Right], u.Column + 1, u.Row);
-            else if (D.ContainsKey(u.Down) && D[u.Down].Visited == false)
+            if (D.ContainsKey(u.Down) && D[u.Down].Visited == false)
                 DFS(D, D[u.Down], u.Column, u.Row + 1);
         }
 
