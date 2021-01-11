@@ -9,48 +9,19 @@
     <Grid >
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="20"/>
-            <ColumnDefinition Width="auto"/>
-            <ColumnDefinition Width="auto"/>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="20"/>
         </Grid.ColumnDefinitions>
 
         <Grid.RowDefinitions>
             <RowDefinition Height="20"/>
-            <RowDefinition Height="auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="20"/>
         </Grid.RowDefinitions>
 
-        <!--Binding test -->
-        
-        <!--<TextBox x:Name="Number1" Grid.Row="1" Grid.Column="1" Width="50"/>
-        <Label Grid.Row="1" Grid.Column="2">+</Label>
-        <TextBox x:Name="Number2" Grid.Row="1" Grid.Column="3" Width="50"/>
-        <Label Grid.Row="1" Grid.Column="4">= </Label>
-        <Label x:Name="Result" Grid.Row="1" Grid.Column="5"></Label>-->
-
-        
-        <!--MVVM Compliant Grid test-->
-        
-        <!--<ItemsControl ItemsSource="{Binding Children}" Grid.Column="3" Grid.Row="2">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <Grid IsItemsHost="True" />
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemContainerStyle>
-                <Style>
-                    <Setter Property="Grid.Row" Value="{Binding Row}" />
-                    <Setter Property="Grid.Column" Value="{Binding Column}" />
-                </Style>
-            </ItemsControl.ItemContainerStyle>
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding ID}"/>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>-->
+        <Grid x:Name="DrawingGrid" Grid.Row="1" Grid.Column="1">
+            
+        </Grid>
 
     </Grid>
 </Window>

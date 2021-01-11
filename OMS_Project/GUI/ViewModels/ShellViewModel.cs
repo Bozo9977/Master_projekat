@@ -69,7 +69,7 @@ namespace GUI.ViewModels
         private void ProcessGraph(Dictionary<string, Entity> D)
         {
             // custom initial value
-            int srcColumn = 50;
+            int srcColumn = 5;
             int srcRow = 0;
 
             try
@@ -128,17 +128,17 @@ namespace GUI.ViewModels
                 ShapeInfo s = new ShapeInfo();
 
                 if(entity.Type == "terminal")
-                    s.MyShape = CreateShape(1, 1, Brushes.Black, Brushes.Black);
+                    s.MyShape = CreateShape(10, 10, Brushes.Black, Brushes.Black);
                 else if (entity.Type == "connectivityNode")
-                    s.MyShape = CreateShape(4, 4, Brushes.Black, Brushes.White);
+                    s.MyShape = CreateShape(20, 20, Brushes.Black, Brushes.White);
                 else if (entity.Type == "breaker")
-                    s.MyShape = CreateShape(4, 4, Brushes.Black, Brushes.GreenYellow);
+                    s.MyShape = CreateShape(20, 20, Brushes.Black, Brushes.GreenYellow);
                 else if (entity.Type == "disconnector")
-                    s.MyShape = CreateShape(4, 4, Brushes.Black, Brushes.Cyan);
+                    s.MyShape = CreateShape(20, 20, Brushes.Black, Brushes.Cyan);
                 else if (entity.Type == "transformer")
-                    s.MyShape = CreateShape(4, 4, Brushes.Black, Brushes.CornflowerBlue);
+                    s.MyShape = CreateShape(20, 20, Brushes.Black, Brushes.CornflowerBlue);
                 else if (entity.Type == "ACLineSegment")
-                    s.MyShape = CreateShape(4, 4, Brushes.Black, Brushes.Gray);
+                    s.MyShape = CreateShape(20, 20, Brushes.Black, Brushes.Gray);
 
                 s.Row = entity.Row;
                 s.Column = entity.Column;
