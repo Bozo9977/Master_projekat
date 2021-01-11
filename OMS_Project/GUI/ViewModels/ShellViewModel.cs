@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media;
+using System.Windows.Shapes;
 
 namespace GUI.ViewModels
 {
@@ -61,6 +63,7 @@ namespace GUI.ViewModels
             D.Add("SRC", src);
 
             ProcessGraph(D);
+            InitializeShapeInfo();
         }
 
         private void ProcessGraph(Dictionary<string, Entity> D)
@@ -105,6 +108,42 @@ namespace GUI.ViewModels
             }
 
             throw new Exception("Missing SRC connection!");
+        }
+
+        private Shape CreateShape(int width, int height, Brush stroke, Brush fill)
+        {
+            Ellipse e = new Ellipse();
+            e.Width = width;
+            e.Height = height;
+            e.Stroke = stroke;
+            e.Fill = fill;
+
+            return e;
+        }
+
+        private void InitializeShapeInfo()
+        {
+            foreach(var entity in Children)
+            {
+                ShapeInfo s = new ShapeInfo();
+
+                if(entity.Type == "terminal")
+                    s.MyShape = CreateShape(1, 1, Brushes.Black, Brushes.Black);
+                else if (entity.Type == "connectivityNode")
+                    s.MyShape = CreateShape(4, 4, Brushes.Black, Brushes.White);
+                else if (entity.Type == "breaker")
+                    s.MyShape = CreateShape(4, 4, Brushes.Black, Brushes.GreenYellow);
+                else if (entity.Type == "disconnector")
+                    s.MyShape = CreateShape(4, 4, Brushes.Black, Brushes.Cyan);
+                else if (entity.Type == "transformer")
+                    s.MyShape = CreateShape(4, 4, Brushes.Black, Brushes.CornflowerBlue);
+                else if (entity.Type == "ACLineSegment")
+                    s.MyShape = CreateShape(4, 4, Brushes.Black, Brushes.Gray);
+
+                s.Row = entity.Row;
+                s.Column = entity.Column;
+                Data.Shapes.Add(s);
+            }
         }
     }
 }

@@ -74,6 +74,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Models\Data.cs" />
     <Compile Include="Models\Entity.cs" />
     <Compile Include="Models\JSONParser.cs" />
     <Compile Include="Models\ShapeInfo.cs" />
