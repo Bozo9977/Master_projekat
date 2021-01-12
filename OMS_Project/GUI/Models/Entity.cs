@@ -15,15 +15,15 @@ namespace GUI.Models
         public string Right { get; set; }
         public string Down { get; set; }
         public string Left { get; set; }
-        public int Row { get; set; }
-        public int Column { get; set; }
+        public double X { get; set; }
+        public double Y { get; set; }
 
         public Entity()
         {
 
         }
 
-        public Entity(string id, string type, string up, string right, string down, string left, int row, int column)
+        public Entity(string id, string type, string up, string right, string down, string left, double x, double y)
         {
             Visited = false;
             ID = id;
@@ -32,8 +32,8 @@ namespace GUI.Models
             Right = right;
             Down = down;
             Left = left;
-            Row = row;
-            Column = column;
+            X = x;
+            Y = y;
         }
 
         ~Entity()

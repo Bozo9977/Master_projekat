@@ -11,14 +11,14 @@ namespace GUI.Models
     {
         public Shape MyShape { get; set; }
 
-        public int Row { get; set; }
+        public double X { get; set; }
 
-        public int Column { get; set; }
+        public double Y { get; set; }
 
         public ShapeInfo()
         {
-            Row = 0;
-            Column = 0;
+            X = 0;
+            Y = 0;
         }
     }
 }

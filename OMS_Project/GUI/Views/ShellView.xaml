@@ -19,9 +19,9 @@
             <RowDefinition Height="20"/>
         </Grid.RowDefinitions>
 
-        <Grid x:Name="DrawingGrid" Grid.Row="1" Grid.Column="1">
+        <Canvas x:Name="DrawingCanvas" Grid.Row="1" Grid.Column="1">
             
-        </Grid>
+        </Canvas>
 
     </Grid>
 </Window>
