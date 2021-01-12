@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{3C03A41C-BE4C-40A8-97D5-5DBAC0C34102}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>CIMParser</RootNamespace>
+    <AssemblyName>CIMParser</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <OutputPath>bin\Debug\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <OutputPath>bin\Release\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CIMModelLoader.cs" />
+    <Compile Include="CIMModelLoaderResult.cs" />
+    <Compile Include="DefaultXMLHandler.cs" />
+    <Compile Include="Handler\CIMXMLReaderHandler.cs" />
+    <Compile Include="Handler\IHandler.cs" />
+    <Compile Include="Handler\RDFSXMLReaderHandler.cs" />
+    <Compile Include="Manager\AssemblyManager.cs" />
+    <Compile Include="Manager\FileManager.cs" />
+    <Compile Include="Manager\StringManipulationManager.cs" />
+    <Compile Include="ModelCompare\CIMCompareMap.cs" />
+    <Compile Include="ModelCompare\CIMEntity.cs" />
+    <Compile Include="ModelCompare\CIMEntityDifference.cs" />
+    <Compile Include="ModelCompare\CIMModelSets.cs" />
+    <Compile Include="ModelDifference\CIMDifference.cs" />
+    <Compile Include="Model\Builder\ConcreteModelBuilder.cs" />
+    <Compile Include="Model\Builder\ConcreteModelBuildingResult.cs" />
+    <Compile Include="Model\CIMConstants.cs" />
+    <Compile Include="Model\CIMModel.cs" />
+    <Compile Include="Model\CIMModelContext.cs" />
+    <Compile Include="Model\CIMObject.cs" />
+    <Compile Include="Model\ConcreteModel.cs" />
+    <Compile Include="Model\ObjectAttribute.cs" />
+    <Compile Include="Model\Profile.cs" />
+    <Compile Include="Model\ProfileElement.cs" />
+    <Compile Include="Model\ProfileElementStereotype.cs" />
+    <Compile Include="Model\Reader\BasicConversions.cs" />
+    <Compile Include="Model\Reader\ObjectModel\CAssociation.cs" />
+    <Compile Include="Model\Reader\ObjectModel\CAttribute.cs" />
+    <Compile Include="Model\Reader\ObjectModel\CClass.cs" />
+    <Compile Include="Model\Reader\ObjectModel\CObjectModel.cs" />
+    <Compile Include="Model\Reader\ObjectModel\CPackage.cs" />
+    <Compile Include="Model\Tools\CIMComparer.cs" />
+    <Compile Include="Model\Tools\ModelElementComparer.cs" />
+    <Compile Include="ProfileLoader.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Specific\CIMDifferenceXMLHandler.cs" />
+    <Compile Include="Specific\CIMRDFComparerXMLHandler.cs" />
+    <Compile Include="Specific\CIMRDFDocumentXMLHandler.cs" />
+    <Compile Include="Specific\CIMRDFObjectXMLHandler.cs" />
+    <Compile Include="Utilities\CodeDOMUtil.cs" />
+    <Compile Include="XMLParseError.cs" />
+    <Compile Include="XMLParser.cs" />
+    <Compile Include="XMLParsingManager.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

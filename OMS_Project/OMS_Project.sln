@@ -11,6 +11,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GUI", "GUI\GUI.csproj", "{8
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NMS", "NMS\NMS.csproj", "{0A45485E-20D1-47C9-ABF5-E17AC17197B8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CIMParser", "CIMParser\CIMParser.csproj", "{3C03A41C-BE4C-40A8-97D5-5DBAC0C34102}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Importer", "Importer\Importer.csproj", "{FF4FE822-2C90-40FA-86BF-6787E561E121}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,6 +61,26 @@ Global
 		{0A45485E-20D1-47C9-ABF5-E17AC17197B8}.Release|x64.Build.0 = Release|Any CPU
 		{0A45485E-20D1-47C9-ABF5-E17AC17197B8}.Release|x86.ActiveCfg = Release|Any CPU
 		{0A45485E-20D1-47C9-ABF5-E17AC17197B8}.Release|x86.Build.0 = Release|Any CPU
+		{3C03A41C-BE4C-40A8-97D5-5DBAC0C34102}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C03A41C-BE4C-40A8-97D5-5DBAC0C34102}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C03A41C-BE4C-40A8-97D5-5DBAC0C34102}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3C03A41C-BE4C-40A8-97D5-5DBAC0C34102}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3C03A41C-BE4C-40A8-97D5-5DBAC0C34102}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C03A41C-BE4C-40A8-97D5-5DBAC0C34102}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3C03A41C-BE4C-40A8-97D5-5DBAC0C34102}.Release|x64.ActiveCfg = Release|Any CPU
+		{3C03A41C-BE4C-40A8-97D5-5DBAC0C34102}.Release|x86.ActiveCfg = Release|Any CPU
+		{FF4FE822-2C90-40FA-86BF-6787E561E121}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FF4FE822-2C90-40FA-86BF-6787E561E121}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FF4FE822-2C90-40FA-86BF-6787E561E121}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FF4FE822-2C90-40FA-86BF-6787E561E121}.Debug|x64.Build.0 = Debug|Any CPU
+		{FF4FE822-2C90-40FA-86BF-6787E561E121}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FF4FE822-2C90-40FA-86BF-6787E561E121}.Debug|x86.Build.0 = Debug|Any CPU
+		{FF4FE822-2C90-40FA-86BF-6787E561E121}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FF4FE822-2C90-40FA-86BF-6787E561E121}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FF4FE822-2C90-40FA-86BF-6787E561E121}.Release|x64.ActiveCfg = Release|Any CPU
+		{FF4FE822-2C90-40FA-86BF-6787E561E121}.Release|x64.Build.0 = Release|Any CPU
+		{FF4FE822-2C90-40FA-86BF-6787E561E121}.Release|x86.ActiveCfg = Release|Any CPU
+		{FF4FE822-2C90-40FA-86BF-6787E561E121}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
