@@ -23,6 +23,7 @@ namespace GUI.Views
         public ShellView()
         {
             InitializeComponent();
+            DrawConnections(Data.Paths);
             DrawNetwork(Data.Shapes);
         }
 
@@ -32,10 +33,18 @@ namespace GUI.Views
             foreach (var f in shapesToDraw)
             {
 
-                Canvas.SetTop(f.MyShape, f.Y);
-                Canvas.SetLeft(f.MyShape, f.X);
+                Canvas.SetTop(f.MyShape, f.X);
+                Canvas.SetLeft(f.MyShape, f.Y);
 
                 DrawingCanvas.Children.Add(f.MyShape);
+            }
+        }
+
+        private void DrawConnections(List<Path> paths)
+        {
+            foreach(var p in paths)
+            {
+                DrawingCanvas.Children.Add(p);
             }
         }
     }
