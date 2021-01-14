@@ -15,6 +15,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CIMParser", "CIMParser\CIMP
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Importer", "Importer\Importer.csproj", "{FF4FE822-2C90-40FA-86BF-6787E561E121}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TM", "TM", "{8885ADFC-C3A9-4BA5-8800-1F2ACE736F4D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionManager", "TransactionManager\TransactionManager.csproj", "{852BB905-3798-415E-B13A-7737F08BE04A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionManagerService", "TransactionManagerService\TransactionManagerService.csproj", "{D75BC115-F0D6-4940-8CAD-8AC332FED79E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -81,12 +87,38 @@ Global
 		{FF4FE822-2C90-40FA-86BF-6787E561E121}.Release|x64.Build.0 = Release|Any CPU
 		{FF4FE822-2C90-40FA-86BF-6787E561E121}.Release|x86.ActiveCfg = Release|Any CPU
 		{FF4FE822-2C90-40FA-86BF-6787E561E121}.Release|x86.Build.0 = Release|Any CPU
+		{852BB905-3798-415E-B13A-7737F08BE04A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{852BB905-3798-415E-B13A-7737F08BE04A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{852BB905-3798-415E-B13A-7737F08BE04A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{852BB905-3798-415E-B13A-7737F08BE04A}.Debug|x64.Build.0 = Debug|Any CPU
+		{852BB905-3798-415E-B13A-7737F08BE04A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{852BB905-3798-415E-B13A-7737F08BE04A}.Debug|x86.Build.0 = Debug|Any CPU
+		{852BB905-3798-415E-B13A-7737F08BE04A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{852BB905-3798-415E-B13A-7737F08BE04A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{852BB905-3798-415E-B13A-7737F08BE04A}.Release|x64.ActiveCfg = Release|Any CPU
+		{852BB905-3798-415E-B13A-7737F08BE04A}.Release|x64.Build.0 = Release|Any CPU
+		{852BB905-3798-415E-B13A-7737F08BE04A}.Release|x86.ActiveCfg = Release|Any CPU
+		{852BB905-3798-415E-B13A-7737F08BE04A}.Release|x86.Build.0 = Release|Any CPU
+		{D75BC115-F0D6-4940-8CAD-8AC332FED79E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D75BC115-F0D6-4940-8CAD-8AC332FED79E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D75BC115-F0D6-4940-8CAD-8AC332FED79E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D75BC115-F0D6-4940-8CAD-8AC332FED79E}.Debug|x64.Build.0 = Debug|Any CPU
+		{D75BC115-F0D6-4940-8CAD-8AC332FED79E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D75BC115-F0D6-4940-8CAD-8AC332FED79E}.Debug|x86.Build.0 = Debug|Any CPU
+		{D75BC115-F0D6-4940-8CAD-8AC332FED79E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D75BC115-F0D6-4940-8CAD-8AC332FED79E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D75BC115-F0D6-4940-8CAD-8AC332FED79E}.Release|x64.ActiveCfg = Release|Any CPU
+		{D75BC115-F0D6-4940-8CAD-8AC332FED79E}.Release|x64.Build.0 = Release|Any CPU
+		{D75BC115-F0D6-4940-8CAD-8AC332FED79E}.Release|x86.ActiveCfg = Release|Any CPU
+		{D75BC115-F0D6-4940-8CAD-8AC332FED79E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{876C732A-7D58-4851-AB3B-3D809AEDA458} = {28682DC3-9C65-4AE6-B33E-71D12B55FC57}
+		{852BB905-3798-415E-B13A-7737F08BE04A} = {8885ADFC-C3A9-4BA5-8800-1F2ACE736F4D}
+		{D75BC115-F0D6-4940-8CAD-8AC332FED79E} = {8885ADFC-C3A9-4BA5-8800-1F2ACE736F4D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {65E1617F-DC08-4C86-AD3A-EA4DB61AC8E1}
