@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{FF4FE822-2C90-40FA-86BF-6787E561E121}</ProjectGuid>
+    <ProjectGuid>{9A33B236-1A21-4982-9602-0BA230D6A7EE}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>Importer</RootNamespace>
     <AssemblyName>Importer</AssemblyName>
@@ -33,6 +33,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="OutageCIMProfile_Labs">
+      <HintPath>.\OutageCIMProfile_Labs.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -43,11 +46,27 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Adapter.cs" />
+    <Compile Include="OutageConverter.cs" />
+    <Compile Include="OutageImporter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CIMParser\CIMParser.csproj">
+      <Project>{3c03a41c-be4c-40a8-97d5-5dbac0c34102}</Project>
+      <Name>CIMParser</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Common\Common.csproj">
+      <Project>{41f506dd-503a-4de8-9c46-1d8c0bd8ff68}</Project>
+      <Name>Common</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="OutageCIMProfile_Labs.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

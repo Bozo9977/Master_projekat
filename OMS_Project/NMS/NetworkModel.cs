@@ -15,7 +15,7 @@ namespace NMS
 		public NetworkModel()
 		{
 			Array types = Enum.GetValues(typeof(DMSType));
-			containers = new Dictionary<DMSType, Dictionary<long, IdentifiedObject>>();
+			containers = new Dictionary<DMSType, Dictionary<long, IdentifiedObject>>(types.Length);
 
 			foreach(DMSType t in types)
 				containers.Add(t, new Dictionary<long, IdentifiedObject>(0));
