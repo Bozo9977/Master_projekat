@@ -27,6 +27,12 @@ namespace Importer
 			return new OutageImporter().CreateNMSDelta(concreteModel);
 		}
 
+		public string ApplyUpdates(Delta delta)
+		{
+			//...call NMS.GDA.ApplyUpdates()
+			return null;
+		}
+
 		bool LoadModelFromFile(Stream extract, out Assembly assembly, out ConcreteModel concreteModel)
 		{
 			System.Globalization.CultureInfo culture = Thread.CurrentThread.CurrentCulture;

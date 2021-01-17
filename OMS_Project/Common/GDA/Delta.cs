@@ -244,10 +244,8 @@ namespace Common.GDA
 		{
 			int insertSorted = 0;
 
-			for(int i = 0; i < ModelResourcesDesc.TypeIdsInInsertOrder.Length; ++i)
+			foreach(DMSType type in ModelResourcesDesc.TypeIdsInInsertOrder)
 			{
-				DMSType type = ModelCodeHelper.GetTypeFromModelCode(ModelResourcesDesc.TypeIdsInInsertOrder[i]);
-
 				for(int j = insertSorted; j < insertOps.Count; ++j)
 				{
 					ResourceDescription rd = insertOps[j];
@@ -265,10 +263,8 @@ namespace Common.GDA
 			//deleted in reverse
 			int deleteSorted = 0;
 
-			for(int i = 0; i < ModelResourcesDesc.TypeIdsInInsertOrder.Length; ++i)
+			foreach(DMSType type in ModelResourcesDesc.TypeIdsInInsertOrder)
 			{
-				DMSType type = ModelCodeHelper.GetTypeFromModelCode(ModelResourcesDesc.TypeIdsInInsertOrder[i]);
-
 				for(int j = deleteOps.Count - 1 - deleteSorted; j >= 0; --j)
 				{
 					ResourceDescription rd = deleteOps[j];

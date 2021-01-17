@@ -8,21 +8,21 @@ namespace Common.GDA
 {
 	public enum DMSType : short
 	{
-		ANALOG = 0x0001,
-		DISCRETE = 0x0002,
-		CONNECTIVITYNODE = 0x0003,
-		TERMINAL = 0x0004,
-		BASEVOLTAGE = 0x0005,
-		POWERTRANSFORMER = 0x0006,
-		TRANSFORMERWINDING = 0x0007,
-		RATIOTAPCHANGER = 0x0008,
-		ENERGYSOURCE = 0x0009,
-		DISTRIBUTIONGENERATOR = 0x000A,
-		ENERGYCONSUMER = 0x000B,
-		ACLINESEGMENT = 0x000C,
-		BREAKER = 0x000D,
-		RECLOSER = 0x000E,
-		DISCONNECTOR = 0x000F
+		Analog = 0x0001,
+		Discrete = 0x0002,
+		ConnectivityNode = 0x0003,
+		Terminal = 0x0004,
+		BaseVoltage = 0x0005,
+		PowerTransformer = 0x0006,
+		TransformerWinding = 0x0007,
+		RatioTapChanger = 0x0008,
+		EnergySource = 0x0009,
+		DistributionGenerator = 0x000A,
+		EnergyConsumer = 0x000B,
+		ACLineSegment = 0x000C,
+		Breaker = 0x000D,
+		Recloser = 0x000E,
+		Disconnector = 0x000F
 	}
 
 	[Flags]
@@ -121,6 +121,6 @@ namespace Common.GDA
 
 	public class ModelResourcesDesc
 	{
-		public static readonly ModelCode[] TypeIdsInInsertOrder = { ModelCode.CONNECTIVITYNODE, ModelCode.BASEVOLTAGE, ModelCode.ENERGYCONSUMER, ModelCode.ACLINESEGMENT, ModelCode.DISCONNECTOR, ModelCode.BREAKER, ModelCode.RECLOSER, ModelCode.DISTRIBUTIONGENERATOR, ModelCode.POWERTRANSFORMER, ModelCode.TRANSFORMERWINDING, ModelCode.RATIOTAPCHANGER, ModelCode.ENERGYSOURCE, ModelCode.TERMINAL, ModelCode.ANALOG, ModelCode.DISCRETE };
+		public static readonly DMSType[] TypeIdsInInsertOrder = { DMSType.ConnectivityNode, DMSType.BaseVoltage, DMSType.EnergyConsumer, DMSType.ACLineSegment, DMSType.Disconnector, DMSType.Breaker, DMSType.Recloser, DMSType.DistributionGenerator, DMSType.PowerTransformer, DMSType.TransformerWinding, DMSType.RatioTapChanger, DMSType.EnergySource, DMSType.Terminal, DMSType.Analog, DMSType.Discrete };
 	}
 }

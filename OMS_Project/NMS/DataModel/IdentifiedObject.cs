@@ -28,49 +28,49 @@ namespace NMS.DataModel
 
 			switch(ModelCodeHelper.GetTypeFromGID(rd.Id))
 			{
-				case DMSType.ACLINESEGMENT:
+				case DMSType.ACLineSegment:
 					io = new ACLineSegment();
 					break;
-				case DMSType.ANALOG:
+				case DMSType.Analog:
 					io = new Analog();
 					break;
-				case DMSType.BASEVOLTAGE:
+				case DMSType.BaseVoltage:
 					io = new BaseVoltage();
 					break;
-				case DMSType.BREAKER:
+				case DMSType.Breaker:
 					io = new Breaker();
 					break;
-				case DMSType.CONNECTIVITYNODE:
+				case DMSType.ConnectivityNode:
 					io = new ConnectivityNode();
 					break;
-				case DMSType.DISCONNECTOR:
+				case DMSType.Disconnector:
 					io = new Disconnector();
 					break;
-				case DMSType.DISCRETE:
+				case DMSType.Discrete:
 					io = new Discrete();
 					break;
-				case DMSType.DISTRIBUTIONGENERATOR:
+				case DMSType.DistributionGenerator:
 					io = new DistributionGenerator();
 					break;
-				case DMSType.ENERGYCONSUMER:
+				case DMSType.EnergyConsumer:
 					io = new EnergyConsumer();
 					break;
-				case DMSType.ENERGYSOURCE:
+				case DMSType.EnergySource:
 					io = new EnergySource();
 					break;
-				case DMSType.POWERTRANSFORMER:
+				case DMSType.PowerTransformer:
 					io = new PowerTransformer();
 					break;
-				case DMSType.RATIOTAPCHANGER:
+				case DMSType.RatioTapChanger:
 					io = new RatioTapChanger();
 					break;
-				case DMSType.RECLOSER:
+				case DMSType.Recloser:
 					io = new Recloser();
 					break;
-				case DMSType.TERMINAL:
+				case DMSType.Terminal:
 					io = new Terminal();
 					break;
-				case DMSType.TRANSFORMERWINDING:
+				case DMSType.TransformerWinding:
 					io = new TransformerWinding();
 					break;
 

@@ -75,5 +75,10 @@ namespace Common.GDA
 				return oldGid & ~((long)(ushort)~0 << 48) | ((long)(ushort)systemId << 48);
 			}
 		}
+
+		public static string DMSTypeToName(DMSType type)
+		{
+			return Enum.GetName(typeof(DMSType), type);
+		}
 	}
 }
