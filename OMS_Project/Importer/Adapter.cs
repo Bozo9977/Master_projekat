@@ -1,14 +1,9 @@
 ﻿using CIM.Model;
 using CIMParser;
 using Common.GDA;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Importer
 {
@@ -27,12 +22,6 @@ namespace Importer
 			return new OutageImporter().CreateNMSDelta(concreteModel);
 		}
 
-		public string ApplyUpdates(Delta delta)
-		{
-			//...call NMS.GDA.ApplyUpdates()
-			return null;
-		}
-
 		bool LoadModelFromFile(Stream extract, out Assembly assembly, out ConcreteModel concreteModel)
 		{
 			System.Globalization.CultureInfo culture = Thread.CurrentThread.CurrentCulture;
@@ -43,14 +32,14 @@ namespace Importer
 			{
 				assembly = Assembly.LoadFrom(profileDLLName);
 				CIMModel cimModel = new CIMModel();
-				CIMModelLoaderResult modelLoadResult = CIMModelLoader.LoadCIMXMLModel(extract, "model", out cimModel);
+				CIMModelLoaderResult modelLoadResult = CIMModelLoader.LoadCIMXMLModel(extract, "FTN", out cimModel);
 
 				if(!modelLoadResult.Success)
 					return false;
 
 				concreteModel = new ConcreteModel();
 				ConcreteModelBuilder builder = new ConcreteModelBuilder();
-				ConcreteModelBuildingResult modelBuildResult = builder.GenerateModel(cimModel, assembly, "model", ref concreteModel);
+				ConcreteModelBuildingResult modelBuildResult = builder.GenerateModel(cimModel, assembly, "FTN", ref concreteModel);
 
 				if(!modelBuildResult.Success)
 					return false;

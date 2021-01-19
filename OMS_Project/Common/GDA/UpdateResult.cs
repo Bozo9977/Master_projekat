@@ -44,13 +44,20 @@ namespace Common.GDA
 			StringBuilder sb = new StringBuilder();
 
 			sb.AppendFormat("Update result: {0}\n", result);
-			sb.AppendFormat("Message: {0}\n", message);
-			sb.AppendLine("GID pairs:");
+			sb.AppendFormat("Message: {0}\n", message == null ? "N/A" : message);
+			sb.Append("GID pairs (client -> server):");
 
-			foreach(KeyValuePair<long, long> kvp in globalIdPairs)
+			if(globalIdPairs == null)
 			{
-				sb.AppendFormat("Client GID: 0x{0:x16}\t -> Server GID: 0x{1:x16}\n", kvp.Key, kvp.Value);
+				sb.Append(" N/A");
 			}
+			else
+			{
+				foreach(KeyValuePair<long, long> kvp in globalIdPairs)
+					sb.AppendFormat("\n0x{0:x16} -> 0x{1:x16}", kvp.Key, kvp.Value);
+			}
+
+			sb.Append("\n");
 
 			return sb.ToString();
 		}

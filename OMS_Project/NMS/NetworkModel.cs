@@ -27,7 +27,7 @@ namespace NMS
 		{
 			containers = new Dictionary<DMSType, Dictionary<long, IdentifiedObject>>(nm.containers);
 
-			foreach(DMSType k in containers.Keys)
+			foreach(DMSType k in nm.containers.Keys)
 				containers[k] = new Dictionary<long, IdentifiedObject>(nm.containers[k]);
 
 			rwLock = new ReaderWriterLockSlim();

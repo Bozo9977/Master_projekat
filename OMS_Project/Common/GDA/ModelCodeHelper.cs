@@ -64,7 +64,7 @@ namespace Common.GDA
 		{
 			unchecked
 			{
-				return (oldGid & ~((long)(uint)~0 << 32)) | (uint)idNew;
+				return (oldGid & ((long)(uint)~0 << 32)) | (uint)idNew;
 			}
 		}
 
