@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{1FD62E42-FA68-4529-A8A8-815D25CBEDC3}</ProjectGuid>
+    <ProjectGuid>{852235A1-15DB-4BE8-9FB2-DD79AB32D51E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Modbus</RootNamespace>
-    <AssemblyName>Modbus</AssemblyName>
+    <RootNamespace>ProcessingModule</RootNamespace>
+    <AssemblyName>ProcessingModule</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -31,10 +31,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Modbus, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\ScadaV1\ScadaV1\dCom\3rdPartyLibs\Modbus.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -45,24 +41,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Connection\FunctionExecutor.cs" />
-    <Compile Include="Connection\IConnection.cs" />
-    <Compile Include="Connection\TCPConnection.cs" />
-    <Compile Include="FunctionFactory.cs" />
-    <Compile Include="FunctionParameters\ModbusCommandParameters.cs" />
-    <Compile Include="FunctionParameters\ModbusReadCommandParameters.cs" />
-    <Compile Include="FunctionParameters\ModbusWriteCommandParameters.cs" />
-    <Compile Include="ModbusFunctions\ModbusFunction.cs" />
-    <Compile Include="ModbusFunctions\ReadCoilsFunction.cs" />
-    <Compile Include="ModbusFunctions\ReadDiscreteInputsFunction.cs" />
-    <Compile Include="ModbusFunctions\ReadHoldingRegistersFunction.cs" />
-    <Compile Include="ModbusFunctions\ReadInputRegistersFunction.cs" />
-    <Compile Include="ModbusFunctions\WriteSingleCoilFunction.cs" />
-    <Compile Include="ModbusFunctions\WriteSingleRegisterFunction.cs" />
+    <Compile Include="Acquisitor.cs" />
+    <Compile Include="AlarmProcessor.cs" />
+    <Compile Include="AutomationManager.cs" />
+    <Compile Include="EGUConverter.cs" />
+    <Compile Include="ProcessingManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
+    <ProjectReference Include="..\Modbus\Modbus.csproj">
+      <Project>{1fd62e42-fa68-4529-a8a8-815d25cbedc3}</Project>
+      <Name>Modbus</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SCADA_Common\SCADA_Common.csproj">
       <Project>{1cb31c28-5927-48db-b837-ac1c0ebfe9cb}</Project>
       <Name>SCADA_Common</Name>
