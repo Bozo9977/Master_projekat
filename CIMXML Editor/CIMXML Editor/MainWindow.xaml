@@ -1,0 +1,10 @@
+﻿<Window x:Class="CIMXML_Editor.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:CIMXML_Editor"
+        mc:Ignorable="d"
+        Title="CIMXML Editor" Height="480" Width="640" LostKeyboardFocus="Window_LostKeyboardFocus" KeyDown="Window_KeyDown" KeyUp="Window_KeyUp">
+	<Canvas Name="canvas" Background="White" SizeChanged="canvas_SizeChanged" Loaded="canvas_Loaded" MouseLeftButtonDown="canvas_MouseLeftButtonDown"/>
+</Window>
