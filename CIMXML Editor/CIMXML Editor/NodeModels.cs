@@ -65,11 +65,11 @@ namespace CIMXML_Editor
 
 		public class ACLineSegment : NodeModel
 		{
-			public override double Radius { get { return 1; } }
+			public override double Radius { get { return 2; } }
 
 			public override Shape Draw()
 			{
-				return GetRectangle(sqrt2 / 8, sqrt2, Brushes.Black);
+				return GetRectangle(sqrt2 / 4, sqrt2 * 2, Brushes.Black);
 			}
 		}
 

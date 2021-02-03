@@ -210,9 +210,7 @@ namespace CIMXML_Editor
 			ConcreteClasses.Add(c);
 
 			attrs = new Dictionary<string, Attribute>();
-			c = new Class("TapChanger", attrs, Classes["ConductingEquipment"]);
-			a = new Attribute("PowerTransformer", AttributeType.Reference, Classes["PowerTransformer"]);
-			attrs.Add(a.Name, a);
+			c = new Class("TapChanger", attrs, Classes["PowerSystemResource"]);
 			Classes.Add(c.Name, c);
 
 			attrs = new Dictionary<string, Attribute>();

@@ -24,14 +24,14 @@ namespace CIMXML_Editor
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-		enum EKey : byte { Up, Down, Left, Right, MoveUp, MoveDown, MoveLeft, MoveRight, In, Out, Rotate, DeselectAll, Add, Deselect, Edit, Delete, ShowRefs, Copy, Paste, Save, Load, Export, Count }
+		enum EKey : byte { Up, Down, Left, Right, MoveUp, MoveDown, MoveLeft, MoveRight, In, Out, Rotate, RotateGroup, DeselectAll, Add, Deselect, Edit, Delete, ShowRefs, Copy, Paste, Save, Load, Export, Count }
 		uint keys;
-		const byte repeatedKeysCount = 11;
+		const byte repeatedKeysCount = 12;
 		Action[] keyActions;
 		byte keyCount;
 		DispatcherTimer timer;
 		Rect canvasPos;
-		const double moveDelta = 0.02;
+		const double moveDelta = 0.01;
 		const double zoomDelta = 1.05;
 		Dictionary<string, Node> nodes;
 		List<Node> selectedNodes;
@@ -50,7 +50,7 @@ namespace CIMXML_Editor
 		{
 			InitializeComponent();
 
-			keyActions = new Action[(byte)EKey.Count] { Up, Down, Left, Right, MoveUp, MoveDown, MoveLeft, MoveRight, In, Out, Rotate, DeselectAll, Add, Deselect, Edit, Delete, ShowRefs, Copy, Paste, Save, Load, Export };
+			keyActions = new Action[(byte)EKey.Count] { Up, Down, Left, Right, MoveUp, MoveDown, MoveLeft, MoveRight, In, Out, Rotate, RotateGroup, DeselectAll, Add, Deselect, Edit, Delete, ShowRefs, Copy, Paste, Save, Load, Export };
 			
 			profile = new Profile();
 			classToModel = new Dictionary<string, NodeModel>(profile.ConcreteClasses.Count);
@@ -73,6 +73,36 @@ namespace CIMXML_Editor
 
 			timer = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(32) };
 			timer.Tick += Timer_Tick;
+		}
+
+		private void RotateGroup()
+		{
+			if(selectedNodes.Count <= 0)
+				return;
+
+			Point gc = new Point();
+
+			foreach(Node n in selectedNodes)
+			{
+				gc.X += n.X;
+				gc.Y += n.Y;
+			}
+
+			gc.X /= selectedNodes.Count;
+			gc.Y /= selectedNodes.Count;
+			RotateTransform rt = new RotateTransform(angleDelta, gc.X, gc.Y);
+			Point p1 = new Point();
+
+			foreach(Node n in selectedNodes)
+			{
+				p1.X = n.X;
+				p1.Y = n.Y;
+				Point p2 = rt.Transform(p1);
+				n.X = p2.X;
+				n.Y = p2.Y;
+			}
+
+			Redraw();
 		}
 
 		private void Export()
@@ -650,28 +680,28 @@ namespace CIMXML_Editor
 			switch(k)
 			{
 				case Key.Up:
-					return EKey.Up;
-
-				case Key.Down:
-					return EKey.Down;
-
-				case Key.Left:
-					return EKey.Left;
-
-				case Key.Right:
-					return EKey.Right;
-
-				case Key.W:
 					return EKey.MoveUp;
 
-				case Key.S:
+				case Key.Down:
 					return EKey.MoveDown;
 
-				case Key.A:
+				case Key.Left:
 					return EKey.MoveLeft;
 
-				case Key.D:
+				case Key.Right:
 					return EKey.MoveRight;
+
+				case Key.W:
+					return EKey.Up;
+
+				case Key.S:
+					return EKey.Down;
+
+				case Key.A:
+					return EKey.Left;
+
+				case Key.D:
+					return EKey.Right;
 
 				case Key.LeftShift:
 					return EKey.In;
@@ -714,6 +744,9 @@ namespace CIMXML_Editor
 
 				case Key.X:
 					return EKey.Export;
+
+				case Key.T:
+					return EKey.RotateGroup;
 			}
 
 			return EKey.Count;
