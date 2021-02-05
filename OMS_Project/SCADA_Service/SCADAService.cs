@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Common.GDA;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,6 +12,9 @@ namespace SCADA_Service
 {
     public class SCADAService : IDisposable
     {
+        private ChannelFactory<INetworkModelGDAContract> factory;
+        private INetworkModelGDAContract proxy;
+
         public SCADAService()
         {
             //ImportScadaModel();
@@ -19,12 +24,23 @@ namespace SCADA_Service
         public void Dispose()
         {
             ProcessHandler.KillProcesses();
+            Disconnect();
             Console.WriteLine("Disposed!");
             GC.SuppressFinalize(this);
         }
 
         public void Start()
         {
+            try
+            {
+                ConnectToNMS("net.tcp://localhost:11123/NMS/GDA/");
+                Console.WriteLine("Connected to NMS.");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("ERROR: " + e.Message);
+            }
+
             InitializeSCADAClient();
             InitializeSCADAServer();
         }
@@ -49,6 +65,30 @@ namespace SCADA_Service
             ProcessHandler.ActiveProcesses.Add(server);
         }
 
+        private bool ConnectToNMS(string uri)
+        {
+            try
+            {
+                factory = new ChannelFactory<INetworkModelGDAContract>(new NetTcpBinding(), new EndpointAddress(new Uri(uri)));
+                proxy = factory.CreateChannel();
+            }
+            catch
+            {
+                Disconnect();
+                return false;
+            }
+
+            return true;
+        }
+
+        private void Disconnect()
+        {
+            try
+            {
+                factory.Close();
+            }
+            catch { }
+        }
 
     }
 }
