@@ -99,8 +99,7 @@ namespace NMS
 		int AddIterator(ResourceIterator iterator)
 		{
 			int id = Interlocked.Increment(ref iteratorId);
-			iterators.TryAdd(id, iterator);
-			return id;
+			return iterators.TryAdd(id, iterator) ? id : -1;
 		}
 
 		bool RemoveIterator(int id)
