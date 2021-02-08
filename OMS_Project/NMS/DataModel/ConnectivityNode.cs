@@ -11,7 +11,10 @@ namespace NMS.DataModel
 	{
 		public List<long> Terminals { get; private set; }
 
-		public ConnectivityNode() { }
+		public ConnectivityNode()
+		{
+			Terminals = new List<long>();
+		}
 
 		public ConnectivityNode(ConnectivityNode cn)
 		{

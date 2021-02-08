@@ -12,7 +12,10 @@ namespace NMS.DataModel
 		public long BaseVoltage { get; private set; }
 		public List<long> Terminals { get; private set; }
 
-		public ConductingEquipment() { }
+		public ConductingEquipment()
+		{
+			Terminals = new List<long>();
+		}
 
 		public ConductingEquipment(ConductingEquipment c) : base(c)
 		{

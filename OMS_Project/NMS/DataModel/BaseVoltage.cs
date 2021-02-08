@@ -12,7 +12,10 @@ namespace NMS.DataModel
 		public float NominalVoltage { get; private set; }
 		public List<long> ConductingEquipment { get; private set; }
 
-		public BaseVoltage() { }
+		public BaseVoltage()
+		{
+			ConductingEquipment = new List<long>();
+		}
 
 		public BaseVoltage(BaseVoltage b) : base(b)
 		{

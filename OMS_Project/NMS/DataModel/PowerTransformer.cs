@@ -11,7 +11,10 @@ namespace NMS.DataModel
 	{
 		public List<long> TransformerWindings { get; private set; }
 
-		public PowerTransformer() { }
+		public PowerTransformer()
+		{
+			TransformerWindings = new List<long>();
+		}
 
 		public PowerTransformer(PowerTransformer p) : base(p)
 		{

@@ -13,7 +13,10 @@ namespace NMS.DataModel
 		public long ConductingEquipment { get; private set; }
 		public List<long> Measurements { get; private set; }
 
-		public Terminal() { }
+		public Terminal()
+		{
+			Measurements = new List<long>();
+		}
 
 		public Terminal(Terminal t) : base(t)
 		{

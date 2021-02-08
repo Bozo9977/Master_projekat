@@ -11,7 +11,10 @@ namespace NMS.DataModel
 	{
 		public List<long> Measurements { get; private set; }
 
-		public PowerSystemResource() { }
+		public PowerSystemResource()
+		{
+			Measurements = new List<long>();
+		}
 
 		public PowerSystemResource(PowerSystemResource p) : base(p)
 		{

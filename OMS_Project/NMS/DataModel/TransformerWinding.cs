@@ -12,7 +12,10 @@ namespace NMS.DataModel
 		public long PowerTransformer { get; private set; }
 		public List<long> RatioTapChanger { get; private set; }
 
-		public TransformerWinding() { }
+		public TransformerWinding()
+		{
+			RatioTapChanger = new List<long>();
+		}
 
 		public TransformerWinding(TransformerWinding t) : base(t)
 		{
