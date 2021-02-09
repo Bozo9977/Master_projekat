@@ -1,4 +1,5 @@
 ﻿using Common.GDA;
+using SCADA_Client.ViewModel.PointViewModels;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,7 +18,6 @@ namespace SCADA_Service
 
         public SCADAService()
         {
-            //ImportScadaModel();
             Console.WriteLine("Started!");
         }
 
@@ -41,6 +41,8 @@ namespace SCADA_Service
                 Console.WriteLine("ERROR: " + e.Message);
             }
 
+            ImportSCADAModel(proxy);
+
             InitializeSCADAClient();
             InitializeSCADAServer();
         }
@@ -63,6 +65,12 @@ namespace SCADA_Service
             server.StartInfo.WorkingDirectory = Path.GetDirectoryName(serverPath);
             server.Start();
             ProcessHandler.ActiveProcesses.Add(server);
+        }
+
+        public void ImportSCADAModel(INetworkModelGDAContract proxy)
+        {
+            SCADAModel sm = new SCADAModel(proxy);
+            sm.ImportModel();
         }
 
         private bool ConnectToNMS(string uri)

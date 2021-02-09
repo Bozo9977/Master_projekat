@@ -3,7 +3,7 @@ using System;
 
 namespace SCADA_Client.ViewModel.PointViewModels
 {
-    internal class AnalogOutput : AnalogBase
+    public class AnalogOutput : AnalogBase
 	{
 
 		public AnalogOutput(IConfigItem c, IProcessingManager processingManager, IStateUpdater stateUpdater, IConfiguration configuration, int i)

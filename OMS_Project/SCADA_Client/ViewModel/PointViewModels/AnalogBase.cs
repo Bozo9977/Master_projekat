@@ -2,7 +2,7 @@
 
 namespace SCADA_Client.ViewModel.PointViewModels
 {
-    internal abstract class AnalogBase : BasePointItem, IAnalogPoint 
+    public abstract class AnalogBase : BasePointItem, IAnalogPoint 
 	{
 		private double eguValue;
 

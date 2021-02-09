@@ -2,7 +2,7 @@
 
 namespace SCADA_Client.ViewModel.PointViewModels
 {
-    internal abstract class DigitalBase : BasePointItem, IDigitalPoint
+    public abstract class DigitalBase : BasePointItem, IDigitalPoint
     {
 		private DState state;
 

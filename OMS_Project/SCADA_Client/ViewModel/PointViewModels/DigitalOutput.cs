@@ -3,7 +3,7 @@ using System;
 
 namespace SCADA_Client.ViewModel.PointViewModels
 {
-    internal class DigitalOutput : DigitalBase
+    public class DigitalOutput : DigitalBase
 	{
 
 		public DigitalOutput(IConfigItem c, IProcessingManager processingManager, IStateUpdater stateUpdater, IConfiguration configuration, int i)
