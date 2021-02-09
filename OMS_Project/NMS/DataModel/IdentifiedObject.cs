@@ -78,6 +78,8 @@ namespace NMS.DataModel
 					return null;
 			}
 
+			io.GID = rd.Id;
+
 			foreach(Property p in rd.Properties.Values)
 				if(!io.SetProperty(p))
 					return null;
@@ -122,10 +124,6 @@ namespace NMS.DataModel
 
 			switch(p.Id)
 			{
-				case ModelCode.IDENTIFIEDOBJECT_GID:
-					GID = ((Int64Property)p).Value;
-					return true;
-
 				case ModelCode.IDENTIFIEDOBJECT_NAME:
 					Name = ((StringProperty)p).Value;
 					return true;
@@ -163,6 +161,9 @@ namespace NMS.DataModel
 		{
 			return true;
 		}
+
+		public virtual void GetEntitiesToValidate(HashSet<long> dst)
+		{ }
 
 		public abstract IdentifiedObject Clone();
 	}

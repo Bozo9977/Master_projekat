@@ -51,17 +51,52 @@ namespace NMS
 
 				delta.SortOperations();
 
+				HashSet<long> toValidate = new HashSet<long>();
+
 				foreach(ResourceDescription rd in delta.InsertOperations)
-					if(!InsertEntity(rd))
+				{
+					IdentifiedObject io = InsertEntity(rd);
+
+					if(io == null)
 						return null;
+
+					toValidate.Add(io.GID);
+					io.GetEntitiesToValidate(toValidate);
+				}
 
 				foreach(ResourceDescription rd in delta.UpdateOperations)
-					if(!UpdateEntity(rd))
+				{
+					Tuple<IdentifiedObject, IdentifiedObject> io = UpdateEntity(rd);
+
+					if(io == null)
 						return null;
 
+					toValidate.Add(io.Item1.GID);
+					io.Item1.GetEntitiesToValidate(toValidate);
+					io.Item2.GetEntitiesToValidate(toValidate);
+				}
+
 				foreach(ResourceDescription rd in delta.DeleteOperations)
-					if(!DeleteEntity(rd))
+				{
+					IdentifiedObject io = DeleteEntity(rd);
+
+					if(io == null)
 						return null;
+
+					toValidate.Add(io.GID);
+					io.GetEntitiesToValidate(toValidate);
+				}
+
+				foreach(long gid in toValidate)
+				{
+					IdentifiedObject io;
+
+					if(!TryGetEntity(gid, out io))
+						continue;
+
+					if(!io.Validate())
+						return null;
+				}
 
 				return ids;
 			}
@@ -84,22 +119,22 @@ namespace NMS
 			return containers.TryGetValue(ModelCodeHelper.GetTypeFromGID(gid), out container) && container.TryGetValue(gid, out io);
 		}
 
-		bool InsertEntity(ResourceDescription rd)
+		IdentifiedObject InsertEntity(ResourceDescription rd)
 		{
 			if(rd == null)
-				return false;
+				return null;
 
 			DMSType type = ModelCodeHelper.GetTypeFromGID(rd.Id);
 			Dictionary<long, IdentifiedObject> container;
 
 			if(!containers.TryGetValue(type, out container) || container.ContainsKey(rd.Id))
-				return false;
+				return null;
 
 			rd.SetProperty(new Int64Property(ModelCode.IDENTIFIEDOBJECT_GID, rd.Id));
 			IdentifiedObject io = IdentifiedObject.Create(rd);
 
 			if(io == null)
-				return false;
+				return null;
 
 			foreach(Property prop in rd.Properties.Values)
 			{
@@ -114,7 +149,7 @@ namespace NMS
 					Dictionary<long, IdentifiedObject> targetContainer;
 
 					if(!TryGetEntity(targetGID, out target, out targetContainer))
-						return false;
+						return null;
 
 					target = target.Clone();
 					target.AddTargetReference(prop.Id, io.GID);
@@ -123,21 +158,21 @@ namespace NMS
 			}
 
 			containers[type].Add(io.GID, io);
-			return true;
+			return io;
 		}
 
-		bool UpdateEntity(ResourceDescription rd)
+		Tuple<IdentifiedObject, IdentifiedObject> UpdateEntity(ResourceDescription rd)
 		{
 			if(rd == null)
-				return false;
+				return null;
 
-			IdentifiedObject io;
+			IdentifiedObject oldIO;
 			Dictionary<long, IdentifiedObject> container;
 
-			if(!TryGetEntity(rd.Id, out io, out container))
-				return false;
+			if(!TryGetEntity(rd.Id, out oldIO, out container))
+				return null;
 
-			io = io.Clone();
+			IdentifiedObject io = oldIO.Clone();
 
 			foreach(Property prop in rd.Properties.Values)
 			{
@@ -175,26 +210,26 @@ namespace NMS
 				}
 
 				if(!io.SetProperty(prop))
-					return false;
+					return null;
 			}
 
 			container[io.GID] = io;
-			return true;
+			return new Tuple<IdentifiedObject, IdentifiedObject>(oldIO, io);
 		}
 
-		bool DeleteEntity(ResourceDescription rd)
+		IdentifiedObject DeleteEntity(ResourceDescription rd)
 		{
 			if(rd == null)
-				return false;
+				return null;
 
 			IdentifiedObject io;
 			Dictionary<long, IdentifiedObject> container;
 
 			if(!TryGetEntity(rd.Id, out io, out container))
-				return false;
+				return null;
 
 			if(io.IsReferenced())
-				return false;
+				return null;
 
 			Dictionary<ModelCode, long> targetGIDs = new Dictionary<ModelCode, long>();
 			io.GetSourceReferences(targetGIDs);
@@ -213,7 +248,7 @@ namespace NMS
 			}
 
 			container.Remove(io.GID);
-			return true;
+			return io;
 		}
 
 		public ResourceDescription GetValues(long GID, List<ModelCode> propIds)
@@ -256,7 +291,7 @@ namespace NMS
 				Dictionary<long, IdentifiedObject> container;
 				DMSType type = ModelCodeHelper.GetTypeFromModelCode(entityType);
 
-				if(containers.TryGetValue(type, out container))
+				if(!containers.TryGetValue(type, out container))
 					return null;
 
 				return new ResourceIterator(new List<long>(container.Keys), new Dictionary<DMSType, List<ModelCode>>(1) { { type, propIds } });
