@@ -42,14 +42,26 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\AnalogSCADAModelPointItem.cs" />
+    <Compile Include="Data\DiscreteSCADAModelPointItem.cs" />
+    <Compile Include="Data\SCADAModelPointItem.cs" />
     <Compile Include="ProcessHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SCADAModel.cs" />
     <Compile Include="SCADAService.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj">
       <Project>{41f506dd-503a-4de8-9c46-1d8c0bd8ff68}</Project>
       <Name>Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SCADA_Client\SCADA_Client.csproj">
+      <Project>{379d64b2-8e24-442b-9ed7-6a34b371807a}</Project>
+      <Name>SCADA_Client</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SCADA_Common\SCADA_Common.csproj">
+      <Project>{1cb31c28-5927-48db-b837-ac1c0ebfe9cb}</Project>
+      <Name>SCADA_Common</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

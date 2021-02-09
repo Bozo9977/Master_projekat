@@ -2,7 +2,7 @@
 
 namespace SCADA_Client.ViewModel.PointViewModels
 {
-    internal class AnalogInput : AnalogBase
+    public class AnalogInput : AnalogBase
     {
         public AnalogInput(IConfigItem c, IProcessingManager processingManager, IStateUpdater stateUpdater, IConfiguration configuration, int i)
             : base(c, processingManager, stateUpdater, configuration, i)

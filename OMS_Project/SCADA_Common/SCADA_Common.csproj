@@ -41,6 +41,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\IAnalogSCADAModelPointItem.cs" />
+    <Compile Include="Data\IDiscreteSCADAModelPointItem.cs" />
+    <Compile Include="Data\ISCADAModelPointItem.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="IAnalogPoint.cs" />
     <Compile Include="IAutomationManager.cs" />

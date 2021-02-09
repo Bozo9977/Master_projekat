@@ -6,7 +6,7 @@ using System.Windows.Threading;
 
 namespace SCADA_Client.ViewModel.PointViewModels
 {
-    internal abstract class BasePointItem : ViewModelBase, IDataErrorInfo
+    public abstract class BasePointItem : ViewModelBase, IDataErrorInfo
 	{
 		protected PointType type;
 		protected ushort address;
