@@ -52,6 +52,7 @@ namespace NMS
 				delta.SortOperations();
 
 				HashSet<long> toValidate = new HashSet<long>();
+				Func<long, IdentifiedObject> entityGetter = x => { IdentifiedObject y; TryGetEntity(x, out y); return y; };
 
 				foreach(ResourceDescription rd in delta.InsertOperations)
 				{
@@ -61,7 +62,7 @@ namespace NMS
 						return null;
 
 					toValidate.Add(io.GID);
-					io.GetEntitiesToValidate(toValidate);
+					io.GetEntitiesToValidate(entityGetter, toValidate);
 				}
 
 				foreach(ResourceDescription rd in delta.UpdateOperations)
@@ -72,8 +73,8 @@ namespace NMS
 						return null;
 
 					toValidate.Add(io.Item1.GID);
-					io.Item1.GetEntitiesToValidate(toValidate);
-					io.Item2.GetEntitiesToValidate(toValidate);
+					io.Item1.GetEntitiesToValidate(entityGetter, toValidate);
+					io.Item2.GetEntitiesToValidate(entityGetter, toValidate);
 				}
 
 				foreach(ResourceDescription rd in delta.DeleteOperations)
@@ -84,7 +85,7 @@ namespace NMS
 						return null;
 
 					toValidate.Add(io.GID);
-					io.GetEntitiesToValidate(toValidate);
+					io.GetEntitiesToValidate(entityGetter, toValidate);
 				}
 
 				foreach(long gid in toValidate)

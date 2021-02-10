@@ -162,7 +162,7 @@ namespace NMS.DataModel
 			return true;
 		}
 
-		public virtual void GetEntitiesToValidate(HashSet<long> dst)
+		public virtual void GetEntitiesToValidate(Func<long, IdentifiedObject> entityGetter, HashSet<long> dst)
 		{ }
 
 		public abstract IdentifiedObject Clone();
