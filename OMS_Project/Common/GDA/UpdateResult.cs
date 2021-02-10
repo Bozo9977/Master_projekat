@@ -45,20 +45,8 @@ namespace Common.GDA
 
 			sb.AppendFormat("Update result: {0}\n", result);
 			sb.AppendFormat("Message: {0}\n", message == null ? "N/A" : message);
-			sb.Append("GID pairs (client -> server):");
-
-			if(globalIdPairs == null)
-			{
-				sb.Append(" N/A");
-			}
-			else
-			{
-				foreach(KeyValuePair<long, long> kvp in globalIdPairs)
-					sb.AppendFormat("\n0x{0:x16} -> 0x{1:x16}", kvp.Key, kvp.Value);
-			}
-
-			sb.Append("\n");
-
+			sb.Append("Count: ");
+			sb.Append(globalIdPairs == null ? "N/A" : globalIdPairs.Count.ToString());
 			return sb.ToString();
 		}
 	}
