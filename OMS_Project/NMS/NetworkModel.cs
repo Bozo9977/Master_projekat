@@ -130,7 +130,6 @@ namespace NMS
 			if(!containers.TryGetValue(type, out container) || container.ContainsKey(rd.Id))
 				return null;
 
-			rd.SetProperty(new Int64Property(ModelCode.IDENTIFIEDOBJECT_GID, rd.Id));
 			IdentifiedObject io = IdentifiedObject.Create(rd);
 
 			if(io == null)
