@@ -75,13 +75,16 @@ namespace SCADA_Service
 
         private bool ConnectToNMS(string uri)
         {
+            Disconnect();
+
             try
             {
-                factory = new ChannelFactory<INetworkModelGDAContract>(new NetTcpBinding(), new EndpointAddress(new Uri(uri)));
+                factory = new ChannelFactory<INetworkModelGDAContract>(new NetTcpBinding() { TransferMode = TransferMode.Streamed, MaxReceivedMessageSize = 2147483647 }, new EndpointAddress(new Uri(uri)));
                 proxy = factory.CreateChannel();
             }
-            catch
+            catch (Exception e)
             {
+                Console.WriteLine("ERROR: " + e.Message);
                 Disconnect();
                 return false;
             }
@@ -96,6 +99,9 @@ namespace SCADA_Service
                 factory.Close();
             }
             catch { }
+
+            proxy = null;
+            factory = null;
         }
 
     }
