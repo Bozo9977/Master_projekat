@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConfigUpdater.cs" />
     <Compile Include="Data\AnalogSCADAModelPointItem.cs" />
     <Compile Include="Data\DiscreteSCADAModelPointItem.cs" />
     <Compile Include="Data\SCADAModelPointItem.cs" />

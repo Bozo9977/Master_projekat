@@ -10,6 +10,50 @@ namespace SCADA_Service.Data
 {
     public class AnalogSCADAModelPointItem : SCADAModelPointItem, IAnalogSCADAModelPointItem
     {
+        #region Fields
+        private float currentEguValue;
+        #endregion
+
+        #region Properties
+        public float NormalValue { get; set; }
+        public float EGU_Min { get; set; }
+        public float EGU_Max { get; set; }
+        public float ScalingFactor { get; set; }
+        public float Deviation { get; set; }
+
+        public float CurrentEguValue
+        {
+            get { return currentEguValue; }
+            set
+            {
+                currentEguValue = value;
+            }
+        }
+        public int CurrentRawValue
+        {
+            get
+            {
+                return EguToRawValueConversion(CurrentEguValue);
+            }
+        }
+
+        public int MinRawValue
+        {
+            get
+            {
+                return EguToRawValueConversion(CurrentEguValue);
+            }
+        }
+
+        public int MaxRawValue
+        {
+            get
+            {
+                return EguToRawValueConversion(CurrentEguValue);
+            }
+        }
+        #endregion
+
         public AnalogSCADAModelPointItem(List<Property> props, ModelCode type)
             : base(props, type)
         {
@@ -45,44 +89,6 @@ namespace SCADA_Service.Data
             Initialized = true;
         }
 
-        private float currentEguValue;
-        public float NormalValue { get; set; }
-        public float CurrentEguValue
-        {
-            get { return currentEguValue; }
-            set
-            {
-                currentEguValue = value;
-            }
-        }
-        public float EGU_Min { get; set; }
-        public float EGU_Max { get; set; }
-        public float ScalingFactor { get; set; }
-        public float Deviation { get; set; }
-
-        public int CurrentRawValue
-        {
-            get
-            {
-                return EguToRawValueConversion(CurrentEguValue);
-            }
-        }
-
-        public int MinRawValue
-        {
-            get
-            {
-                return EguToRawValueConversion(CurrentEguValue);
-            }
-        }
-
-        public int MaxRawValue
-        {
-            get
-            {
-                return EguToRawValueConversion(CurrentEguValue);
-            }
-        }
 
 
         #region Conversions

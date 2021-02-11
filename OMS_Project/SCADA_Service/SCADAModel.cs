@@ -14,6 +14,7 @@ namespace SCADA_Service
     public class SCADAModel
     {
         private Dictionary<long, ISCADAModelPointItem> scadaModel;
+        private ConfigUpdater configUpdater;
 
         INetworkModelGDAContract proxy;
 
@@ -60,7 +61,10 @@ namespace SCADA_Service
             Console.WriteLine("Importing discrete values...");
             ImportDiscrete();
             Console.WriteLine("Discrete finished!");
-
+            
+            configUpdater = new ConfigUpdater();
+            configUpdater.UpdateServerConfigFile(ScadaModel);
+            configUpdater.UpdateClientConfigFile(ScadaModel);
         }
 
 

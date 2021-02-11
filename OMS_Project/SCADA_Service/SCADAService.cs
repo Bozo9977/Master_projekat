@@ -75,7 +75,7 @@ namespace SCADA_Service
 
         private bool ConnectToNMS(string uri)
         {
-            Disconnect();
+            //Disconnect();
 
             try
             {
