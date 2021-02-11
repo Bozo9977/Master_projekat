@@ -46,7 +46,7 @@ namespace NMS.DataModel
 					return new Int32Property(ModelCode.DISCRETE_MINVALUE, MinValue);
 
 				case ModelCode.DISCRETE_NORMALVALUE:
-					return new Int32Property(ModelCode.ANALOG_NORMALVALUE, NormalValue);
+					return new Int32Property(ModelCode.DISCRETE_NORMALVALUE, NormalValue);
 			}
 
 			return base.GetProperty(p);

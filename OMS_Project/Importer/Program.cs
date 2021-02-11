@@ -90,11 +90,15 @@ namespace Importer
 
 		static void Disconnect()
 		{
-			try
+			if(factory != null)
 			{
-				factory.Close();
+				try
+				{
+					factory.Close();
+				}
+				catch(Exception e)
+				{ }
 			}
-			catch { }
 
 			proxy = null;
 			factory = null;
