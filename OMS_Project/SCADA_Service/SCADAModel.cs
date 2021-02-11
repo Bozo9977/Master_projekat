@@ -57,12 +57,15 @@ namespace SCADA_Service
             ImportAnalog();
             Console.WriteLine("Analog finished!");
 
+            Console.WriteLine("Importing discrete values...");
+            ImportDiscrete();
+            Console.WriteLine("Discrete finished!");
+
         }
 
 
         private void ImportAnalog()
         {
-            bool success;
             int numberOfResources = 1000;
             List<ModelCode> props = new List<ModelCode>();
             props.Add(ModelCode.ANALOG_MAXVALUE);
@@ -88,8 +91,38 @@ namespace SCADA_Service
                         ISCADAModelPointItem pointItem = new AnalogSCADAModelPointItem(rds[i].Properties.Values.ToList(), ModelCode.ANALOG);
                         ScadaModel.Add(rds[i].Id, pointItem);
                         AddressToGidMap[pointItem.RegisterType].Add(pointItem.Address, rds[i].Id);
+                    }
+                }
+                resourcesLeft = proxy.IteratorResourcesLeft(iteratorId);
+            }
+        }
 
-                        //Logger.LogDebug($"ANALOG measurement added to SCADA model [Gid: {gid}, Address: {pointItem.Address}]");
+        private void ImportDiscrete()
+        {
+            int numberOfResources = 1000;
+            List<ModelCode> props = new List<ModelCode>();
+            props.Add(ModelCode.DISCRETE_MAXVALUE);
+            props.Add(ModelCode.DISCRETE_MINVALUE);
+            props.Add(ModelCode.DISCRETE_NORMALVALUE);
+            props.Add(ModelCode.IDENTIFIEDOBJECT_GID);
+            props.Add(ModelCode.IDENTIFIEDOBJECT_NAME);
+            props.Add(ModelCode.MEASUREMENT_BASEADDRESS);
+            props.Add(ModelCode.MEASUREMENT_DIRECTION);
+
+            int iteratorId = proxy.GetExtentValues(ModelCode.DISCRETE, props);
+            int resourcesLeft = proxy.IteratorResourcesLeft(iteratorId);
+
+            while (resourcesLeft > 0)
+            {
+                List<ResourceDescription> rds = proxy.IteratorNext(numberOfResources, iteratorId);
+                for (int i = 0; i < rds.Count; i++)
+                {
+                    if (rds[i] != null)
+                    {
+                        long gid = rds[i].Id;
+                        ISCADAModelPointItem pointItem = new DiscreteSCADAModelPointItem(rds[i].Properties.Values.ToList(), ModelCode.DISCRETE);
+                        ScadaModel.Add(gid, pointItem);
+                        AddressToGidMap[pointItem.RegisterType].Add(pointItem.Address, gid);
                     }
                 }
                 resourcesLeft = proxy.IteratorResourcesLeft(iteratorId);
