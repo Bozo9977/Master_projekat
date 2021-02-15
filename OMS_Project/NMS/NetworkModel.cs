@@ -11,6 +11,7 @@ namespace NMS
 	{
 		Dictionary<DMSType, Dictionary<long, IdentifiedObject>> containers;
 		ReaderWriterLockSlim rwLock;
+		INMSDatabase db;
 
 		public NetworkModel()
 		{
@@ -30,6 +31,49 @@ namespace NMS
 			foreach(DMSType k in nm.containers.Keys)
 				containers[k] = new Dictionary<long, IdentifiedObject>(nm.containers[k]);
 
+			db = nm.db;
+			rwLock = new ReaderWriterLockSlim();
+		}
+
+		public NetworkModel(INMSDatabase db)
+		{
+			Array types = Enum.GetValues(typeof(DMSType));
+			containers = new Dictionary<DMSType, Dictionary<long, IdentifiedObject>>(types.Length);
+
+			foreach(DMSType t in types)
+			{
+				Dictionary<long, IdentifiedObject> container = new Dictionary<long, IdentifiedObject>();
+
+				foreach(IdentifiedObject io in db.GetList(t))
+				{
+					container.Add(io.GID, io);
+				}
+
+				containers.Add(t, container);
+			}
+
+			Dictionary<ModelCode, long> refs = new Dictionary<ModelCode, long>();
+
+			foreach(KeyValuePair<DMSType, Dictionary<long, IdentifiedObject>> container in containers)
+			{
+				foreach(KeyValuePair<long, IdentifiedObject> io in container.Value)
+				{
+					refs.Clear();
+					io.Value.GetSourceReferences(refs);
+
+					foreach(KeyValuePair<ModelCode, long> r in refs)
+					{
+						IdentifiedObject target;
+
+						if(!TryGetEntity(r.Value, out target))
+							continue;
+
+						target.AddTargetReference(r.Key, r.Value);
+					}
+				}
+			}
+
+			this.db = db;
 			rwLock = new ReaderWriterLockSlim();
 		}
 
@@ -52,6 +96,9 @@ namespace NMS
 				delta.SortOperations();
 
 				HashSet<long> toValidate = new HashSet<long>();
+				List<IdentifiedObject> inserted = new List<IdentifiedObject>();
+				List<IdentifiedObject> updated = new List<IdentifiedObject>();
+				List<IdentifiedObject> deleted = new List<IdentifiedObject>();
 				Func<long, IdentifiedObject> entityGetter = x => { IdentifiedObject y; TryGetEntity(x, out y); return y; };
 
 				foreach(ResourceDescription rd in delta.InsertOperations)
@@ -63,6 +110,7 @@ namespace NMS
 
 					toValidate.Add(io.GID);
 					io.GetEntitiesToValidate(entityGetter, toValidate);
+					inserted.Add(io);
 				}
 
 				foreach(ResourceDescription rd in delta.UpdateOperations)
@@ -75,6 +123,7 @@ namespace NMS
 					toValidate.Add(io.Item1.GID);
 					io.Item1.GetEntitiesToValidate(entityGetter, toValidate);
 					io.Item2.GetEntitiesToValidate(entityGetter, toValidate);
+					updated.Add(io.Item2);
 				}
 
 				foreach(ResourceDescription rd in delta.DeleteOperations)
@@ -86,6 +135,7 @@ namespace NMS
 
 					toValidate.Add(io.GID);
 					io.GetEntitiesToValidate(entityGetter, toValidate);
+					deleted.Add(io);
 				}
 
 				foreach(long gid in toValidate)
@@ -98,6 +148,9 @@ namespace NMS
 					if(!io.Validate())
 						return null;
 				}
+
+				if(!db.ApplyDelta(inserted, updated, deleted))
+					return null;
 
 				return ids;
 			}

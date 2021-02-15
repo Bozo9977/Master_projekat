@@ -1,17 +1,31 @@
 ﻿using Common.GDA;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace NMS.DataModel
 {
-	class EnergyConsumer : ConductingEquipment
+	public class EnergyConsumerDBModel
 	{
-		public float PFixed { get; private set; }
-		public float QFixed { get; private set; }
-		public ConsumerClass ConsumerClass { get; private set; }
+		[Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
+		public long GID { get; set; }
+		public string MRID { get; set; }
+		public string Name { get; set; }
+		public long BaseVoltage { get; set; }
+		public float PFixed { get; set; }
+		public float QFixed { get; set; }
+		public ConsumerClass ConsumerClass { get; set; }
+	}
+
+	public class EnergyConsumer : ConductingEquipment
+	{
+		public float PFixed { get; protected set; }
+		public float QFixed { get; protected set; }
+		public ConsumerClass ConsumerClass { get; protected set; }
 
 		public EnergyConsumer() { }
 
@@ -20,6 +34,17 @@ namespace NMS.DataModel
 			PFixed = e.PFixed;
 			QFixed = e.QFixed;
 			ConsumerClass = e.ConsumerClass;
+		}
+
+		public EnergyConsumer(EnergyConsumerDBModel entity)
+		{
+			GID = entity.GID;
+			MRID = entity.MRID;
+			Name = entity.Name;
+			BaseVoltage = entity.BaseVoltage;
+			PFixed = entity.PFixed;
+			QFixed = entity.QFixed;
+			ConsumerClass = entity.ConsumerClass;
 		}
 
 		public override bool HasProperty(ModelCode p)
@@ -74,6 +99,11 @@ namespace NMS.DataModel
 		public override IdentifiedObject Clone()
 		{
 			return new EnergyConsumer(this);
+		}
+
+		public override object ToDBEntity()
+		{
+			return new EnergyConsumerDBModel() { GID = GID, MRID = MRID, Name = Name, BaseVoltage = BaseVoltage, PFixed = PFixed, QFixed = QFixed, ConsumerClass = ConsumerClass };
 		}
 	}
 }

@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace NMS.DataModel
 {
-	abstract class Switch : ConductingEquipment
+	public abstract class Switch : ConductingEquipment
 	{
-		public bool NormalOpen { get; private set; }
+		public bool NormalOpen { get; protected set; }
 
 		public Switch() { }
 

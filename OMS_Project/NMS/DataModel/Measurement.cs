@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 
 namespace NMS.DataModel
 {
-	abstract class Measurement : IdentifiedObject
+	public abstract class Measurement : IdentifiedObject
 	{
-		public int BaseAddress { get; private set; }
-		public SignalDirection Direction { get; private set; }
-		public MeasurementType MeasurementType { get; private set; }
-		public long PowerSystemResource { get; private set; }
-		public long Terminal { get; private set; }
+		public int BaseAddress { get; protected set; }
+		public SignalDirection Direction { get; protected set; }
+		public MeasurementType MeasurementType { get; protected set; }
+		public long PowerSystemResource { get; protected set; }
+		public long Terminal { get; protected set; }
 
 		public Measurement() { }
 

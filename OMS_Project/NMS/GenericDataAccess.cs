@@ -12,7 +12,7 @@ namespace NMS
 	class GenericDataAccess : INetworkModelGDAContract
 	{
 		static object updateLock = new object();
-		static NetworkModel model = new NetworkModel();
+		static NetworkModel model = new NetworkModel(new NMSEFDatabase());
 		static NetworkModel transactionModel = model;
 		static ConcurrentDictionary<int, ResourceIterator> iterators = new ConcurrentDictionary<int, ResourceIterator>();
 		static int iteratorId;

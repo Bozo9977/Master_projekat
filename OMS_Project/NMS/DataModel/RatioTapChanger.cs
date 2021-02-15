@@ -1,18 +1,32 @@
 ﻿using Common.GDA;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace NMS.DataModel
 {
-	class RatioTapChanger : TapChanger
+	public class RatioTapChangerDBModel
 	{
-		public int NominalStep { get; private set; }
-		public int StepCount { get; private set; }
-		public float VoltageStep { get; private set; }
-		public long TransformerWinding { get; private set; }
+		[Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
+		public long GID { get; set; }
+		public string MRID { get; set; }
+		public string Name { get; set; }
+		public int NominalStep { get; set; }
+		public int StepCount { get; set; }
+		public float VoltageStep { get; set; }
+		public long TransformerWinding { get; set; }
+	}
+
+	public class RatioTapChanger : TapChanger
+	{
+		public int NominalStep { get; protected set; }
+		public int StepCount { get; protected set; }
+		public float VoltageStep { get; protected set; }
+		public long TransformerWinding { get; protected set; }
 
 		public RatioTapChanger() { }
 
@@ -22,6 +36,17 @@ namespace NMS.DataModel
 			StepCount = r.StepCount;
 			VoltageStep = r.VoltageStep;
 			TransformerWinding = r.TransformerWinding;
+		}
+
+		public RatioTapChanger(RatioTapChangerDBModel entity)
+		{
+			GID = entity.GID;
+			MRID = entity.MRID;
+			Name = entity.Name;
+			NominalStep = entity.NominalStep;
+			StepCount = entity.StepCount;
+			VoltageStep = entity.VoltageStep;
+			TransformerWinding = entity.TransformerWinding;
 		}
 
 		public override bool HasProperty(ModelCode p)
@@ -94,6 +119,11 @@ namespace NMS.DataModel
 		public override IdentifiedObject Clone()
 		{
 			return new RatioTapChanger(this);
+		}
+
+		public override object ToDBEntity()
+		{
+			return new RatioTapChangerDBModel() { GID = GID, MRID = MRID, Name = Name, StepCount = StepCount, NominalStep = NominalStep, VoltageStep = VoltageStep = TransformerWinding = TransformerWinding };
 		}
 	}
 }

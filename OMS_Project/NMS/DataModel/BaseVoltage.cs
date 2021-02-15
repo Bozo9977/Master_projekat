@@ -1,15 +1,26 @@
 ﻿using Common.GDA;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace NMS.DataModel
 {
-	class BaseVoltage : IdentifiedObject
+	public class BaseVoltageDBModel
 	{
-		public float NominalVoltage { get; private set; }
+		[Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
+		public long GID { get; set; }
+		public string MRID { get; set; }
+		public string Name { get; set; }
+		public float NominalVoltage { get; set; }
+	}
+
+	public class BaseVoltage : IdentifiedObject
+	{
+		public float NominalVoltage { get; protected set; }
 		public List<long> ConductingEquipment { get; private set; }
 
 		public BaseVoltage()
@@ -21,6 +32,15 @@ namespace NMS.DataModel
 		{
 			NominalVoltage = b.NominalVoltage;
 			ConductingEquipment = new List<long>(b.ConductingEquipment);
+		}
+
+		public BaseVoltage(BaseVoltageDBModel entity)
+		{
+			GID = entity.GID;
+			MRID = entity.MRID;
+			Name = entity.Name;
+			NominalVoltage = entity.NominalVoltage;
+			ConductingEquipment = new List<long>();
 		}
 
 		public override bool HasProperty(ModelCode p)
@@ -104,6 +124,11 @@ namespace NMS.DataModel
 		public override IdentifiedObject Clone()
 		{
 			return new BaseVoltage(this);
+		}
+
+		public override object ToDBEntity()
+		{
+			return new BaseVoltageDBModel() { GID = GID, MRID = MRID, Name = Name, NominalVoltage = NominalVoltage };
 		}
 	}
 }

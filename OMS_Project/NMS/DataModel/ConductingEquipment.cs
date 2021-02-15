@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace NMS.DataModel
 {
-	abstract class ConductingEquipment : Equipment
+	public abstract class ConductingEquipment : Equipment
 	{
-		public long BaseVoltage { get; private set; }
+		public long BaseVoltage { get; protected set; }
 		public List<long> Terminals { get; private set; }
 
 		public ConductingEquipment()

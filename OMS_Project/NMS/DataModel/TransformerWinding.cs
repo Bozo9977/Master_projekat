@@ -1,15 +1,27 @@
 ﻿using Common.GDA;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace NMS.DataModel
 {
-	class TransformerWinding : ConductingEquipment
+	public class TransformerWindingDBModel
 	{
-		public long PowerTransformer { get; private set; }
+		[Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
+		public long GID { get; set; }
+		public string MRID { get; set; }
+		public string Name { get; set; }
+		public long BaseVoltage { get; set; }
+		public long PowerTransformer { get; set; }
+	}
+
+	public class TransformerWinding : ConductingEquipment
+	{
+		public long PowerTransformer { get; protected set; }
 		public List<long> RatioTapChanger { get; private set; }
 
 		public TransformerWinding()
@@ -21,6 +33,16 @@ namespace NMS.DataModel
 		{
 			PowerTransformer = t.PowerTransformer;
 			RatioTapChanger = new List<long>(t.RatioTapChanger);
+		}
+
+		public TransformerWinding(TransformerWindingDBModel entity)
+		{
+			GID = entity.GID;
+			MRID = entity.MRID;
+			Name = entity.Name;
+			BaseVoltage = entity.BaseVoltage;
+			PowerTransformer = entity.PowerTransformer;
+			RatioTapChanger = new List<long>();
 		}
 
 		public override bool HasProperty(ModelCode p)
@@ -109,6 +131,11 @@ namespace NMS.DataModel
 		public override IdentifiedObject Clone()
 		{
 			return new TransformerWinding(this);
+		}
+
+		public override object ToDBEntity()
+		{
+			return new TransformerWindingDBModel() { GID = GID, MRID = MRID, Name = Name, BaseVoltage = BaseVoltage, PowerTransformer = PowerTransformer };
 		}
 	}
 }

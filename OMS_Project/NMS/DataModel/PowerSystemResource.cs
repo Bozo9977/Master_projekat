@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace NMS.DataModel
 {
-	abstract class PowerSystemResource : IdentifiedObject
+	public abstract class PowerSystemResource : IdentifiedObject
 	{
 		public List<long> Measurements { get; private set; }
 

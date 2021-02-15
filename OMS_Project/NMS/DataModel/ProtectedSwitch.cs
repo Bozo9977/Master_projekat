@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NMS.DataModel
 {
-	abstract class ProtectedSwitch : Switch
+	public abstract class ProtectedSwitch : Switch
 	{
 		public ProtectedSwitch() { }
 

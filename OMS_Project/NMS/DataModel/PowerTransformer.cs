@@ -1,13 +1,23 @@
 ﻿using Common.GDA;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace NMS.DataModel
 {
-	class PowerTransformer : Equipment
+	public class PowerTransformerDBModel
+	{
+		[Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
+		public long GID { get; set; }
+		public string MRID { get; set; }
+		public string Name { get; set; }
+	}
+
+	public class PowerTransformer : Equipment
 	{
 		public List<long> TransformerWindings { get; private set; }
 
@@ -19,6 +29,14 @@ namespace NMS.DataModel
 		public PowerTransformer(PowerTransformer p) : base(p)
 		{
 			TransformerWindings = new List<long>(p.TransformerWindings);
+		}
+
+		public PowerTransformer(PowerTransformerDBModel entity)
+		{
+			GID = entity.GID;
+			MRID = entity.MRID;
+			Name = entity.Name;
+			TransformerWindings = new List<long>();
 		}
 
 		public override bool HasProperty(ModelCode p)
@@ -84,5 +102,10 @@ namespace NMS.DataModel
 		{
 			return new PowerTransformer(this);
 		}
+		public override object ToDBEntity()
+		{
+			return new PowerTransformerDBModel() { GID = GID, MRID = MRID, Name = Name };
+		}
+
 	}
 }

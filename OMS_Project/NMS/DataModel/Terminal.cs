@@ -1,16 +1,28 @@
 ﻿using Common.GDA;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace NMS.DataModel
 {
-	class Terminal : IdentifiedObject
+	public class TerminalDBModel
 	{
-		public long ConnectivityNode { get; private set; }
-		public long ConductingEquipment { get; private set; }
+		[Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
+		public long GID { get; set; }
+		public string MRID { get; set; }
+		public string Name { get; set; }
+		public long ConnectivityNode { get; set; }
+		public long ConductingEquipment { get; set; }
+	}
+
+	public class Terminal : IdentifiedObject
+	{
+		public long ConnectivityNode { get; protected set; }
+		public long ConductingEquipment { get; protected set; }
 		public List<long> Measurements { get; private set; }
 
 		public Terminal()
@@ -23,6 +35,16 @@ namespace NMS.DataModel
 			ConnectivityNode = t.ConnectivityNode;
 			ConductingEquipment = t.ConductingEquipment;
 			Measurements = new List<long>(t.Measurements);
+		}
+
+		public Terminal(TerminalDBModel entity)
+		{
+			GID = entity.GID;
+			MRID = entity.MRID;
+			Name = entity.Name;
+			ConnectivityNode = entity.ConnectivityNode;
+			ConductingEquipment = entity.ConductingEquipment;
+			Measurements = new List<long>();
 		}
 
 		public override bool HasProperty(ModelCode p)
@@ -118,6 +140,11 @@ namespace NMS.DataModel
 		public override IdentifiedObject Clone()
 		{
 			return new Terminal(this);
+		}
+
+		public override object ToDBEntity()
+		{
+			return new TerminalDBModel() { GID = GID, MRID = MRID, Name = Name, ConnectivityNode = ConnectivityNode, ConductingEquipment = ConductingEquipment };
 		}
 	}
 }

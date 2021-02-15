@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NMS.DataModel
 {
-	abstract class Conductor : ConductingEquipment
+	public abstract class Conductor : ConductingEquipment
 	{
 		public Conductor() { }
 

@@ -1,13 +1,23 @@
 ﻿using Common.GDA;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace NMS.DataModel
 {
-	class ConnectivityNode : IdentifiedObject
+	public class ConnectivityNodeDBModel
+	{
+		[Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
+		public long GID { get; set; }
+		public string MRID { get; set; }
+		public string Name { get; set; }
+	}
+
+	public class ConnectivityNode : IdentifiedObject
 	{
 		public List<long> Terminals { get; private set; }
 
@@ -16,9 +26,17 @@ namespace NMS.DataModel
 			Terminals = new List<long>();
 		}
 
-		public ConnectivityNode(ConnectivityNode cn)
+		public ConnectivityNode(ConnectivityNode c) : base(c)
 		{
-			Terminals = new List<long>(cn.Terminals);
+			Terminals = new List<long>(c.Terminals);
+		}
+
+		public ConnectivityNode(ConnectivityNodeDBModel entity)
+		{
+			GID = entity.GID;
+			MRID = entity.MRID;
+			Name = entity.Name;
+			Terminals = new List<long>();
 		}
 
 		public override bool HasProperty(ModelCode p)
@@ -83,6 +101,11 @@ namespace NMS.DataModel
 		public override IdentifiedObject Clone()
 		{
 			return new ConnectivityNode(this);
+		}
+
+		public override object ToDBEntity()
+		{
+			return new ConnectivityNodeDBModel() { GID = GID, MRID = MRID, Name = Name };
 		}
 	}
 }

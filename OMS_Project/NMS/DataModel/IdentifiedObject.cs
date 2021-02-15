@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace NMS.DataModel
 {
-	abstract class IdentifiedObject
+	public abstract class IdentifiedObject
 	{
-		public long GID { get; private set; }
-		public string Name { get; private set; }
-		public string MRID { get; private set; }
+		public long GID { get; protected set; }
+		public string Name { get; protected set; }
+		public string MRID { get; protected set; }
 
 		public IdentifiedObject() { }
 
@@ -85,6 +85,45 @@ namespace NMS.DataModel
 					return null;
 
 			return io;
+		}
+
+		public static IdentifiedObject Load(DMSType type, object entity)
+		{
+			switch(type)
+			{
+				case DMSType.ACLineSegment:
+					return new ACLineSegment((ACLineSegmentDBModel)entity);
+				case DMSType.Analog:
+					return new Analog((AnalogDBModel)entity);
+				case DMSType.BaseVoltage:
+					return new BaseVoltage((BaseVoltageDBModel)entity);
+				case DMSType.Breaker:
+					return new Breaker((BreakerDBModel)entity);
+				case DMSType.ConnectivityNode:
+					return new ConnectivityNode((ConnectivityNodeDBModel)entity);
+				case DMSType.Disconnector:
+					return new Disconnector((DisconnectorDBModel)entity);
+				case DMSType.Discrete:
+					return new Discrete((DiscreteDBModel)entity);
+				case DMSType.DistributionGenerator:
+					return new DistributionGenerator((DistributionGeneratorDBModel)entity);
+				case DMSType.EnergyConsumer:
+					return new EnergyConsumer((EnergyConsumerDBModel)entity);
+				case DMSType.EnergySource:
+					return new EnergySource((EnergySourceDBModel)entity);
+				case DMSType.PowerTransformer:
+					return new PowerTransformer((PowerTransformerDBModel)entity);
+				case DMSType.RatioTapChanger:
+					return new RatioTapChanger((RatioTapChangerDBModel)entity);
+				case DMSType.Recloser:
+					return new Recloser((RecloserDBModel)entity);
+				case DMSType.Terminal:
+					return new Terminal((TerminalDBModel)entity);
+				case DMSType.TransformerWinding:
+					return new TransformerWinding((TransformerWindingDBModel)entity);
+			}
+
+			return null;
 		}
 
 		public virtual bool HasProperty(ModelCode p)
@@ -166,5 +205,7 @@ namespace NMS.DataModel
 		{ }
 
 		public abstract IdentifiedObject Clone();
+
+		public abstract object ToDBEntity();
 	}
 }

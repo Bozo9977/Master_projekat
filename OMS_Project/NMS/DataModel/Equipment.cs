@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NMS.DataModel
 {
-	abstract class Equipment : PowerSystemResource
+	public abstract class Equipment : PowerSystemResource
 	{
 		public Equipment() { }
 

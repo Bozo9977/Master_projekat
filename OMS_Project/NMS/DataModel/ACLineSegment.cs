@@ -1,21 +1,42 @@
 ﻿using Common.GDA;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace NMS.DataModel
 {
-	class ACLineSegment : Conductor
+	public class ACLineSegmentDBModel
 	{
-		public float RatedCurrent { get; private set; }
+		[Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
+		public long GID { get; set; }
+		public string MRID { get; set; }
+		public string Name { get; set; }
+		public long BaseVoltage { get; set; }
+		public float RatedCurrent { get; set; }
+	}
+
+	public class ACLineSegment : Conductor
+	{
+		public float RatedCurrent { get; protected set; }
 
 		public ACLineSegment() { }
 
 		public ACLineSegment(ACLineSegment a) : base(a)
 		{
 			RatedCurrent = a.RatedCurrent;
+		}
+
+		public ACLineSegment(ACLineSegmentDBModel entity)
+		{
+			GID = entity.GID;
+			MRID = entity.MRID;
+			Name = entity.Name;
+			BaseVoltage = entity.BaseVoltage;
+			RatedCurrent = entity.RatedCurrent;
 		}
 
 		public override bool HasProperty(ModelCode p)
@@ -58,6 +79,11 @@ namespace NMS.DataModel
 		public override IdentifiedObject Clone()
 		{
 			return new ACLineSegment(this);
+		}
+
+		public override object ToDBEntity()
+		{
+			return new ACLineSegmentDBModel() { GID = GID, MRID = MRID, Name = Name, BaseVoltage = BaseVoltage, RatedCurrent = RatedCurrent };
 		}
 	}
 }
