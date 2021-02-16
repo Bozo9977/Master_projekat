@@ -42,7 +42,6 @@ namespace SCADA_Service
             }
 
             ImportSCADAModel(proxy);
-
             InitializeSCADAClient();
             InitializeSCADAServer();
         }
