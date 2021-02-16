@@ -13,10 +13,17 @@ namespace NMS
 		{
 			ServiceHost host = new ServiceHost(typeof(GenericDataAccess));
 			host.Open();
+
+			NetworkModelService nms = new NetworkModelService();
+			nms.Start();
+
 			Console.WriteLine(host.BaseAddresses[0].ToString());
 			Console.WriteLine("[Press any key to stop the service]");
 			Console.ReadKey();
 			host.Close();
+
+
+			
 		}
 	}
 }

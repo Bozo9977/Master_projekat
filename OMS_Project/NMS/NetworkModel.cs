@@ -418,5 +418,24 @@ namespace NMS
 				rwLock.ExitReadLock();
 			}
 		}
+
+		public NetworkModel GetCopyOfNetworkModel()
+        {
+			NetworkModel retNetworkModel = new NetworkModel();
+			foreach(DMSType dmsType in this.containers.Keys)
+            {
+                if (!retNetworkModel.containers.ContainsKey(dmsType))
+                {
+					retNetworkModel.containers.Add(dmsType, this.containers[dmsType]);
+                }
+                else
+                {
+					retNetworkModel.containers[dmsType] = this.containers[dmsType];
+                }
+            }
+
+			return retNetworkModel;
+		}
+
 	}
 }

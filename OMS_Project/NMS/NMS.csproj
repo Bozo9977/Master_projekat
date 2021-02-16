@@ -84,6 +84,8 @@
     <Compile Include="INMSDatabase.cs" />
     <Compile Include="IEFTable.cs" />
     <Compile Include="NetworkModel.cs" />
+    <Compile Include="NetworkModelService.cs" />
+    <Compile Include="NetworkModelTransactionService.cs" />
     <Compile Include="NMSEFDatabase.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -97,6 +99,10 @@
     <ProjectReference Include="..\Common\Common.csproj">
       <Project>{41f506dd-503a-4de8-9c46-1d8c0bd8ff68}</Project>
       <Name>Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TransactionManager\TransactionManager.csproj">
+      <Project>{852bb905-3798-415e-b13a-7737f08be04a}</Project>
+      <Name>TransactionManager</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

@@ -17,7 +17,21 @@ namespace NMS
 		static ConcurrentDictionary<int, ResourceIterator> iterators = new ConcurrentDictionary<int, ResourceIterator>();
 		static int iteratorId;
 
-		public UpdateResult ApplyUpdate(Delta delta)
+		public static NetworkModel Model
+        {
+            set
+            {
+				model = value;
+            }
+        }
+
+		static NetworkModel newNetworkModel = new NetworkModel();
+		static NetworkModel oldNetworkModel;
+
+        public static NetworkModel OldNetworkModel { get { return oldNetworkModel; } set { oldNetworkModel = value; } }
+        public static NetworkModel NewNetworkModel { get { return newNetworkModel; } set { newNetworkModel = value; } }
+
+        public UpdateResult ApplyUpdate(Delta delta)
 		{
 			lock(updateLock)
 			{
@@ -113,5 +127,11 @@ namespace NMS
 			iterators.TryGetValue(id, out ri);
 			return ri;
 		}
+
+		public void GetCopyOfNetworkModel()
+        {
+			NewNetworkModel = model.GetCopyOfNetworkModel();
+			OldNetworkModel = model.GetCopyOfNetworkModel();
+        }
 	}
 }
