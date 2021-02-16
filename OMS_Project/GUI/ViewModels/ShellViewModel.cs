@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using GUI.Models;
+using NServiceBus;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,10 +11,11 @@ using System.Windows.Shapes;
 
 namespace GUI.ViewModels
 {
-    public class ShellViewModel : Screen
+    public class ShellViewModel : Screen, IDisposable
     {
         public BindableCollection<Entity> Children = new BindableCollection<Entity>();
         public List<LineGeometry> Lines = new List<LineGeometry>();
+        private static IEndpointInstance endpointInstance;
 
         #region Binding Test
         /*private int _number1 = 0;
@@ -52,8 +54,9 @@ namespace GUI.ViewModels
         public ShellViewModel()
         {
             Dictionary<string, Entity> D = new Dictionary<string, Entity>();
-            
-            using(JSONParser jp = new JSONParser())
+            AsyncEndpointCreate().GetAwaiter().GetResult();
+
+            using (JSONParser jp = new JSONParser())
             {
                 D = jp.Import("../../mock_network.json");
             }
@@ -66,6 +69,8 @@ namespace GUI.ViewModels
             ProcessGraph(D);
             InitializeLineInfo();
             InitializeShapeInfo();
+
+
         }
 
         private void ProcessGraph(Dictionary<string, Entity> D)
@@ -207,15 +212,20 @@ namespace GUI.ViewModels
                 Data.Shapes.Add(s);
             }
         }
+
+        static async Task AsyncEndpointCreate()
+        {
+            var endpointConfiguration = new EndpointConfiguration("GUI");
+
+            var transport = endpointConfiguration.UseTransport<LearningTransport>();
+
+            endpointInstance = await Endpoint.Start(endpointConfiguration)
+                .ConfigureAwait(false);      
+        }
+
+        public void Dispose()
+        {
+            endpointInstance.Stop().ConfigureAwait(false);
+        }
     }
 }
-
-/*
- link.Stroke = Brushes.White;
-                link.Fill = Brushes.White;
-                link.StrokeThickness = 0.75;
-                link.Visibility = Visibility.Visible;
-                link.Data = gLink;
-                link.ToolTip = StringFormatter.PrintLine(lajna);
-                link.Opacity = 0.9;
- */

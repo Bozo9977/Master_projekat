@@ -49,6 +49,8 @@
   <ItemGroup>
     <Compile Include="Commands\UpdateAnalogPoint.cs" />
     <Compile Include="Commands\UpdateDiscretePoint.cs" />
+    <Compile Include="Events\AnalogUpdated.cs" />
+    <Compile Include="Events\DiscreteUpdated.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -57,5 +59,6 @@
   <ItemGroup>
     <Analyzer Include="..\packages\NServiceBus.7.4.4\analyzers\dotnet\cs\NServiceBus.Core.Analyzer.dll" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

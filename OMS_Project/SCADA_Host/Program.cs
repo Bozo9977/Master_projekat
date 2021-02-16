@@ -1,4 +1,6 @@
-﻿using SCADA_Service;
+﻿using NServiceBus;
+using NServiceBus.Logging;
+using SCADA_Service;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,5 +25,6 @@ namespace SCADA_Host
                 Console.ReadLine();
             }
         }
+  
     }
 }

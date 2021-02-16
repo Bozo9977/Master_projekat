@@ -1,4 +1,6 @@
-﻿using Modbus.Connection;
+﻿using Messages.Commands;
+using Modbus.Connection;
+using NServiceBus;
 using ProcessingModule;
 using SCADA_Client.Configuration;
 using SCADA_Client.ViewModel.PointViewModels;
@@ -36,6 +38,7 @@ namespace SCADA_Client.ViewModel
 		private bool disposed = false;
 		IConfiguration configuration;
 		private IProcessingManager processingManager = null;
+		private static IEndpointInstance endpointInstance;
 		#endregion Fields
 
 		Dictionary<int, IPoint> pointsCache = new Dictionary<int, IPoint>();
@@ -111,6 +114,7 @@ namespace SCADA_Client.ViewModel
 			this.processingManager = new ProcessingManager(this, commandExecutor);
 			this.acquisitor = new Acquisitor(acquisitionTrigger, this.processingManager, this, configuration);
 			this.automationManager = new AutomationManager(this, processingManager);
+			AsyncEndpointCreate().GetAwaiter().GetResult();
 			InitializePointCollection();
 			InitializeAndStartThreads();
 			logBuilder = new StringBuilder();
@@ -132,6 +136,33 @@ namespace SCADA_Client.ViewModel
 					{
 						Points.Add(pi);
 						pointsCache.Add(pi.PointId, pi as IPoint);
+
+						UpdateAnalogPoint analogCommand;
+						UpdateDiscretePoint discreteCommand;
+
+						if(pi.Type == PointType.ANALOG_INPUT || pi.Type == PointType.ANALOG_OUTPUT)
+                        {
+							analogCommand = new UpdateAnalogPoint
+							{
+								Name = $"{pi.Name}",
+								Value = pi.RawValue
+							};
+
+							endpointInstance.Send(analogCommand).ConfigureAwait(false);
+                        }
+						else if (pi.Type == PointType.DIGITAL_INPUT || pi.Type == PointType.DIGITAL_OUTPUT)
+						{
+							discreteCommand = new UpdateDiscretePoint
+							{
+								Name = $"{pi.Name}",
+								Value = (short)pi.RawValue
+							};
+
+							endpointInstance.Send(discreteCommand).ConfigureAwait(false);
+						}
+
+						// Send the command to the local endpoint
+
 						processingManager.InitializePoint(pi.Type, pi.Address, pi.RawValue);
 					}
 				}
@@ -233,6 +264,7 @@ namespace SCADA_Client.ViewModel
 			this.acquisitor.Dispose();
 			acquisitionTrigger.Dispose();
 			automationManager.Stop();
+			endpointInstance.Stop().ConfigureAwait(false);
 		}
 
 		public List<IPoint> GetPoints(List<PointIdentifier> pointIds)
@@ -248,6 +280,25 @@ namespace SCADA_Client.ViewModel
 				}
 			}
 			return retVal;
+		}
+
+		static async Task AsyncEndpointCreate()
+		{
+			var endpointConfiguration = new EndpointConfiguration("SCADA_Service");
+
+			/*
+             * LearningTransport - starter transport for learning purposes
+             * (other transports can be attained through nugget)
+             */
+			var transport = endpointConfiguration.UseTransport<LearningTransport>();
+
+			var routing = transport.Routing();
+			routing.RouteToEndpoint(typeof(UpdateAnalogPoint), "GUI");
+			routing.RouteToEndpoint(typeof(UpdateDiscretePoint), "GUI");
+
+			/* Start the endpoint */
+			endpointInstance = await Endpoint.Start(endpointConfiguration)
+				.ConfigureAwait(false);
 		}
 	}
 }

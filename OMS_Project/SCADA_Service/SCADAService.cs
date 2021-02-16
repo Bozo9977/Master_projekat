@@ -1,4 +1,6 @@
 ﻿using Common.GDA;
+using Messages.Commands;
+using NServiceBus;
 using SCADA_Client.ViewModel.PointViewModels;
 using System;
 using System.Collections.Generic;
@@ -41,7 +43,7 @@ namespace SCADA_Service
                 Console.WriteLine("ERROR: " + e.Message);
             }
 
-            ImportSCADAModel(proxy);
+            //ImportSCADAModel(proxy);
             InitializeSCADAClient();
             InitializeSCADAServer();
         }
@@ -102,6 +104,5 @@ namespace SCADA_Service
             proxy = null;
             factory = null;
         }
-
     }
 }

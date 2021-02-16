@@ -20,7 +20,6 @@
         </Grid.RowDefinitions>
 
         <Canvas x:Name="DrawingCanvas" Grid.Row="1" Grid.Column="1">
-            
         </Canvas>
 
     </Grid>
