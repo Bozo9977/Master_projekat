@@ -84,8 +84,6 @@
     <Compile Include="INMSDatabase.cs" />
     <Compile Include="IEFTable.cs" />
     <Compile Include="NetworkModel.cs" />
-    <Compile Include="NetworkModelService.cs" />
-    <Compile Include="NetworkModelTransactionService.cs" />
     <Compile Include="NMSEFDatabase.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

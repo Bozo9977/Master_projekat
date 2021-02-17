@@ -26,10 +26,10 @@ namespace NMS
 
 		public NetworkModel(NetworkModel nm)
 		{
-			containers = new Dictionary<DMSType, Dictionary<long, IdentifiedObject>>(nm.containers);
+			containers = new Dictionary<DMSType, Dictionary<long, IdentifiedObject>>(nm.containers.Count);
 
-			foreach(DMSType k in nm.containers.Keys)
-				containers[k] = new Dictionary<long, IdentifiedObject>(nm.containers[k]);
+			foreach(KeyValuePair<DMSType, Dictionary<long, IdentifiedObject>> kvp in nm.containers)
+				containers[kvp.Key] = new Dictionary<long, IdentifiedObject>(kvp.Value);
 
 			db = nm.db;
 			rwLock = new ReaderWriterLockSlim();
@@ -149,7 +149,7 @@ namespace NMS
 						return null;
 				}
 
-				if(!db.ApplyDelta(inserted, updated, deleted))
+				if(db != null && !db.ApplyDelta(inserted, updated, deleted))
 					return null;
 
 				return ids;
@@ -418,24 +418,5 @@ namespace NMS
 				rwLock.ExitReadLock();
 			}
 		}
-
-		public NetworkModel GetCopyOfNetworkModel()
-        {
-			NetworkModel retNetworkModel = new NetworkModel();
-			foreach(DMSType dmsType in this.containers.Keys)
-            {
-                if (!retNetworkModel.containers.ContainsKey(dmsType))
-                {
-					retNetworkModel.containers.Add(dmsType, this.containers[dmsType]);
-                }
-                else
-                {
-					retNetworkModel.containers[dmsType] = this.containers[dmsType];
-                }
-            }
-
-			return retNetworkModel;
-		}
-
 	}
 }
