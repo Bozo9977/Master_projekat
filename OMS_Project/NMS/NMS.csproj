@@ -98,10 +98,6 @@
       <Project>{41f506dd-503a-4de8-9c46-1d8c0bd8ff68}</Project>
       <Name>Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\TransactionManager\TransactionManager.csproj">
-      <Project>{852bb905-3798-415e-b13a-7737f08be04a}</Project>
-      <Name>TransactionManager</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
