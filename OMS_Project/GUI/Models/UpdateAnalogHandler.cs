@@ -10,17 +10,13 @@ using NServiceBus.Logging;
 
 namespace GUI.Models
 {
-    public class UpdateAnalogHandler : IHandleMessages<UpdateAnalogPoint>
+    public class UpdateAnalogHandler : IHandleMessages<AnalogUpdated>
     {
-        public Task Handle(UpdateAnalogPoint message, IMessageHandlerContext context)
+        public Task Handle(AnalogUpdated message, IMessageHandlerContext context)
         {
-            var analogUpdated = new AnalogUpdated
-            {
-                Name = message.Name,
-                Value = message.Value
-            };
+            
 
-            return context.Publish(analogUpdated);
+            return context.Publish(message);
         }
     }
 }

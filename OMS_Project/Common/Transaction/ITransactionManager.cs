@@ -14,7 +14,7 @@ namespace Common.Transaction
 		bool StartEnlist();
 
 		[OperationContract]
-		void Enlist();
+		bool Enlist();
 
 		[OperationContract]
 		bool EndEnlist(bool ok);

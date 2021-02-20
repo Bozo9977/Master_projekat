@@ -1,8 +1,10 @@
 ﻿using Messages.Commands;
+using Messages.Events;
 using Modbus.Connection;
 using NServiceBus;
 using ProcessingModule;
 using SCADA_Client.Configuration;
+using SCADA_Client.PubSubCode;
 using SCADA_Client.ViewModel.PointViewModels;
 using SCADA_Common;
 using System;
@@ -124,8 +126,12 @@ namespace SCADA_Client.ViewModel
 
 		#region Private methods
 
-		private void InitializePointCollection()
+		private async Task InitializePointCollection()
 		{
+			//pubsub
+			AnalogUpdated analogUpdated;
+			DiscreteUpdated discreteUpdated;
+
 			Points = new ObservableCollection<BasePointItem>();
 			foreach (var c in configuration.GetConfigurationItems())
 			{
@@ -137,33 +143,27 @@ namespace SCADA_Client.ViewModel
 						Points.Add(pi);
 						pointsCache.Add(pi.PointId, pi as IPoint);
 
-						UpdateAnalogPoint analogCommand;
-						UpdateDiscretePoint discreteCommand;
-
-						if(pi.Type == PointType.ANALOG_INPUT || pi.Type == PointType.ANALOG_OUTPUT)
+						//pubsub code 
+						using (EndpointHandler eH = new EndpointHandler())
                         {
-							analogCommand = new UpdateAnalogPoint
-							{
-								Name = $"{pi.Name}",
-								Value = pi.RawValue
-							};
+							await eH.AsyncEndpointCreate();
 
-							endpointInstance.Send(analogCommand).ConfigureAwait(false);
+							if (pi.Type == PointType.ANALOG_INPUT || pi.Type == PointType.ANALOG_OUTPUT)
+                            {
+								analogUpdated = new AnalogUpdated() {Name = pi.Name, Value = pi.RawValue };
+								await eH.EndpointInstance.Publish(analogUpdated);
+							}
+
+							if (pi.Type == PointType.DIGITAL_INPUT || pi.Type == PointType.DIGITAL_OUTPUT)
+                            {
+								discreteUpdated = new DiscreteUpdated() { Name = pi.Name, Value = (short)pi.RawValue };
+								await eH.EndpointInstance.Publish(discreteUpdated);
+							}
                         }
-						else if (pi.Type == PointType.DIGITAL_INPUT || pi.Type == PointType.DIGITAL_OUTPUT)
-						{
-							discreteCommand = new UpdateDiscretePoint
-							{
-								Name = $"{pi.Name}",
-								Value = (short)pi.RawValue
-							};
 
-							endpointInstance.Send(discreteCommand).ConfigureAwait(false);
-						}
+							// Send the command to the local endpoint
 
-						// Send the command to the local endpoint
-
-						processingManager.InitializePoint(pi.Type, pi.Address, pi.RawValue);
+							processingManager.InitializePoint(pi.Type, pi.Address, pi.RawValue);
 					}
 				}
 			}
