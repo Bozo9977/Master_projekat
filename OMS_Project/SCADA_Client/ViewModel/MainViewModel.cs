@@ -116,7 +116,6 @@ namespace SCADA_Client.ViewModel
 			this.processingManager = new ProcessingManager(this, commandExecutor);
 			this.acquisitor = new Acquisitor(acquisitionTrigger, this.processingManager, this, configuration);
 			this.automationManager = new AutomationManager(this, processingManager);
-			AsyncEndpointCreate().GetAwaiter().GetResult();
 			InitializePointCollection();
 			InitializeAndStartThreads();
 			logBuilder = new StringBuilder();
@@ -264,7 +263,6 @@ namespace SCADA_Client.ViewModel
 			this.acquisitor.Dispose();
 			acquisitionTrigger.Dispose();
 			automationManager.Stop();
-			endpointInstance.Stop().ConfigureAwait(false);
 		}
 
 		public List<IPoint> GetPoints(List<PointIdentifier> pointIds)
@@ -280,25 +278,6 @@ namespace SCADA_Client.ViewModel
 				}
 			}
 			return retVal;
-		}
-
-		static async Task AsyncEndpointCreate()
-		{
-			var endpointConfiguration = new EndpointConfiguration("SCADA_Service");
-
-			/*
-             * LearningTransport - starter transport for learning purposes
-             * (other transports can be attained through nugget)
-             */
-			var transport = endpointConfiguration.UseTransport<LearningTransport>();
-
-			var routing = transport.Routing();
-			routing.RouteToEndpoint(typeof(UpdateAnalogPoint), "GUI");
-			routing.RouteToEndpoint(typeof(UpdateDiscretePoint), "GUI");
-
-			/* Start the endpoint */
-			endpointInstance = await Endpoint.Start(endpointConfiguration)
-				.ConfigureAwait(false);
 		}
 	}
 }
