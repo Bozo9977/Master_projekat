@@ -5,3 +5,5 @@ HR_INT 1 101 0 240 100 220 AO @Analog_0 2
 HR_INT 1 102 0 340 100 230 AO @Analog_1 2
 IN_REG 1 100 0 200 240 210 AI @Analog_2 2
 IN_REG 1 103 0 260 120 220 AI @Analog_3 2
+DO_REG 1 201 0 0   1   1   DO @Dig_0    3
+DI_REG 1 202 0 0   1   0   DI @Dig_1    3

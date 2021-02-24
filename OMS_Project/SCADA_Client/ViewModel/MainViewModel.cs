@@ -116,11 +116,12 @@ namespace SCADA_Client.ViewModel
 			this.processingManager = new ProcessingManager(this, commandExecutor);
 			this.acquisitor = new Acquisitor(acquisitionTrigger, this.processingManager, this, configuration);
 			this.automationManager = new AutomationManager(this, processingManager);
-			InitializePointCollection();
+			InitializePointCollection().ConfigureAwait(false);
 			InitializeAndStartThreads();
 			logBuilder = new StringBuilder();
 			ConnectionState = ConnectionState.DISCONNECTED;
 			Thread.CurrentThread.Name = "Main Thread";
+
 		}
 
 		#region Private methods
@@ -149,13 +150,13 @@ namespace SCADA_Client.ViewModel
 
 							if (pi.Type == PointType.ANALOG_INPUT || pi.Type == PointType.ANALOG_OUTPUT)
                             {
-								analogUpdated = new AnalogUpdated() {Name = pi.Name, Value = pi.RawValue };
+								analogUpdated = new AnalogUpdated() {Name = pi.Name, Value = pi.RawValue, Address = pi.Address};
 								await eH.EndpointInstance.Publish(analogUpdated);
 							}
 
 							if (pi.Type == PointType.DIGITAL_INPUT || pi.Type == PointType.DIGITAL_OUTPUT)
                             {
-								discreteUpdated = new DiscreteUpdated() { Name = pi.Name, Value = (short)pi.RawValue };
+								discreteUpdated = new DiscreteUpdated() { Name = pi.Name, Value = (short)pi.RawValue , Address = pi.Address};
 								await eH.EndpointInstance.Publish(discreteUpdated);
 							}
                         }

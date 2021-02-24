@@ -13,9 +13,14 @@ namespace GUI.PubSubCode
     {
         public Task Handle(AnalogUpdated message, IMessageHandlerContext context)
         {
+            AnalogPoint p = new AnalogPoint();
+            p.Name = message.Name;
+            p.Value = message.Value;
+            p.Address = message.Address;
+
             using (JSONParser jP = new JSONParser())
             {
-                jP.AddAnalogPoint(message);
+                jP.AddAnalogPoint(p);
             }
 
             return context.Reply("Ok");

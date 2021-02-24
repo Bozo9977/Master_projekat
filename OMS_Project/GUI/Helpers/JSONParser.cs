@@ -40,33 +40,38 @@ namespace GUI.Helpers
             return temp;
         }*/
 
-        public void AddAnalogPoint(AnalogUpdated point)
+        public void AddAnalogPoint(AnalogPoint p)
         {
-            if (!File.Exists(analogPath))
-                File.WriteAllText(analogPath, JsonConvert.SerializeObject(new List<AnalogUpdated> { }, Formatting.Indented));
-            
-
-            List<AnalogUpdated> list = JsonConvert.DeserializeObject<List<AnalogUpdated>>(File.ReadAllText(analogPath));
-            list.Add(point);
-
-            var toWrite =  JsonConvert.SerializeObject(list);
 
             if (!File.Exists(analogPath))
+                File.WriteAllText(analogPath, JsonConvert.SerializeObject(new Dictionary<int, AnalogPoint> { }, Formatting.Indented));
+
+
+            Dictionary<int, AnalogPoint> dict = JsonConvert.DeserializeObject<Dictionary<int, AnalogPoint>>(File.ReadAllText(analogPath));
+
+            //if (!dict.ContainsKey(p.Address))
+                dict.Add(p.Address, p);
+
+            var toWrite =  JsonConvert.SerializeObject(dict, Formatting.Indented);
+
+            if (File.Exists(analogPath))
                 File.WriteAllText(analogPath, toWrite);
         }
 
-        public void AddDiscretePoint(DiscreteUpdated point)
+        public void AddDiscretePoint(DiscretePoint p)
         {
-            if (!File.Exists(discretePath))
-                File.WriteAllText(discretePath, JsonConvert.SerializeObject(new List<DiscreteUpdated> { }, Formatting.Indented));
-
-
-            List<DiscreteUpdated> list = JsonConvert.DeserializeObject<List<DiscreteUpdated>>(File.ReadAllText(discretePath));
-            list.Add(point);
-
-            var toWrite = JsonConvert.SerializeObject(list, Formatting.Indented);
 
             if (!File.Exists(discretePath))
+                File.WriteAllText(discretePath, JsonConvert.SerializeObject(new Dictionary<int, DiscretePoint> { }, Formatting.Indented));
+
+            Dictionary<int, DiscretePoint> dict = JsonConvert.DeserializeObject<Dictionary<int, DiscretePoint>>(File.ReadAllText(discretePath));
+
+            //if (!dict.ContainsKey(p.Address))
+                dict.Add(p.Address, p);
+
+            var toWrite = JsonConvert.SerializeObject(dict, Formatting.Indented);
+
+            if (File.Exists(discretePath))
                 File.WriteAllText(discretePath, toWrite);
         }
 

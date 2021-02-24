@@ -64,6 +64,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Helpers\AnalogPoint.cs" />
+    <Compile Include="Helpers\DiscretePoint.cs" />
     <Compile Include="PubSubCode\UpdateAnalogHandler.cs" />
     <Compile Include="PubSubCode\UpdateDiscreteHandler.cs" />
     <Page Include="MainWindow.xaml">

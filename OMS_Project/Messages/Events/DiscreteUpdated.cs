@@ -6,5 +6,6 @@ namespace Messages.Events
     {
         public string Name { get; set; }
         public short Value { get; set; }
+        public ushort Address { get; set; }
     }
 }
