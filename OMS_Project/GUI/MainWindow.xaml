@@ -5,8 +5,35 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GUI"
         mc:Ignorable="d"
+        MouseWheel="Window_MouseWheel"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
         
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="10"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="10"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="10"/>
+        </Grid.ColumnDefinitions>
+
+        <Menu Grid.Row="0" Grid.ColumnSpan="3">
+            <MenuItem Header="File">
+                <MenuItem Header="_Import Schema" Click="ImportSchema"/>
+                <MenuItem Header="Exit" Click="Exit"/>
+            </MenuItem>
+        </Menu>
+
+        <Viewbox x:Name="ZoomViewbox" Grid.Row="1" Grid.Column="1" Stretch="Fill">
+            <Canvas Grid.Row="1" Grid.Column="1" Height="4200" Width="7800" Background="Aqua" ClipToBounds="True">
+                <Canvas.RenderTransform>
+                    <MatrixTransform x:Name="mt"/>
+                </Canvas.RenderTransform>
+                <Rectangle Width="100" Height="100" Fill="Red" Canvas.Left="3700" Canvas.Top="2000"/>
+            </Canvas>
+        </Viewbox>
     </Grid>
 </Window>
