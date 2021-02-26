@@ -36,7 +36,7 @@ namespace NMS
 			return l;
 		}
 
-		public bool ApplyDelta(List<IdentifiedObject> inserted, List<IdentifiedObject> updated, List<IdentifiedObject> deleted)
+		public bool PersistDelta(List<IdentifiedObject> inserted, List<IdentifiedObject> updatedNew, List<IdentifiedObject> deleted)
 		{
 			try
 			{
@@ -49,7 +49,7 @@ namespace NMS
 						table.Insert(context, entity);
 					}
 
-					foreach(IdentifiedObject io in updated)
+					foreach(IdentifiedObject io in updatedNew)
 					{
 						IEFTable table = tables[(int)ModelCodeHelper.GetTypeFromGID(io.GID) - 1];
 						object entity = io.ToDBEntity();
@@ -61,6 +61,44 @@ namespace NMS
 						IEFTable table = tables[(int)ModelCodeHelper.GetTypeFromGID(io.GID) - 1];
 						object entity = io.ToDBEntity();
 						table.Delete(context, entity);
+					}
+
+					context.SaveChanges();
+				}
+			}
+			catch(Exception e)
+			{
+				return false;
+			}
+
+			return true;
+		}
+
+		public bool RollbackDelta(List<IdentifiedObject> inserted, List<IdentifiedObject> updatedOld, List<IdentifiedObject> deleted)
+		{
+			try
+			{
+				using(DBContext context = new DBContext())
+				{
+					foreach(IdentifiedObject io in inserted)
+					{
+						IEFTable table = tables[(int)ModelCodeHelper.GetTypeFromGID(io.GID) - 1];
+						object entity = io.ToDBEntity();
+						table.Delete(context, entity);
+					}
+
+					foreach(IdentifiedObject io in updatedOld)
+					{
+						IEFTable table = tables[(int)ModelCodeHelper.GetTypeFromGID(io.GID) - 1];
+						object entity = io.ToDBEntity();
+						table.Update(context, entity);
+					}
+
+					foreach(IdentifiedObject io in deleted)
+					{
+						IEFTable table = tables[(int)ModelCodeHelper.GetTypeFromGID(io.GID) - 1];
+						object entity = io.ToDBEntity();
+						table.Insert(context, entity);
 					}
 
 					context.SaveChanges();

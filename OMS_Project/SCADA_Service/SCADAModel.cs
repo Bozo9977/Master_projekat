@@ -80,7 +80,7 @@ namespace SCADA_Service
             props.Add(ModelCode.MEASUREMENT_BASEADDRESS);
             props.Add(ModelCode.MEASUREMENT_DIRECTION);
 
-            int iteratorId = proxy.GetExtentValues(ModelCode.ANALOG, props);
+            int iteratorId = proxy.GetExtentValues(ModelCode.ANALOG, props, false);
             int resourcesLeft = proxy.IteratorResourcesLeft(iteratorId);
 
             while (resourcesLeft > 0)
@@ -113,7 +113,7 @@ namespace SCADA_Service
             props.Add(ModelCode.MEASUREMENT_BASEADDRESS);
             props.Add(ModelCode.MEASUREMENT_DIRECTION);
 
-            int iteratorId = proxy.GetExtentValues(ModelCode.DISCRETE, props);
+            int iteratorId = proxy.GetExtentValues(ModelCode.DISCRETE, props, false);
             int resourcesLeft = proxy.IteratorResourcesLeft(iteratorId);
 
             while (resourcesLeft > 0)

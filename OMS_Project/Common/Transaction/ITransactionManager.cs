@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Common.Transaction
 {
-	[ServiceContract]
+	[ServiceContract(CallbackContract = typeof(ITransaction))]
 	public interface ITransactionManager
 	{
 		[OperationContract]

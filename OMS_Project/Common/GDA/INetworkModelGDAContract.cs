@@ -14,13 +14,13 @@ namespace Common.GDA
 		UpdateResult ApplyUpdate(Delta delta);
 
 		[OperationContract]
-		ResourceDescription GetValues(long resourceId, List<ModelCode> propIds);
+		ResourceDescription GetValues(long resourceId, List<ModelCode> propIds, bool transaction);
 
 		[OperationContract]
-		int GetExtentValues(ModelCode entityType, List<ModelCode> propIds);
+		int GetExtentValues(ModelCode entityType, List<ModelCode> propIds, bool transaction);
 
 		[OperationContract]
-		int GetRelatedValues(long source, List<ModelCode> propIds, Association association);
+		int GetRelatedValues(long source, List<ModelCode> propIds, Association association, bool transaction);
 
 		[OperationContract]
 		List<ResourceDescription> IteratorNext(int n, int id);

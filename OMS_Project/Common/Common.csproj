@@ -61,6 +61,8 @@
     <Compile Include="PubSub\IPublishing.cs" />
     <Compile Include="PubSub\ISubscription.cs" />
     <Compile Include="PubSub\Message.cs" />
+    <Compile Include="WCF\Client.cs" />
+    <Compile Include="WCF\DuplexClient.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

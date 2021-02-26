@@ -11,6 +11,7 @@ namespace NMS
 	interface INMSDatabase
 	{
 		List<IdentifiedObject> GetList(DMSType type);
-		bool ApplyDelta(List<IdentifiedObject> inserted, List<IdentifiedObject> updated, List<IdentifiedObject> deleted);
+		bool PersistDelta(List<IdentifiedObject> inserted, List<IdentifiedObject> updatedNew, List<IdentifiedObject> deleted);
+		bool RollbackDelta(List<IdentifiedObject> inserted, List<IdentifiedObject> updatedOld, List<IdentifiedObject> deleted);
 	}
 }

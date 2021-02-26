@@ -1,53 +1,104 @@
 ﻿using Common.GDA;
+using Common.Transaction;
+using Common.WCF;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.ServiceModel;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace NMS
 {
-	class GenericDataAccess : INetworkModelGDAContract
+	[CallbackBehavior(ConcurrencyMode = ConcurrencyMode.Reentrant)]
+	class GenericDataAccess : INetworkModelGDAContract, ITransaction
 	{
-		static object updateLock = new object();
+		static readonly object updateLock = new object();
+		static readonly object modelLock = new object();
 		static NetworkModel model = new NetworkModel(new NMSEFDatabase());
 		static NetworkModel transactionModel = model;
-		static ConcurrentDictionary<int, ResourceIterator> iterators = new ConcurrentDictionary<int, ResourceIterator>();
+		static readonly ConcurrentDictionary<int, ResourceIterator> iterators = new ConcurrentDictionary<int, ResourceIterator>();
 		static int iteratorId;
 
-        public UpdateResult ApplyUpdate(Delta delta)
+		public UpdateResult ApplyUpdate(Delta delta)
 		{
 			lock(updateLock)
 			{
-				transactionModel = new NetworkModel(model);
-				Dictionary<long, long> mappings = transactionModel.ApplyUpdate(delta);
+				bool ok;
+				Dictionary<long, long> mappings;
+				NetworkModel tModel;
+				DuplexClient<ITransactionManager, ITransaction> client = new DuplexClient<ITransactionManager, ITransaction>("callbackEndpoint", this);
 
-				if(mappings == null)
+				client.Connect();
+
+				if(!client.Call<bool>(tm => tm.StartEnlist(), out ok) || !ok)   //TM.StartEnlist()
 				{
-					Interlocked.Exchange(ref transactionModel, model);
+					client.Disconnect();
 					return new UpdateResult(null, null, ResultType.Failure);
 				}
 
-				Interlocked.Exchange(ref model, transactionModel);
-				return new UpdateResult(mappings, null, ResultType.Success);
+				tModel = new NetworkModel(model);
+				mappings = tModel.ApplyUpdate(delta);
+
+				if(mappings == null)
+				{
+					client.Call<bool>(tm => tm.EndEnlist(false), out ok);   //TM.EndEnlist(false)
+					client.Disconnect();
+					return new UpdateResult(null, null, ResultType.Failure);
+				}
+
+				lock(modelLock)
+				{
+					transactionModel = tModel;
+				}
+
+				if(!client.Call<bool>(tm => tm.Enlist(), out ok) || !ok)   //TM.Enlist()
+				{
+					lock(modelLock)
+					{
+						transactionModel = model;
+					}
+
+					client.Call<bool>(tm => tm.EndEnlist(false), out ok);   //TM.EndEnlist(false)
+					client.Disconnect();
+					return new UpdateResult(null, null, ResultType.Failure);
+				}
+
+				//if(!SCADA.ApplyUpdate(affectedGIDs)) { ... }
+				//if(!CE.ApplyUpdate(affectedGIDs)) { ... }
+
+				if(!client.Call<bool>(tm => tm.EndEnlist(true), out ok) || !ok)   //TM.EndEnlist(true)
+				{
+					lock(modelLock)
+					{
+						transactionModel = model;
+					}
+
+					client.Disconnect();
+					return new UpdateResult(null, null, ResultType.Failure);
+				}
+
+				client.Disconnect();
+
+				lock(modelLock)
+				{
+					return model == tModel ? new UpdateResult(mappings, null, ResultType.Success) : new UpdateResult(null, null, ResultType.Failure);
+				}
 			}
 		}
 
-		public int GetExtentValues(ModelCode entityType, List<ModelCode> propIds)
+		public int GetExtentValues(ModelCode entityType, List<ModelCode> propIds, bool transaction)
 		{
-			return AddIterator(model.GetExtentValues(entityType, propIds));
+			return AddIterator((transaction ? transactionModel : model).GetExtentValues(entityType, propIds));
 		}
 
-		public int GetRelatedValues(long source, List<ModelCode> propIds, Association association)
+		public int GetRelatedValues(long source, List<ModelCode> propIds, Association association, bool transaction)
 		{
-			return AddIterator(model.GetRelatedValues(source, propIds, association));
+			return AddIterator((transaction ? transactionModel : model).GetRelatedValues(source, propIds, association));
 		}
 
-		public ResourceDescription GetValues(long resourceId, List<ModelCode> propIds)
+		public ResourceDescription GetValues(long resourceId, List<ModelCode> propIds, bool transaction)
 		{
-			return model.GetValues(resourceId, propIds);
+			return (transaction ? transactionModel : model).GetValues(resourceId, propIds);
 		}
 
 		public bool IteratorClose(int id)
@@ -62,7 +113,10 @@ namespace NMS
 			if(ri == null)
 				return null;
 
-			return ri.Next(n, model);
+			lock(ri)
+			{
+				return ri.Next(n, model);
+			}
 		}
 
 		public int IteratorResourcesLeft(int id)
@@ -72,7 +126,10 @@ namespace NMS
 			if(ri == null)
 				return -1;
 
-			return ri.ResourcesLeft();
+			lock(ri)
+			{
+				return ri.ResourcesLeft();
+			}
 		}
 
 		public int IteratorResourcesTotal(int id)
@@ -82,7 +139,10 @@ namespace NMS
 			if(ri == null)
 				return -1;
 
-			return ri.ResourcesTotal();
+			lock(ri)
+			{
+				return ri.ResourcesTotal();
+			}
 		}
 
 		public bool IteratorRewind(int id)
@@ -92,7 +152,11 @@ namespace NMS
 			if(ri == null)
 				return false;
 
-			ri.Rewind();
+			lock(ri)
+			{
+				ri.Rewind();
+			}
+			
 			return true;
 		}
 
@@ -109,9 +173,38 @@ namespace NMS
 
 		ResourceIterator GetIterator(int id)
 		{
-			ResourceIterator ri = null;
+			ResourceIterator ri;
 			iterators.TryGetValue(id, out ri);
 			return ri;
+		}
+
+		public bool Prepare()
+		{
+			lock(modelLock)
+			{
+				if(model == transactionModel)
+					return false;
+			}
+
+			return transactionModel.PersistUpdate();
+		}
+
+		public void Commit()
+		{
+			lock(modelLock)
+			{
+				model = transactionModel;
+			}
+		}
+
+		public void Rollback()
+		{
+			transactionModel.RollbackUpdate();
+
+			lock(modelLock)
+			{
+				transactionModel = model;
+			}
 		}
 	}
 }

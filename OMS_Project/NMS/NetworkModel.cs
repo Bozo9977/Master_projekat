@@ -9,9 +9,13 @@ namespace NMS
 {
 	class NetworkModel
 	{
-		Dictionary<DMSType, Dictionary<long, IdentifiedObject>> containers;
-		ReaderWriterLockSlim rwLock;
-		INMSDatabase db;
+		readonly Dictionary<DMSType, Dictionary<long, IdentifiedObject>> containers;
+		readonly ReaderWriterLockSlim rwLock;
+		readonly INMSDatabase db;
+		List<IdentifiedObject> inserted;
+		List<IdentifiedObject> updatedOld;
+		List<IdentifiedObject> updatedNew;
+		List<IdentifiedObject> deleted;
 
 		public NetworkModel()
 		{
@@ -97,7 +101,8 @@ namespace NMS
 
 				HashSet<long> toValidate = new HashSet<long>();
 				List<IdentifiedObject> inserted = new List<IdentifiedObject>();
-				List<IdentifiedObject> updated = new List<IdentifiedObject>();
+				List<IdentifiedObject> updatedOld = new List<IdentifiedObject>();
+				List<IdentifiedObject> updatedNew = new List<IdentifiedObject>();
 				List<IdentifiedObject> deleted = new List<IdentifiedObject>();
 				Func<long, IdentifiedObject> entityGetter = x => { IdentifiedObject y; TryGetEntity(x, out y); return y; };
 
@@ -123,7 +128,8 @@ namespace NMS
 					toValidate.Add(io.Item1.GID);
 					io.Item1.GetEntitiesToValidate(entityGetter, toValidate);
 					io.Item2.GetEntitiesToValidate(entityGetter, toValidate);
-					updated.Add(io.Item2);
+					updatedOld.Add(io.Item1);
+					updatedNew.Add(io.Item2);
 				}
 
 				foreach(ResourceDescription rd in delta.DeleteOperations)
@@ -149,14 +155,47 @@ namespace NMS
 						return null;
 				}
 
-				if(db != null && !db.ApplyDelta(inserted, updated, deleted))
-					return null;
+				if(db != null)
+				{
+					this.inserted = inserted;
+					this.updatedOld = updatedOld;
+					this.updatedNew = updatedNew;
+					this.deleted = deleted;
+				}
 
 				return ids;
 			}
 			finally
 			{
 				rwLock.ExitWriteLock();
+			}
+		}
+
+		public bool PersistUpdate()
+		{
+			rwLock.EnterReadLock();
+
+			try
+			{
+				return db != null && inserted != null && db.PersistDelta(inserted, updatedNew, deleted);
+			}
+			finally
+			{
+				rwLock.ExitReadLock();
+			}
+		}
+
+		public bool RollbackUpdate()
+		{
+			rwLock.EnterReadLock();
+
+			try
+			{
+				return db != null && inserted != null && db.RollbackDelta(inserted, updatedOld, deleted);
+			}
+			finally
+			{
+				rwLock.ExitReadLock();
 			}
 		}
 

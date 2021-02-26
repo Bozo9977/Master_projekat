@@ -46,6 +46,7 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TransactionManager.cs" />
     <Compile Include="TransactionManagerService.cs" />
   </ItemGroup>
   <ItemGroup>

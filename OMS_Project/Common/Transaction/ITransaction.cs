@@ -7,16 +7,15 @@ using System.Threading.Tasks;
 
 namespace Common.Transaction
 {
-	[ServiceContract]
 	public interface ITransaction
 	{
 		[OperationContract]
 		bool Prepare();
 
-		[OperationContract]
+		[OperationContract(IsOneWay = true)]
 		void Commit();
 
-		[OperationContract]
+		[OperationContract(IsOneWay = true)]
 		void Rollback();
 	}
 }
