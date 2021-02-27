@@ -25,7 +25,7 @@ namespace GUI.PubSubCode
                 jP.AddDiscretePoint(p);
             }
 
-            return context.Reply("Ok");
+            return Task.CompletedTask;
         }
     }
 }

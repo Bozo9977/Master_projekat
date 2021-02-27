@@ -23,7 +23,7 @@ namespace GUI.PubSubCode
                 jP.AddAnalogPoint(p);
             }
 
-            return context.Reply("Ok");
+            return Task.CompletedTask;
         }
     }
 }

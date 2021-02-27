@@ -116,8 +116,9 @@ namespace SCADA_Client.ViewModel
 			this.processingManager = new ProcessingManager(this, commandExecutor);
 			this.acquisitor = new Acquisitor(acquisitionTrigger, this.processingManager, this, configuration);
 			this.automationManager = new AutomationManager(this, processingManager);
-			InitializePointCollection().ConfigureAwait(false);
+			InitializePointCollection();
 			InitializeAndStartThreads();
+			PublishPointInfo().ConfigureAwait(false);
 			logBuilder = new StringBuilder();
 			ConnectionState = ConnectionState.DISCONNECTED;
 			Thread.CurrentThread.Name = "Main Thread";
@@ -126,7 +127,7 @@ namespace SCADA_Client.ViewModel
 
 		#region Private methods
 
-		private async Task InitializePointCollection()
+		private void InitializePointCollection()
 		{
 			//pubsub
 			AnalogUpdated analogUpdated;
@@ -143,27 +144,45 @@ namespace SCADA_Client.ViewModel
 						Points.Add(pi);
 						pointsCache.Add(pi.PointId, pi as IPoint);
 
-						//pubsub code 
-						using (EndpointHandler eH = new EndpointHandler())
-                        {
-							await eH.AsyncEndpointCreate();
+						processingManager.InitializePoint(pi.Type, pi.Address, pi.RawValue);
+					}
+				}
+			}
+		}
 
-							if (pi.Type == PointType.ANALOG_INPUT || pi.Type == PointType.ANALOG_OUTPUT)
-                            {
-								analogUpdated = new AnalogUpdated() {Name = pi.Name, Value = pi.RawValue, Address = pi.Address};
-								await eH.EndpointInstance.Publish(analogUpdated);
-							}
+		private async Task PublishPointInfo()
+        {
+			using (EndpointHandler eH = new EndpointHandler())
+			{
+				AnalogUpdated analogUpdated;
+				DiscreteUpdated discreteUpdated;
+				await eH.AsyncEndpointCreate();
 
-							if (pi.Type == PointType.DIGITAL_INPUT || pi.Type == PointType.DIGITAL_OUTPUT)
-                            {
-								discreteUpdated = new DiscreteUpdated() { Name = pi.Name, Value = (short)pi.RawValue , Address = pi.Address};
-								await eH.EndpointInstance.Publish(discreteUpdated);
-							}
-                        }
+				while (true)
+                {
+					foreach (var pi in Points)
+					{
+						if (pi.Type == PointType.ANALOG_INPUT || pi.Type == PointType.ANALOG_OUTPUT)
+						{
+							analogUpdated = new AnalogUpdated() { Name = pi.Name, Value = pi.RawValue, Address = pi.Address };
 
-							// Send the command to the local endpoint
+							IPoint temp = pointsCache[pi.PointId];
+							if (temp != null)
+								analogUpdated.Value = temp.RawValue;
 
-							processingManager.InitializePoint(pi.Type, pi.Address, pi.RawValue);
+							await eH.EndpointInstance.Publish(analogUpdated);
+						}
+
+						if (pi.Type == PointType.DIGITAL_INPUT || pi.Type == PointType.DIGITAL_OUTPUT)
+						{
+							discreteUpdated = new DiscreteUpdated() { Name = pi.Name, Value = (short)pi.RawValue, Address = pi.Address };
+
+							IPoint temp = pointsCache[pi.PointId];
+							if (temp != null)
+								discreteUpdated.Value = (short)temp.RawValue;
+
+							await eH.EndpointInstance.Publish(discreteUpdated);
+						}
 					}
 				}
 			}

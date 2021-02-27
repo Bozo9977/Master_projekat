@@ -29,6 +29,8 @@ namespace GUI
 
             var transport = endpointConfiguration.UseTransport<LearningTransport>();
 
+            endpointConfiguration.PurgeOnStartup(true);
+
             endpointInstance = await Endpoint.Start(endpointConfiguration)
                 .ConfigureAwait(false);
         }

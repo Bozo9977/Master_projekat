@@ -23,6 +23,8 @@ namespace SCADA_Client.PubSubCode
              */
 			var transport = endpointConfiguration.UseTransport<LearningTransport>();
 
+			endpointConfiguration.PurgeOnStartup(true);
+
 			var routing = transport.Routing();
 
 			/* Start the endpoint */

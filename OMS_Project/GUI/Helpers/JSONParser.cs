@@ -49,8 +49,10 @@ namespace GUI.Helpers
 
             Dictionary<int, AnalogPoint> dict = JsonConvert.DeserializeObject<Dictionary<int, AnalogPoint>>(File.ReadAllText(analogPath));
 
-            //if (!dict.ContainsKey(p.Address))
+            if (!dict.ContainsKey(p.Address))
                 dict.Add(p.Address, p);
+            else
+                dict[p.Address] = p;
 
             var toWrite =  JsonConvert.SerializeObject(dict, Formatting.Indented);
 
@@ -66,8 +68,10 @@ namespace GUI.Helpers
 
             Dictionary<int, DiscretePoint> dict = JsonConvert.DeserializeObject<Dictionary<int, DiscretePoint>>(File.ReadAllText(discretePath));
 
-            //if (!dict.ContainsKey(p.Address))
+            if (!dict.ContainsKey(p.Address))
                 dict.Add(p.Address, p);
+            else
+                dict[p.Address] = p;
 
             var toWrite = JsonConvert.SerializeObject(dict, Formatting.Indented);
 
