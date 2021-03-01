@@ -1,7 +1,9 @@
 ﻿using Common.GDA;
 using SCADA_Client.ViewModel.PointViewModels;
 using SCADA_Common;
+using SCADA_Common.DAO;
 using SCADA_Common.Data;
+using SCADA_Common.DB_Model;
 using SCADA_Service.Data;
 using System;
 using System.Collections.Generic;
@@ -63,6 +65,34 @@ namespace SCADA_Service
             Console.WriteLine("Discrete finished!");
             
             configUpdater = new ConfigUpdater();
+            ////
+            RepoAccess<PointItemDB> ra = new SCADA_Common.DAO.RepoAccess<PointItemDB>();
+            foreach(var item in scadaModel.Values)
+            {
+                try
+                {
+                    if (ra.GetAll().SingleOrDefault(x => x.Gid == item.Gid) == null)
+                    {
+                        ra.Insert(new PointItemDB()
+                        {
+                            Address = item.Address,
+                            Gid = item.Gid,
+                            Alarm = false,
+                            Name = item.Name,
+                            RegisterType = item.RegisterType
+                        });
+                    }
+                    else
+                        continue;
+                }
+                catch(Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+                
+            }
+
+            ////
             configUpdater.UpdateServerConfigFile(ScadaModel);
             configUpdater.UpdateClientConfigFile(ScadaModel);
         }
