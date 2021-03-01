@@ -109,6 +109,8 @@ namespace SCADA_Client.ViewModel
 
 		#endregion Properties
 
+		private CancellationTokenSource src = new CancellationTokenSource();
+
 		public MainViewModel()
 		{
 			configuration = new ConfigReader();
@@ -118,7 +120,7 @@ namespace SCADA_Client.ViewModel
 			this.automationManager = new AutomationManager(this, processingManager);
 			InitializePointCollection();
 			InitializeAndStartThreads();
-			PublishPointInfo().ConfigureAwait(false);
+			PeriodicPublishPointInfo(TimeSpan.FromSeconds(3), src.Token).ConfigureAwait(false);
 			logBuilder = new StringBuilder();
 			ConnectionState = ConnectionState.DISCONNECTED;
 			Thread.CurrentThread.Name = "Main Thread";
@@ -150,6 +152,16 @@ namespace SCADA_Client.ViewModel
 			}
 		}
 
+		private async Task PeriodicPublishPointInfo(TimeSpan interval, CancellationToken cancellationToken)
+		{
+			while (true)
+			{
+				await PublishPointInfo();
+				await Task.Delay(interval, cancellationToken);
+			}
+		}
+
+
 		private async Task PublishPointInfo()
         {
 			using (EndpointHandler eH = new EndpointHandler())
@@ -158,33 +170,32 @@ namespace SCADA_Client.ViewModel
 				DiscreteUpdated discreteUpdated;
 				await eH.AsyncEndpointCreate();
 
-				while (true)
-                {
-					foreach (var pi in Points)
+				
+				foreach (var pi in Points)
+				{
+					if (pi.Type == PointType.ANALOG_INPUT || pi.Type == PointType.ANALOG_OUTPUT)
 					{
-						if (pi.Type == PointType.ANALOG_INPUT || pi.Type == PointType.ANALOG_OUTPUT)
-						{
-							analogUpdated = new AnalogUpdated() { Name = pi.Name, Value = pi.RawValue, Address = pi.Address };
+						analogUpdated = new AnalogUpdated() { Name = pi.Name, Value = pi.RawValue, Address = pi.Address };
 
-							IPoint temp = pointsCache[pi.PointId];
-							if (temp != null)
-								analogUpdated.Value = temp.RawValue;
+						IPoint temp = pointsCache[pi.PointId];
+						if (temp != null)
+							analogUpdated.Value = temp.RawValue;
 
-							await eH.EndpointInstance.Publish(analogUpdated);
-						}
+						await eH.EndpointInstance.Publish(analogUpdated);
+					}
 
-						if (pi.Type == PointType.DIGITAL_INPUT || pi.Type == PointType.DIGITAL_OUTPUT)
-						{
-							discreteUpdated = new DiscreteUpdated() { Name = pi.Name, Value = (short)pi.RawValue, Address = pi.Address };
+					if (pi.Type == PointType.DIGITAL_INPUT || pi.Type == PointType.DIGITAL_OUTPUT)
+					{
+						discreteUpdated = new DiscreteUpdated() { Name = pi.Name, Value = (short)pi.RawValue, Address = pi.Address };
 
-							IPoint temp = pointsCache[pi.PointId];
-							if (temp != null)
-								discreteUpdated.Value = (short)temp.RawValue;
+						IPoint temp = pointsCache[pi.PointId];
+						if (temp != null)
+							discreteUpdated.Value = (short)temp.RawValue;
 
-							await eH.EndpointInstance.Publish(discreteUpdated);
-						}
+						await eH.EndpointInstance.Publish(discreteUpdated);
 					}
 				}
+			
 			}
 		}
 
@@ -279,6 +290,7 @@ namespace SCADA_Client.ViewModel
 		{
 			disposed = true;
 			timerThreadStopSignal = false;
+			src.Cancel();
 			(commandExecutor as IDisposable).Dispose();
 			this.acquisitor.Dispose();
 			acquisitionTrigger.Dispose();

@@ -79,6 +79,15 @@ namespace GUI.Helpers
                 File.WriteAllText(discretePath, toWrite);
         }
 
+        public void Reset()
+        {
+            if (File.Exists(analogPath))
+                File.Delete(analogPath);
+
+            if (File.Exists(discretePath))
+                File.Delete(discretePath);
+        }
+
 
         public void Dispose()
         {

@@ -45,6 +45,7 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Security" />
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Transactions" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -64,8 +65,14 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="DataModel\Analog.cs" />
+    <Compile Include="DataModel\Discrete.cs" />
+    <Compile Include="DataModel\DrawingModel.cs" />
+    <Compile Include="DataModel\IdentifiedObject.cs" />
+    <Compile Include="DataModel\Measurement.cs" />
     <Compile Include="Helpers\AnalogPoint.cs" />
     <Compile Include="Helpers\DiscretePoint.cs" />
+    <Compile Include="Helpers\Drawer.cs" />
     <Compile Include="PubSubCode\UpdateAnalogHandler.cs" />
     <Compile Include="PubSubCode\UpdateDiscreteHandler.cs" />
     <Page Include="MainWindow.xaml">
@@ -113,6 +120,10 @@
     <Analyzer Include="..\packages\NServiceBus.7.4.4\analyzers\dotnet\cs\NServiceBus.Core.Analyzer.dll" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj">
+      <Project>{41f506dd-503a-4de8-9c46-1d8c0bd8ff68}</Project>
+      <Name>Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Messages\Messages.csproj">
       <Project>{bf91d7a7-e09c-4405-a975-d75ca2c0c1e7}</Project>
       <Name>Messages</Name>

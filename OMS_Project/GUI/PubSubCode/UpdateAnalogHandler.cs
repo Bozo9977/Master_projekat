@@ -23,6 +23,8 @@ namespace GUI.PubSubCode
                 jP.AddAnalogPoint(p);
             }
 
+            context.DoNotContinueDispatchingCurrentMessageToHandlers();
+
             return Task.CompletedTask;
         }
     }
