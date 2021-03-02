@@ -80,25 +80,28 @@ namespace NMS
 			{
 				using(DBContext context = new DBContext())
 				{
-					foreach(IdentifiedObject io in inserted)
+					for(int i = deleted.Count - 1; i >= 0; --i)
 					{
+						IdentifiedObject io = deleted[i];
 						IEFTable table = tables[(int)ModelCodeHelper.GetTypeFromGID(io.GID) - 1];
 						object entity = io.ToDBEntity();
-						table.Delete(context, entity);
+						table.Insert(context, entity);
 					}
 
-					foreach(IdentifiedObject io in updatedOld)
+					for(int i = updatedOld.Count - 1; i >= 0; --i)
 					{
+						IdentifiedObject io = updatedOld[i];
 						IEFTable table = tables[(int)ModelCodeHelper.GetTypeFromGID(io.GID) - 1];
 						object entity = io.ToDBEntity();
 						table.Update(context, entity);
 					}
 
-					foreach(IdentifiedObject io in deleted)
+					for(int i = inserted.Count - 1; i >= 0; --i)
 					{
+						IdentifiedObject io = inserted[i];
 						IEFTable table = tables[(int)ModelCodeHelper.GetTypeFromGID(io.GID) - 1];
 						object entity = io.ToDBEntity();
-						table.Insert(context, entity);
+						table.Delete(context, entity);
 					}
 
 					context.SaveChanges();
