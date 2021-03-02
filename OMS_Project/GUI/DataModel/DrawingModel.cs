@@ -9,18 +9,22 @@ namespace GUI.DataModel
 {
     public class DrawingModel
     {
-        public Dictionary<long, IdentifiedObject> CurrentModel { get; set; }
+        public Dictionary<DMSType, Dictionary<long, IdentifiedObject>> CurrentModel { get; set; }
         private INetworkModelGDAContract proxy;
 
         public DrawingModel()
         {
-            CurrentModel = new Dictionary<long, IdentifiedObject>();
+            CurrentModel = new Dictionary<DMSType, Dictionary<long, IdentifiedObject>>();
+            CurrentModel.Add(DMSType.Analog, new Dictionary<long, IdentifiedObject>());
+            CurrentModel.Add(DMSType.Discrete, new Dictionary<long, IdentifiedObject>());
 
         }
 
         public DrawingModel(INetworkModelGDAContract proxy)
         {
-            CurrentModel = new Dictionary<long, IdentifiedObject>();
+            CurrentModel = new Dictionary<DMSType, Dictionary<long, IdentifiedObject>>();
+            CurrentModel.Add(DMSType.Analog, new Dictionary<long, IdentifiedObject>());
+            CurrentModel.Add(DMSType.Discrete, new Dictionary<long, IdentifiedObject>());
             this.proxy = proxy;
         }
 
@@ -54,7 +58,7 @@ namespace GUI.DataModel
                     {
                         long gid = rds[i].Id;
                         Analog analog = new Analog(rds[i].Properties.Values.ToList(), ModelCode.ANALOG);
-                        CurrentModel.Add(rds[i].Id, analog);
+                        CurrentModel[DMSType.Analog].Add(rds[i].Id, analog);
                     }
                 }
                 resourcesLeft = proxy.IteratorResourcesLeft(iteratorId);
@@ -85,7 +89,7 @@ namespace GUI.DataModel
                     {
                         long gid = rds[i].Id;
                         Discrete discrete = new Discrete(rds[i].Properties.Values.ToList(), ModelCode.ANALOG);
-                        CurrentModel.Add(rds[i].Id, discrete);
+                        CurrentModel[DMSType.Discrete].Add(rds[i].Id, discrete);
                     }
                 }
                 resourcesLeft = proxy.IteratorResourcesLeft(iteratorId);

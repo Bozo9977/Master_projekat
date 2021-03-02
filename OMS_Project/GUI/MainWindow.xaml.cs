@@ -4,10 +4,13 @@ using GUI.Helpers;
 using Microsoft.Win32;
 using NServiceBus;
 using System;
+using System.Collections.Generic;
 using System.ServiceModel;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Shapes;
 
 namespace GUI
 {
@@ -21,7 +24,6 @@ namespace GUI
         static INetworkModelGDAContract proxy;
         private static IEndpointInstance endpointInstance;
         private DrawingModel drawingModel;
-
 
         public MainWindow()
         {
@@ -68,15 +70,48 @@ namespace GUI
 
         private void ImportSchema(object sender, RoutedEventArgs e)
         {
-            /*OpenFileDialog openFileDialog = new OpenFileDialog
-            {
-                Filter = "Image files (*txt, *.xml, *.json) | *.txt; *.xml; *.json;"
-            };
-            if (openFileDialog.ShowDialog() == true)
-            {
-                // import logic for schema
-            }*/
             drawingModel.ImportModel();
+            List<Shape> Shapes = Drawer.Draw(drawingModel);
+            DrawSchema(Shapes);
+        }
+
+        private void DrawSchema(List<Shape> shapes)
+        {
+            int elementNumber = shapes.Count;
+
+            const int columnNumber = 15;
+            int rowNumber = 0;
+
+            if (elementNumber < columnNumber)
+                rowNumber = 1;
+            else
+            {
+                int condition = elementNumber;
+                while(condition > 0)
+                {
+                    rowNumber++;
+                    condition -= columnNumber;
+                }
+            }
+
+            int shapeCounter = 0;
+            for (int j = 0; j < rowNumber; j++)
+            {
+                for (int i = 0; i < columnNumber; i++)
+                {
+                    if (shapeCounter < elementNumber)
+                    {
+                        myCanvas.Children.Add(shapes[shapeCounter]);
+
+                        Canvas.SetLeft(shapes[shapeCounter], i * (50 + 5)); // size + space
+                        Canvas.SetTop(shapes[shapeCounter], j * (50 + 5)); // size + space
+                        shapeCounter++;
+                    }
+                    else
+                        break;
+
+                }
+            }
         }
 
         private void Exit(object sender, RoutedEventArgs e)
@@ -116,7 +151,7 @@ namespace GUI
             {
                 var pos = e.GetPosition(this);
                 var matrix = mt.Matrix; // it's a struct
-                matrix.Translate((pos.X - _last.X)*5, (pos.Y - _last.Y)*5);
+                matrix.Translate((pos.X - _last.X), (pos.Y - _last.Y));
                 mt.Matrix = matrix;
                 _last = pos;
             }

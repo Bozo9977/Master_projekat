@@ -5,7 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GUI"
         mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen"
         MouseWheel="Window_MouseWheel"
+        Background="WhiteSmoke"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
         
@@ -28,12 +30,13 @@
         </Menu>
 
         <Viewbox x:Name="ZoomViewbox" Grid.Row="1" Grid.Column="1" Stretch="Fill">
-            <Canvas Grid.Row="1" Grid.Column="1" Height="4200" Width="7800" Background="Aqua" ClipToBounds="True">
-                <Canvas.RenderTransform>
-                    <MatrixTransform x:Name="mt"/>
-                </Canvas.RenderTransform>
-                <Rectangle Width="100" Height="100" Fill="Red" Canvas.Left="3700" Canvas.Top="2000"/>
-            </Canvas>
+            <Border Background="WhiteSmoke" Padding="5">
+                <Canvas x:Name="myCanvas" Grid.Row="1" Grid.Column="1" Height="420" Width="780" Background="WhiteSmoke" ClipToBounds="True">
+                    <Canvas.RenderTransform>
+                        <MatrixTransform x:Name="mt"/>
+                    </Canvas.RenderTransform>
+                </Canvas>
+            </Border>
         </Viewbox>
     </Grid>
 </Window>

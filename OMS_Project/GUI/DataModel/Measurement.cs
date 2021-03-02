@@ -32,6 +32,8 @@ namespace GUI.DataModel
 					case ModelCode.MEASUREMENT_BASEADDRESS:
 						BaseAddress = ((Int32Property)prop).Value;
 						break;
+					default:
+						break;
 				}
 			}
 		}
