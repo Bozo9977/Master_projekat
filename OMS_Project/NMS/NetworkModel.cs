@@ -9,7 +9,7 @@ namespace NMS
 {
 	class NetworkModel
 	{
-		readonly Dictionary<DMSType, Dictionary<long, IdentifiedObject>> containers;
+		readonly Dictionary<DMSType, Container> containers;
 		readonly ReaderWriterLockSlim rwLock;
 		readonly INMSDatabase db;
 		List<IdentifiedObject> inserted;
@@ -19,21 +19,21 @@ namespace NMS
 
 		public NetworkModel()
 		{
-			Array types = Enum.GetValues(typeof(DMSType));
-			containers = new Dictionary<DMSType, Dictionary<long, IdentifiedObject>>(types.Length);
+			DMSType[] types = ModelResourcesDesc.TypeIdsInInsertOrder;
+			containers = new Dictionary<DMSType, Container>(types.Length);
 
 			foreach(DMSType t in types)
-				containers.Add(t, new Dictionary<long, IdentifiedObject>(0));
+				containers.Add(t, new Container());
 
 			rwLock = new ReaderWriterLockSlim();
 		}
 
 		public NetworkModel(NetworkModel nm)
 		{
-			containers = new Dictionary<DMSType, Dictionary<long, IdentifiedObject>>(nm.containers.Count);
+			containers = new Dictionary<DMSType, Container>(nm.containers.Count);
 
-			foreach(KeyValuePair<DMSType, Dictionary<long, IdentifiedObject>> kvp in nm.containers)
-				containers[kvp.Key] = new Dictionary<long, IdentifiedObject>(kvp.Value);
+			foreach(KeyValuePair<DMSType, Container> container in nm.containers)
+				containers.Add(container.Key, new Container(container.Value));
 
 			db = nm.db;
 			rwLock = new ReaderWriterLockSlim();
@@ -41,24 +41,15 @@ namespace NMS
 
 		public NetworkModel(INMSDatabase db)
 		{
-			Array types = Enum.GetValues(typeof(DMSType));
-			containers = new Dictionary<DMSType, Dictionary<long, IdentifiedObject>>(types.Length);
+			DMSType[] types = ModelResourcesDesc.TypeIdsInInsertOrder;
+			containers = new Dictionary<DMSType, Container>(types.Length);
 
 			foreach(DMSType t in types)
-			{
-				Dictionary<long, IdentifiedObject> container = new Dictionary<long, IdentifiedObject>();
-
-				foreach(IdentifiedObject io in db.GetList(t))
-				{
-					container.Add(io.GID, io);
-				}
-
-				containers.Add(t, container);
-			}
+				containers.Add(t, new Container(db.GetList(t)));
 
 			Dictionary<ModelCode, long> refs = new Dictionary<ModelCode, long>();
 
-			foreach(KeyValuePair<DMSType, Dictionary<long, IdentifiedObject>> container in containers)
+			foreach(KeyValuePair<DMSType, Container> container in containers)
 			{
 				foreach(KeyValuePair<long, IdentifiedObject> io in container.Value)
 				{
@@ -89,8 +80,8 @@ namespace NMS
 			{
 				Dictionary<DMSType, int> counters = new Dictionary<DMSType, int>();
 
-				foreach(KeyValuePair<DMSType, Dictionary<long, IdentifiedObject>> c in containers)
-					counters.Add(c.Key, c.Value.Count);
+				foreach(KeyValuePair<DMSType, Container> c in containers)
+					counters.Add(c.Key, c.Value.NextEntityId);
 
 				Dictionary<long, long> ids = delta.ResolveIds(x => counters.ContainsKey(x) ? counters[x]++ : -1);
 
@@ -201,15 +192,15 @@ namespace NMS
 
 		bool TryGetEntity(long gid, out IdentifiedObject io)
 		{
-			Dictionary<long, IdentifiedObject> container;
+			Container container;
 			io = null;
-			return containers.TryGetValue(ModelCodeHelper.GetTypeFromGID(gid), out container) && container.TryGetValue(gid, out io);
+			return containers.TryGetValue(ModelCodeHelper.GetTypeFromGID(gid), out container) && container.Get(gid, out io);
 		}
 
-		bool TryGetEntity(long gid, out IdentifiedObject io, out Dictionary<long, IdentifiedObject> container)
+		bool TryGetEntity(long gid, out IdentifiedObject io, out Container container)
 		{
 			io = null;
-			return containers.TryGetValue(ModelCodeHelper.GetTypeFromGID(gid), out container) && container.TryGetValue(gid, out io);
+			return containers.TryGetValue(ModelCodeHelper.GetTypeFromGID(gid), out container) && container.Get(gid, out io);
 		}
 
 		IdentifiedObject InsertEntity(ResourceDescription rd)
@@ -218,9 +209,9 @@ namespace NMS
 				return null;
 
 			DMSType type = ModelCodeHelper.GetTypeFromGID(rd.Id);
-			Dictionary<long, IdentifiedObject> container;
+			Container container;
 
-			if(!containers.TryGetValue(type, out container) || container.ContainsKey(rd.Id))
+			if(!containers.TryGetValue(type, out container) || container.Contains(rd.Id))
 				return null;
 
 			IdentifiedObject io = IdentifiedObject.Create(rd);
@@ -238,18 +229,18 @@ namespace NMS
 						continue;
 
 					IdentifiedObject target;
-					Dictionary<long, IdentifiedObject> targetContainer;
+					Container targetContainer;
 
 					if(!TryGetEntity(targetGID, out target, out targetContainer))
 						return null;
 
 					target = target.Clone();
 					target.AddTargetReference(prop.Id, io.GID);
-					targetContainer[targetGID] = target;
+					targetContainer.Set(target);
 				}
 			}
 
-			containers[type].Add(io.GID, io);
+			containers[type].Add(io);
 			return io;
 		}
 
@@ -259,7 +250,7 @@ namespace NMS
 				return null;
 
 			IdentifiedObject oldIO;
-			Dictionary<long, IdentifiedObject> container;
+			Container container;
 
 			if(!TryGetEntity(rd.Id, out oldIO, out container))
 				return null;
@@ -275,13 +266,13 @@ namespace NMS
 					if(oldTargetGID != 0)
 					{
 						IdentifiedObject oldTarget;
-						Dictionary<long, IdentifiedObject> oldTargetContainer;
+						Container oldTargetContainer;
 
 						if(TryGetEntity(oldTargetGID, out oldTarget, out oldTargetContainer))
 						{
 							oldTarget = oldTarget.Clone();
 							oldTarget.RemoveTargetReference(prop.Id, io.GID);
-							oldTargetContainer[oldTargetGID] = oldTarget;
+							oldTargetContainer.Set(oldTarget);
 						}
 					}
 
@@ -290,13 +281,13 @@ namespace NMS
 					if(targetGID != 0)
 					{
 						IdentifiedObject target;
-						Dictionary<long, IdentifiedObject> targetContainer;
+						Container targetContainer;
 
 						if(TryGetEntity(targetGID, out target, out targetContainer))
 						{
 							target = target.Clone();
 							target.AddTargetReference(prop.Id, io.GID);
-							targetContainer[targetGID] = target;
+							targetContainer.Set(target);
 						}
 					}
 				}
@@ -305,7 +296,7 @@ namespace NMS
 					return null;
 			}
 
-			container[io.GID] = io;
+			container.Set(io);
 			return new Tuple<IdentifiedObject, IdentifiedObject>(oldIO, io);
 		}
 
@@ -315,7 +306,7 @@ namespace NMS
 				return null;
 
 			IdentifiedObject io;
-			Dictionary<long, IdentifiedObject> container;
+			Container container;
 
 			if(!TryGetEntity(rd.Id, out io, out container))
 				return null;
@@ -329,13 +320,13 @@ namespace NMS
 			foreach(KeyValuePair<ModelCode, long> pair in targetGIDs)
 			{
 				IdentifiedObject target;
-				Dictionary<long, IdentifiedObject> targetContainer;
+				Container targetContainer;
 
 				if(pair.Value != 0 && TryGetEntity(pair.Value, out target, out targetContainer))
 				{
 					target = target.Clone();
 					target.RemoveTargetReference(pair.Key, pair.Value);
-					targetContainer[pair.Value] = target;
+					targetContainer.Set(target);
 				}
 			}
 
@@ -380,13 +371,13 @@ namespace NMS
 
 			try
 			{
-				Dictionary<long, IdentifiedObject> container;
+				Container container;
 				DMSType type = ModelCodeHelper.GetTypeFromModelCode(entityType);
 
 				if(!containers.TryGetValue(type, out container))
 					return null;
 
-				return new ResourceIterator(new List<long>(container.Keys), new Dictionary<DMSType, List<ModelCode>>(1) { { type, propIds } });
+				return new ResourceIterator(container.GetKeys(), new Dictionary<DMSType, List<ModelCode>>(1) { { type, propIds } });
 			}
 			finally
 			{

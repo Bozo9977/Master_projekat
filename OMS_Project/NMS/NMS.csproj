@@ -54,6 +54,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Container.cs" />
     <Compile Include="DataModel\ACLineSegment.cs" />
     <Compile Include="DataModel\Analog.cs" />
     <Compile Include="DataModel\BaseVoltage.cs" />
