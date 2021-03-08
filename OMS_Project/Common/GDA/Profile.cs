@@ -122,5 +122,27 @@ namespace Common.GDA
 	public class ModelResourcesDesc
 	{
 		public static readonly DMSType[] TypeIdsInInsertOrder = { DMSType.ConnectivityNode, DMSType.BaseVoltage, DMSType.EnergyConsumer, DMSType.ACLineSegment, DMSType.Disconnector, DMSType.Breaker, DMSType.Recloser, DMSType.DistributionGenerator, DMSType.PowerTransformer, DMSType.TransformerWinding, DMSType.RatioTapChanger, DMSType.EnergySource, DMSType.Terminal, DMSType.Analog, DMSType.Discrete };
+
+		public static Dictionary<DMSType, List<ModelCode>> GetClassToPropertiesMap()
+		{
+			Dictionary<DMSType, List<ModelCode>> d = new Dictionary<DMSType, List<ModelCode>>(TypeIdsInInsertOrder.Length);
+
+			foreach(DMSType type in TypeIdsInInsertOrder)
+			{
+				d.Add(type, new List<ModelCode>());
+			}
+
+			foreach(ModelCode mc in Enum.GetValues(typeof(ModelCode)))
+			{
+				DMSType t = ModelCodeHelper.GetTypeFromModelCode(mc);
+
+				if(!d.ContainsKey(t) || ModelCodeHelper.GetPropertyTypeFromModelCode(mc) == PropertyType.Empty)
+					continue;
+
+				d[t].Add(mc);
+			}
+
+			return d;
+		}
 	}
 }

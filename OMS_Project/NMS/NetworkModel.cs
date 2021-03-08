@@ -1,5 +1,5 @@
 ﻿using Common.GDA;
-using NMS.DataModel;
+using Common.DataModel;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -142,7 +142,7 @@ namespace NMS
 					if(!TryGetEntity(gid, out io))
 						continue;
 
-					if(!io.Validate())
+					if(!io.Validate(entityGetter))
 						return null;
 				}
 
@@ -365,19 +365,18 @@ namespace NMS
 			}
 		}
 
-		public ResourceIterator GetExtentValues(ModelCode entityType, List<ModelCode> propIds)
+		public ResourceIterator GetExtentValues(DMSType entityType, List<ModelCode> propIds)
 		{
 			rwLock.EnterReadLock();
 
 			try
 			{
 				Container container;
-				DMSType type = ModelCodeHelper.GetTypeFromModelCode(entityType);
 
-				if(!containers.TryGetValue(type, out container))
+				if(!containers.TryGetValue(entityType, out container))
 					return null;
 
-				return new ResourceIterator(container.GetKeys(), new Dictionary<DMSType, List<ModelCode>>(1) { { type, propIds } });
+				return new ResourceIterator(container.GetKeys(), new Dictionary<DMSType, List<ModelCode>>(1) { { entityType, propIds } });
 			}
 			finally
 			{

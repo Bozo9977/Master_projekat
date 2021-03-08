@@ -86,7 +86,7 @@ namespace NMS
 			}
 		}
 
-		public int GetExtentValues(ModelCode entityType, List<ModelCode> propIds, bool transaction)
+		public int GetExtentValues(DMSType entityType, List<ModelCode> propIds, bool transaction)
 		{
 			return AddIterator((transaction ? transactionModel : model).GetExtentValues(entityType, propIds));
 		}

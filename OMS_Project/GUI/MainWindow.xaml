@@ -5,38 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GUI"
         mc:Ignorable="d"
-        WindowStartupLocation="CenterScreen"
-        MouseWheel="Window_MouseWheel"
-        Background="WhiteSmoke"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        
-        <Grid.RowDefinitions>
-            <RowDefinition Height="20"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="10"/>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="10"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="10"/>
-        </Grid.ColumnDefinitions>
-
-        <Menu Grid.Row="0" Grid.ColumnSpan="3">
-            <MenuItem Header="File">
-                <MenuItem Header="_Import Schema" Click="ImportSchema"/>
-                <MenuItem Header="Exit" Click="Exit"/>
-            </MenuItem>
-        </Menu>
-
-        <Viewbox x:Name="ZoomViewbox" Grid.Row="1" Grid.Column="1" Stretch="Fill">
-            <Border Background="WhiteSmoke" Padding="5">
-                <Canvas x:Name="myCanvas" Grid.Row="1" Grid.Column="1" Height="420" Width="780" Background="WhiteSmoke" ClipToBounds="True">
-                    <Canvas.RenderTransform>
-                        <MatrixTransform x:Name="mt"/>
-                    </Canvas.RenderTransform>
-                </Canvas>
-            </Border>
-        </Viewbox>
-    </Grid>
+        Title="GUI" Height="480" Width="640">
+    <DockPanel>
+		<Menu DockPanel.Dock="Top">
+			<MenuItem Header="_File">
+				<MenuItem Header="_Import network" Click="menuItemImport_Click"/>
+				<MenuItem Header="E_xit" Click="menuItemExit_Click"/>
+			</MenuItem>
+		</Menu>
+		<Canvas x:Name="canvas" Background="White"/>
+	</DockPanel>
 </Window>

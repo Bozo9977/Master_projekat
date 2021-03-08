@@ -1,5 +1,5 @@
 ﻿using Common.GDA;
-using NMS.DataModel;
+using Common.DataModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;

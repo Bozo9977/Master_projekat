@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using Common.DataModel;
 using Common.GDA;
-using NMS.DataModel;
 
 namespace NMS
 {
