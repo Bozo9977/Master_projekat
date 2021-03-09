@@ -198,6 +198,15 @@ namespace Common.DataModel
 
 		public virtual bool Validate(Func<long, IdentifiedObject> entityGetter)
 		{
+			if (GID == 0)
+				return false;
+
+			if (String.IsNullOrWhiteSpace(MRID))
+				return false;
+
+			if (String.IsNullOrWhiteSpace(Name))
+				return false;
+
 			return true;
 		}
 

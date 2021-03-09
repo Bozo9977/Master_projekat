@@ -107,5 +107,21 @@ namespace Common.DataModel
 			return new PowerTransformerDBModel() { GID = GID, MRID = MRID, Name = Name };
 		}
 
+		//validation
+		public override void GetEntitiesToValidate(Func<long, IdentifiedObject> entityGetter, HashSet<long> dst)
+		{
+			foreach (var winding in TransformerWindings) 
+			{
+				dst.Add(winding);
+            }
+
+			base.GetEntitiesToValidate(entityGetter, dst);
+		}
+
+		public override bool Validate(Func<long, IdentifiedObject> entityGetter)
+		{
+
+			return base.Validate(entityGetter);
+		}
 	}
 }

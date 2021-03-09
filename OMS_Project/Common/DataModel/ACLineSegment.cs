@@ -85,5 +85,20 @@ namespace Common.DataModel
 		{
 			return new ACLineSegmentDBModel() { GID = GID, MRID = MRID, Name = Name, BaseVoltage = BaseVoltage, RatedCurrent = RatedCurrent };
 		}
-	}
+
+
+		//validation
+        public override void GetEntitiesToValidate(Func<long, IdentifiedObject> entityGetter, HashSet<long> dst)
+        {
+            base.GetEntitiesToValidate(entityGetter, dst);
+        }
+
+        public override bool Validate(Func<long, IdentifiedObject> entityGetter)
+        {
+			if (RatedCurrent < 0)
+				return false;
+
+            return base.Validate(entityGetter);
+        }
+    }
 }

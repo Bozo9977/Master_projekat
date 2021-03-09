@@ -43,7 +43,7 @@ namespace SCADA_Service
                 Console.WriteLine("ERROR: " + e.Message);
             }
 
-            //ImportSCADAModel(proxy);
+            ImportSCADAModel(proxy);
             InitializeSCADAClient();
             InitializeSCADAServer();
         }
