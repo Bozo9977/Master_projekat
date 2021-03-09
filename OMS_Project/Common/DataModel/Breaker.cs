@@ -43,5 +43,17 @@ namespace Common.DataModel
 		{
 			return new BreakerDBModel() { GID = GID, MRID = MRID, Name = Name, BaseVoltage = BaseVoltage, NormalOpen = NormalOpen };
 		}
-	}
+
+
+		// VALIDATION
+        public override void GetEntitiesToValidate(Func<long, IdentifiedObject> entityGetter, HashSet<long> dst)
+        {
+            base.GetEntitiesToValidate(entityGetter, dst);
+        }
+
+        public override bool Validate(Func<long, IdentifiedObject> entityGetter)
+        {
+            return base.Validate(entityGetter);
+        }
+    }
 }

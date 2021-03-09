@@ -79,5 +79,20 @@ namespace Common.DataModel
 		{
 			return Measurements.Count > 0 || base.IsReferenced();
 		}
-	}
+
+
+        // VALIDATION
+        public override void GetEntitiesToValidate(Func<long, IdentifiedObject> entityGetter, HashSet<long> dst)
+        {
+			foreach (var k in Measurements)
+				dst.Add(k);
+
+            base.GetEntitiesToValidate(entityGetter, dst);
+        }
+
+        public override bool Validate(Func<long, IdentifiedObject> entityGetter)
+        {
+            return base.Validate(entityGetter);
+        }
+    }
 }

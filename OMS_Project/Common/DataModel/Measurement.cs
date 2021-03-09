@@ -85,5 +85,23 @@ namespace Common.DataModel
 			dst[ModelCode.MEASUREMENT_TERMINAL] = Terminal;
 			base.GetSourceReferences(dst);
 		}
-	}
+
+
+        // VALIDATION
+        public override void GetEntitiesToValidate(Func<long, IdentifiedObject> entityGetter, HashSet<long> dst)
+        {
+			dst.Add(PowerSystemResource);
+			dst.Add(Terminal);
+
+            base.GetEntitiesToValidate(entityGetter, dst);
+        }
+
+        public override bool Validate(Func<long, IdentifiedObject> entityGetter)
+        {
+			if (BaseAddress < 0)
+				return false;
+
+            return base.Validate(entityGetter);
+        }
+    }
 }
