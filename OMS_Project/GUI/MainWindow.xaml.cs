@@ -31,8 +31,9 @@ namespace GUI
 		private void menuItemImport_Click(object sender, RoutedEventArgs e)
 		{
 			NetworkModelDownload download = new NetworkModelDownload();
-			download.Download();
-			//networkModel = new NetworkModel(download);
+
+			if(download.Download())
+				networkModel = new NetworkModel(download);
 		}
 
 		private void menuItemExit_Click(object sender, RoutedEventArgs e)

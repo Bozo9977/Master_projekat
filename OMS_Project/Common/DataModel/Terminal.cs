@@ -75,7 +75,7 @@ namespace Common.DataModel
 			return base.GetProperty(p);
 		}
 
-		public override bool SetProperty(Property p)
+		public override bool SetProperty(Property p, bool force = false)
 		{
 			if(p == null)
 				return false;
@@ -88,9 +88,17 @@ namespace Common.DataModel
 				case ModelCode.TERMINAL_CONDUCTINGEQUIPMENT:
 					ConductingEquipment = ((ReferenceProperty)p).Value;
 					return true;
+
+				case ModelCode.TERMINAL_MEASUREMENTS:
+					if(force)
+					{
+						Measurements = ((ReferencesProperty)p).Value;
+						return true;
+					}
+					return false;
 			}
 
-			return base.SetProperty(p);
+			return base.SetProperty(p, force);
 		}
 
 		public override bool AddTargetReference(ModelCode sourceProperty, long sourceGID)

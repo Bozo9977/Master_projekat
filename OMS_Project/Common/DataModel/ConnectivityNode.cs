@@ -61,6 +61,22 @@ namespace Common.DataModel
 			return base.GetProperty(p);
 		}
 
+		public override bool SetProperty(Property p, bool force = false)
+		{
+			switch(p.Id)
+			{
+				case ModelCode.CONNECTIVITYNODE_TERMINALS:
+					if(force)
+					{
+						Terminals = ((ReferencesProperty)p).Value;
+						return true;
+					}
+					return false;
+			}
+
+			return base.SetProperty(p, force);
+		}
+
 		public override bool AddTargetReference(ModelCode sourceProperty, long sourceGID)
 		{
 			switch(sourceProperty)

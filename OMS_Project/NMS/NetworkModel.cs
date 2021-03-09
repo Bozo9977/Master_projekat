@@ -63,7 +63,7 @@ namespace NMS
 						if(!TryGetEntity(r.Value, out target))
 							continue;
 
-						target.AddTargetReference(r.Key, r.Value);
+						target.AddTargetReference(r.Key, io.Value.GID);
 					}
 				}
 			}

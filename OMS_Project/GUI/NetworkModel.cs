@@ -8,5 +8,9 @@ namespace GUI
 {
 	class NetworkModel
 	{
+		public NetworkModel(NetworkModelDownload download)
+		{
+
+		}
 	}
 }

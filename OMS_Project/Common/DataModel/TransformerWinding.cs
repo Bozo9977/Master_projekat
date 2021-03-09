@@ -70,7 +70,7 @@ namespace Common.DataModel
 			return base.GetProperty(p);
 		}
 
-		public override bool SetProperty(Property p)
+		public override bool SetProperty(Property p, bool force = false)
 		{
 			if(p == null)
 				return false;
@@ -80,9 +80,17 @@ namespace Common.DataModel
 				case ModelCode.TRANSFORMERWINDING_POWERTRANSFORMER:
 					PowerTransformer = ((ReferenceProperty)p).Value;
 					return true;
+
+				case ModelCode.TRANSFORMERWINDING_RATIOTAPCHANGER:
+					if(force)
+					{
+						RatioTapChanger = ((ReferencesProperty)p).Value;
+						return true;
+					}
+					return false;
 			}
 
-			return base.SetProperty(p);
+			return base.SetProperty(p, force);
 		}
 
 		public override bool AddTargetReference(ModelCode sourceProperty, long sourceGID)

@@ -45,7 +45,7 @@ namespace GUI
 
 					foreach(ResourceDescription rd in result)
 					{
-						IdentifiedObject io = IdentifiedObject.Create(rd);
+						IdentifiedObject io = IdentifiedObject.Create(rd, true);
 						container.Add(io.GID, io);
 					}
 				}

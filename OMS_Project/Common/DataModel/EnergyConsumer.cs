@@ -75,7 +75,7 @@ namespace Common.DataModel
 			return base.GetProperty(p);
 		}
 
-		public override bool SetProperty(Property p)
+		public override bool SetProperty(Property p, bool force = false)
 		{
 			if(p == null)
 				return false;
@@ -93,7 +93,7 @@ namespace Common.DataModel
 					return true;
 			}
 
-			return base.SetProperty(p);
+			return base.SetProperty(p, force);
 		}
 
 		public override IdentifiedObject Clone()

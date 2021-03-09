@@ -23,7 +23,7 @@ namespace Common.DataModel
 			MRID = io.MRID;
 		}
 
-		public static IdentifiedObject Create(ResourceDescription rd)
+		public static IdentifiedObject Create(ResourceDescription rd, bool forceProperties = false)
 		{
 			IdentifiedObject io = null;
 
@@ -82,7 +82,7 @@ namespace Common.DataModel
 			io.GID = rd.Id;
 
 			foreach(Property p in rd.Properties.Values)
-				io.SetProperty(p);
+				io.SetProperty(p, forceProperties);
 
 			return io;
 		}
@@ -156,7 +156,7 @@ namespace Common.DataModel
 			return null;
 		}
 
-		public virtual bool SetProperty(Property p)
+		public virtual bool SetProperty(Property p, bool force = false)
 		{
 			if(p == null)
 				return false;
@@ -170,6 +170,14 @@ namespace Common.DataModel
 				case ModelCode.IDENTIFIEDOBJECT_MRID:
 					MRID = ((StringProperty)p).Value;
 					return true;
+
+				case ModelCode.IDENTIFIEDOBJECT_GID:
+					if(force)
+					{
+						GID = ((Int64Property)p).Value;
+						return true;
+					}
+					return false;
 			}
 
 			return false;
