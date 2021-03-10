@@ -134,10 +134,5 @@ namespace Common.DataModel
 
             base.GetEntitiesToValidate(entityGetter, dst);
         }
-
-        public override bool Validate(Func<long, IdentifiedObject> entityGetter)
-        {
-            return base.Validate(entityGetter);
-        }
     }
 }

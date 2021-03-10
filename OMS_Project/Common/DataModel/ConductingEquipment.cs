@@ -117,17 +117,10 @@ namespace Common.DataModel
         // VALIDATION
         public override void GetEntitiesToValidate(Func<long, IdentifiedObject> entityGetter, HashSet<long> dst)
         {
-			dst.Add(BaseVoltage);
-
 			foreach (var k in Terminals)
 				dst.Add(k);
 
             base.GetEntitiesToValidate(entityGetter, dst);
-        }
-
-        public override bool Validate(Func<long, IdentifiedObject> entityGetter)
-        {
-            return base.Validate(entityGetter);
         }
     }
 }

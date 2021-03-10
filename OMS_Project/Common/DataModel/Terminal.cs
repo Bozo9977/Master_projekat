@@ -159,18 +159,10 @@ namespace Common.DataModel
 		// VALIDATION
         public override void GetEntitiesToValidate(Func<long, IdentifiedObject> entityGetter, HashSet<long> dst)
         {
-			dst.Add(ConnectivityNode);
-			dst.Add(ConductingEquipment);
-
 			foreach (var k in Measurements)
 				dst.Add(k);
 
             base.GetEntitiesToValidate(entityGetter, dst);
-        }
-
-        public override bool Validate(Func<long, IdentifiedObject> entityGetter)
-        {
-            return base.Validate(entityGetter);
         }
     }
 }
