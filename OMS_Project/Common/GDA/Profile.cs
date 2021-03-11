@@ -123,23 +123,36 @@ namespace Common.GDA
 	{
 		public static readonly DMSType[] TypeIdsInInsertOrder = { DMSType.ConnectivityNode, DMSType.BaseVoltage, DMSType.EnergyConsumer, DMSType.ACLineSegment, DMSType.Disconnector, DMSType.Breaker, DMSType.Recloser, DMSType.DistributionGenerator, DMSType.PowerTransformer, DMSType.TransformerWinding, DMSType.RatioTapChanger, DMSType.EnergySource, DMSType.Terminal, DMSType.Analog, DMSType.Discrete };
 
-		public static Dictionary<DMSType, List<ModelCode>> GetClassToPropertiesMap()
+		public static Dictionary<DMSType, List<ModelCode>> GetTypeToPropertiesMap()
 		{
 			Dictionary<DMSType, List<ModelCode>> d = new Dictionary<DMSType, List<ModelCode>>(TypeIdsInInsertOrder.Length);
+			Dictionary<DMSType, ModelCode> typeToMC = new Dictionary<DMSType, ModelCode>();
+			List<ModelCode> abstractType = new List<ModelCode>();
 
 			foreach(DMSType type in TypeIdsInInsertOrder)
-			{
 				d.Add(type, new List<ModelCode>());
-			}
 
 			foreach(ModelCode mc in Enum.GetValues(typeof(ModelCode)))
 			{
-				DMSType t = ModelCodeHelper.GetTypeFromModelCode(mc);
+				DMSType type = ModelCodeHelper.GetTypeFromModelCode(mc);
 
-				if(!d.ContainsKey(t) || ModelCodeHelper.GetPropertyTypeFromModelCode(mc) == PropertyType.Empty)
-					continue;
+				if(ModelCodeHelper.IsProperty(mc))
+				{
+					(type == 0 ? abstractType : d[type]).Add(mc);
+				}
+				else if(type != 0)
+				{
+					typeToMC.Add(type, mc);
+				}
+			}
 
-				d[t].Add(mc);
+			foreach(ModelCode mc in abstractType)
+			{
+				foreach(KeyValuePair<DMSType, List<ModelCode>> type in d)
+				{
+					if(ModelCodeHelper.ModelCodeClassIsSubClassOf(typeToMC[type.Key], mc))
+						type.Value.Add(mc);
+				}
 			}
 
 			return d;

@@ -8,7 +8,7 @@ namespace GUI
 	class NetworkModelDownload
 	{
 		const int iteratorCount = 256;
-		Dictionary<DMSType, Dictionary<long, IdentifiedObject>> containers;
+		public Dictionary<DMSType, Dictionary<long, IdentifiedObject>> Containers { get; private set; }
 
 		public bool Download()
 		{
@@ -27,7 +27,7 @@ namespace GUI
 
 		bool Get(INetworkModelGDAContract nms)
 		{
-			Dictionary<DMSType, List<ModelCode>> classToPropertiesMap = ModelResourcesDesc.GetClassToPropertiesMap();
+			Dictionary<DMSType, List<ModelCode>> typeToPropertiesMap = ModelResourcesDesc.GetTypeToPropertiesMap();
 
 			DMSType[] types = ModelResourcesDesc.TypeIdsInInsertOrder;
 			Dictionary<DMSType, Dictionary<long, IdentifiedObject>> containers = new Dictionary<DMSType, Dictionary<long, IdentifiedObject>>(types.Length);
@@ -36,7 +36,7 @@ namespace GUI
 			{
 				Dictionary<long, IdentifiedObject> container = new Dictionary<long, IdentifiedObject>();
 
-				int iterator = nms.GetExtentValues(type, classToPropertiesMap[type], false);
+				int iterator = nms.GetExtentValues(type, typeToPropertiesMap[type], false);
 				List<ResourceDescription> result;
 
 				do
@@ -55,7 +55,7 @@ namespace GUI
 				containers.Add(type, container);
 			}
 
-			this.containers = containers;
+			Containers = containers;
 			return true;
 		}
 	}
