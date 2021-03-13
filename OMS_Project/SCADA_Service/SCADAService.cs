@@ -1,4 +1,6 @@
 ﻿using Common.GDA;
+using Common.Transaction;
+using Common.WCF;
 using Messages.Commands;
 using NServiceBus;
 using SCADA_Client.ViewModel.PointViewModels;
@@ -9,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.ServiceModel;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SCADA_Service
@@ -17,6 +20,12 @@ namespace SCADA_Service
     {
         private ChannelFactory<INetworkModelGDAContract> factory;
         private INetworkModelGDAContract proxy;
+
+        //novo
+        static readonly object updateLock = new object();
+        static readonly object modelLock = new object();
+        static SCADAModel scadaModel = new SCADAModel();
+        static SCADAModel transactionModel = scadaModel;
 
         public SCADAService()
         {
@@ -68,10 +77,78 @@ namespace SCADA_Service
             ProcessHandler.ActiveProcesses.Add(server);
         }
 
-        public void ImportSCADAModel(INetworkModelGDAContract proxy)
+        /*public void ImportSCADAModel(INetworkModelGDAContract proxy)
         {
-            SCADAModel sm = new SCADAModel(proxy);
-            sm.ImportModel();
+            scadaModel = new SCADAModel(proxy);
+            scadaModel.ImportModel();
+        }*/
+
+        //MASIVNA METODA
+        public UpdateResult ImportSCADAModel(INetworkModelGDAContract proxy)
+        {
+            lock (updateLock)
+            {
+                bool ok;
+                SCADAModel tModel;
+                scadaModel = new SCADAModel(proxy);
+                DuplexClient<ITransactionManager, ITransaction> client = new DuplexClient<ITransactionManager, ITransaction>("callbackEndpoint", this);
+
+                client.Connect();
+
+                if (!client.Call<bool>(tm => tm.StartEnlist(), out ok) || !ok)   //TM.StartEnlist()
+                {
+                    client.Disconnect();
+                    return new UpdateResult(null, null, ResultType.Failure);
+                }
+
+                tModel = new SCADAModel(scadaModel);
+                tModel.ImportModel();
+
+                if (tModel == null || tModel.ScadaModel == null)
+                {
+                    client.Call<bool>(tm => tm.EndEnlist(false), out ok);   //TM.EndEnlist(false)
+                    client.Disconnect();
+                    return new UpdateResult(null, null, ResultType.Failure);
+                }
+
+                lock (modelLock)
+                {
+                    transactionModel = tModel;
+                }
+
+                if (!client.Call<bool>(tm => tm.Enlist(), out ok) || !ok)   //TM.Enlist()
+                {
+                    lock (modelLock)
+                    {
+                        transactionModel = scadaModel;
+                    }
+
+                    client.Call<bool>(tm => tm.EndEnlist(false), out ok);   //TM.EndEnlist(false)
+                    client.Disconnect();
+                    return new UpdateResult(null, null, ResultType.Failure);
+                }
+
+                //if(!SCADA.ApplyUpdate(affectedGIDs)) { ... }
+                //if(!CE.ApplyUpdate(affectedGIDs)) { ... }
+
+                if (!client.Call<bool>(tm => tm.EndEnlist(true), out ok) || !ok)   //TM.EndEnlist(true)
+                {
+                    lock (modelLock)
+                    {
+                        transactionModel = scadaModel;
+                    }
+
+                    client.Disconnect();
+                    return new UpdateResult(null, null, ResultType.Failure);
+                }
+
+                client.Disconnect();
+
+                lock (modelLock)
+                {
+                    return scadaModel == tModel ? new UpdateResult(null, null, ResultType.Success) : new UpdateResult(null, null, ResultType.Failure);
+                }
+            }
         }
 
         private bool ConnectToNMS(string uri)

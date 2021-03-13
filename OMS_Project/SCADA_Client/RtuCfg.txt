@@ -1,16 +1,8 @@
 STA 1
 TCP 502
 
-<<<<<<< Updated upstream
-IN_REG 1 100 0 100 450 150 AI @Analog_0 2
-IN_REG 1 101 0 100 800 420 AI @Analog_1 2
-HR_INT 1 102 0 100 500 255 AO @Analog_2 2
-DI_REG 1 200 0 0 1 0 DI @Discrete_0 2
-DO_REG 1 201 0 0 1 1 DO @Discrete_1 2
-=======
 HR_INT 1 1011 0 200 240 220 AO @Analog_0 2
 IN_REG 1 1211 0 190 260 210 AI @Analog_1 2
 IN_REG 1 1220 0 200 250 230 AI @Analog_2 2
 DI_REG 1 560 0 0 1 0 DI @Discrete_0 2
 DI_REG 1 660 0 0 1 1 DI @Discrete_1 2
->>>>>>> Stashed changes

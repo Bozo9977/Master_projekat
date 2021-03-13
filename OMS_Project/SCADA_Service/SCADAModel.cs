@@ -27,6 +27,15 @@ namespace SCADA_Service
             scadaModel = new Dictionary<long, ISCADAModelPointItem>();
         }
 
+        public SCADAModel(SCADAModel model)
+        {
+            foreach (var point in model.scadaModel)
+            {
+                scadaModel.Add(point.Key, point.Value);
+            }
+            proxy = model.proxy;
+        }
+
         public SCADAModel(INetworkModelGDAContract p)
         {
             scadaModel = new Dictionary<long, ISCADAModelPointItem>();
