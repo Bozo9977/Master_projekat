@@ -67,6 +67,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj">
+      <Project>{41f506dd-503a-4de8-9c46-1d8c0bd8ff68}</Project>
+      <Name>Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SCADA_Service\SCADA_Service.csproj">
       <Project>{f60241e7-bfca-424f-ba65-132b66aee6e3}</Project>
       <Name>SCADA_Service</Name>

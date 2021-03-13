@@ -16,7 +16,8 @@ using System.Threading.Tasks;
 
 namespace SCADA_Service
 {
-    public class SCADAService : IDisposable
+    [CallbackBehavior(ConcurrencyMode = ConcurrencyMode.Reentrant)]
+    public class SCADAService : IDisposable, ITransaction
     {
         private ChannelFactory<INetworkModelGDAContract> factory;
         private INetworkModelGDAContract proxy;
@@ -91,7 +92,7 @@ namespace SCADA_Service
                 bool ok;
                 SCADAModel tModel;
                 scadaModel = new SCADAModel(proxy);
-                DuplexClient<ITransactionManager, ITransaction> client = new DuplexClient<ITransactionManager, ITransaction>("callbackEndpoint", this);
+                DuplexClient<ITransactionManager, ITransaction> client = new DuplexClient<ITransactionManager, ITransaction>("callbackEndpointScada", this);
 
                 client.Connect();
 
@@ -148,6 +149,38 @@ namespace SCADA_Service
                 {
                     return scadaModel == tModel ? new UpdateResult(null, null, ResultType.Success) : new UpdateResult(null, null, ResultType.Failure);
                 }
+            }
+        }
+
+        public bool Prepare()
+        {
+            lock (modelLock)
+            {
+                if (scadaModel == transactionModel)
+                    return false;
+            }
+
+            // Srediti bazu
+            //return transactionModel.PersistUpdate();
+            return true;
+        }
+
+        public void Commit()
+        {
+            lock (modelLock)
+            {
+                scadaModel = transactionModel;
+            }
+        }
+
+        public void Rollback()
+        {
+            // Srediti bazu
+            //transactionModel.RollbackUpdate();
+
+            lock (modelLock)
+            {
+                transactionModel = scadaModel;
             }
         }
 

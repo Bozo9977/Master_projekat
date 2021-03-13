@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SCADA_Service
@@ -17,6 +18,7 @@ namespace SCADA_Service
     {
         private Dictionary<long, ISCADAModelPointItem> scadaModel;
         private ConfigUpdater configUpdater;
+        readonly ReaderWriterLockSlim rwLock;
 
         INetworkModelGDAContract proxy;
 
@@ -171,5 +173,34 @@ namespace SCADA_Service
                 resourcesLeft = proxy.IteratorResourcesLeft(iteratorId);
             }
         }
+
+        // Srediti bazu prvo
+        /*public bool PersistUpdate()
+        {
+            rwLock.EnterReadLock();
+
+            try
+            {
+                return db != null && inserted != null && db.PersistDelta(inserted, updatedNew, deleted);
+            }
+            finally
+            {
+                rwLock.ExitReadLock();
+            }
+        }
+
+        public bool RollbackUpdate()
+        {
+            rwLock.EnterReadLock();
+
+            try
+            {
+                return db != null && inserted != null && db.RollbackDelta(inserted, updatedOld, deleted);
+            }
+            finally
+            {
+                rwLock.ExitReadLock();
+            }
+        }*/
     }
 }
