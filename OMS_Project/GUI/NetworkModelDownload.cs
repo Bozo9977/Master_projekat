@@ -37,11 +37,18 @@ namespace GUI
 				Dictionary<long, IdentifiedObject> container = new Dictionary<long, IdentifiedObject>();
 
 				int iterator = nms.GetExtentValues(type, typeToPropertiesMap[type], false);
+
+				if(iterator < 0)
+					return false;
+
 				List<ResourceDescription> result;
 
 				do
 				{
 					result = nms.IteratorNext(iteratorCount, iterator);
+
+					if(result == null)
+						return false;
 
 					foreach(ResourceDescription rd in result)
 					{

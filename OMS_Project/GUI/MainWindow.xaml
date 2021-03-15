@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GUI"
         mc:Ignorable="d"
-        Title="GUI" Height="480" Width="640">
+        Title="GUI" Height="480" Width="640" LostKeyboardFocus="Window_LostKeyboardFocus" KeyDown="Window_KeyDown" KeyUp="Window_KeyUp">
     <DockPanel>
 		<Menu DockPanel.Dock="Top">
 			<MenuItem Header="_File">
@@ -13,6 +13,6 @@
 				<MenuItem Header="E_xit" Click="menuItemExit_Click"/>
 			</MenuItem>
 		</Menu>
-		<Canvas x:Name="canvas" Background="White"/>
+		<Canvas x:Name="canvas" Background="White" SizeChanged="canvas_SizeChanged" Loaded="canvas_Loaded"/>
 	</DockPanel>
 </Window>

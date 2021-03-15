@@ -63,6 +63,8 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="GraphicsElement.cs" />
+    <Compile Include="GraphicsLine.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -71,6 +73,9 @@
   <ItemGroup>
     <Compile Include="NetworkModelDownload.cs" />
     <Compile Include="NetworkModel.cs" />
+    <Compile Include="NetworkModelDrawing.cs" />
+    <Compile Include="GraphicsModel.cs" />
+    <Compile Include="GraphicsModels.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

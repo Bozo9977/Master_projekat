@@ -8,22 +8,22 @@ using System.Threading.Tasks;
 
 namespace GUI
 {
+	class Node
+	{
+		public Node parent;
+		public IdentifiedObject io;
+		public List<Node> children;
+
+		public Node(Node parent, IdentifiedObject io)
+		{
+			this.parent = parent;
+			this.io = io;
+			children = new List<Node>();
+		}
+	}
+
 	class NetworkModel
 	{
-		class Node
-		{
-			public Node parent;
-			public IdentifiedObject io;
-			public List<Node> children;
-
-			public Node(Node parent, IdentifiedObject io)
-			{
-				this.parent = parent;
-				this.io = io;
-				children = new List<Node>();
-			}
-		}
-
 		List<Node> trees;
 
 		public NetworkModel(NetworkModelDownload download)
@@ -32,12 +32,10 @@ namespace GUI
 			Dictionary<long, IdentifiedObject> recloserContainer = download.Containers[DMSType.Recloser];
 			Dictionary<long, IdentifiedObject> conNodeContainer = download.Containers[DMSType.ConnectivityNode];
 
-			trees = new List<Node>();
+			List<Node> trees = new List<Node>();
 
 			foreach(KeyValuePair<long, IdentifiedObject> source in download.Containers[DMSType.EnergySource])
 			{
-				List<Node> tree = new List<Node>();
-
 				Node root = new Node(null, source.Value);
 				Stack<Node> stack = new Stack<Node>();
 				stack.Push(root);
@@ -66,7 +64,7 @@ namespace GUI
 									continue;
 
 								Node childNode = new Node(node, condEq);
-								node.children.Insert(0, childNode);
+								node.children.Add(childNode);
 								stack.Push(childNode);
 							}
 						}
@@ -87,7 +85,7 @@ namespace GUI
 									continue;
 
 								Node childNode = new Node(node, conNodeContainer[conNodeGID]);
-								node.children.Insert(0, childNode);
+								node.children.Add(childNode);
 								stack.Push(childNode);
 							}
 						}
@@ -97,6 +95,13 @@ namespace GUI
 
 				trees.Add(root);
 			}
+
+			this.trees = trees;
+		}
+
+		public List<Node> GetTrees()
+		{
+			return trees;
 		}
 	}
 }
