@@ -1,5 +1,4 @@
 ﻿using Common.GDA;
-using SCADA_Client.ViewModel.PointViewModels;
 using SCADA_Common;
 using SCADA_Common.DAO;
 using SCADA_Common.Data;
@@ -76,8 +75,9 @@ namespace SCADA_Service
             Console.WriteLine("Discrete finished!");
             
             configUpdater = new ConfigUpdater();
-            ////
-            RepoAccess<PointItemDB> ra = new SCADA_Common.DAO.RepoAccess<PointItemDB>();
+
+
+            /*RepoAccess<PointItemDB> ra = new SCADA_Common.DAO.RepoAccess<PointItemDB>();
             foreach(var item in scadaModel.Values)
             {
                 try
@@ -103,7 +103,7 @@ namespace SCADA_Service
                 
             }
 
-            ////
+            */
             configUpdater.UpdateServerConfigFile(ScadaModel);
             configUpdater.UpdateClientConfigFile(ScadaModel);
         }
@@ -124,6 +124,8 @@ namespace SCADA_Service
             int iteratorId = proxy.GetExtentValues(DMSType.Analog, props, false);
             int resourcesLeft = proxy.IteratorResourcesLeft(iteratorId);
 
+            RepoAccess<PointItemDB> ra = new SCADA_Common.DAO.RepoAccess<PointItemDB>();
+
             while (resourcesLeft > 0)
             {
                 List<ResourceDescription> rds = proxy.IteratorNext(numberOfResources, iteratorId);
@@ -136,7 +138,9 @@ namespace SCADA_Service
                         ISCADAModelPointItem pointItem = new AnalogSCADAModelPointItem(rds[i].Properties.Values.ToList(), ModelCode.ANALOG);
                         ScadaModel.Add(rds[i].Id, pointItem);
                         AddressToGidMap[pointItem.RegisterType].Add(pointItem.Address, rds[i].Id);
+                        WriteAnalogIntoDB((AnalogSCADAModelPointItem)pointItem);
                     }
+
                 }
                 resourcesLeft = proxy.IteratorResourcesLeft(iteratorId);
             }
@@ -168,9 +172,52 @@ namespace SCADA_Service
                         ISCADAModelPointItem pointItem = new DiscreteSCADAModelPointItem(rds[i].Properties.Values.ToList(), ModelCode.DISCRETE);
                         ScadaModel.Add(gid, pointItem);
                         AddressToGidMap[pointItem.RegisterType].Add(pointItem.Address, gid);
+                        WriteDiscreteIntoDB((DiscreteSCADAModelPointItem)pointItem);
                     }
                 }
                 resourcesLeft = proxy.IteratorResourcesLeft(iteratorId);
+            }
+        }
+
+        private void WriteAnalogIntoDB(AnalogSCADAModelPointItem point)
+        {
+            RepoAccess<AnalogPointItemDB> ra = new RepoAccess<AnalogPointItemDB>();
+
+
+            if (ra.GetAll().SingleOrDefault(x => x.Gid == point.Gid) == null)
+            {
+                ra.Insert(new AnalogPointItemDB()
+                {
+                    Address = point.Address,
+                    Gid = point.Gid,
+                    Alarm = false,
+                    Name = point.Name,
+                    RegisterType = point.RegisterType,
+                    NormalValue = point.NormalValue,
+                    MinValue = point.EGU_Min,
+                    MaxValue = point.EGU_Max
+                }) ;
+            }
+        }
+
+        private void WriteDiscreteIntoDB(DiscreteSCADAModelPointItem point)
+        {
+            RepoAccess<DiscretePointItemDB> ra = new RepoAccess<DiscretePointItemDB>();
+
+
+            if (ra.GetAll().SingleOrDefault(x => x.Gid == point.Gid) == null)
+            {
+                ra.Insert(new DiscretePointItemDB()
+                {
+                    Address = point.Address,
+                    Gid = point.Gid,
+                    Alarm = false,
+                    Name = point.Name,
+                    RegisterType = point.RegisterType,
+                    CurrentValue = (short)point.CurrentValue,
+                    MinValue = (short)point.MinValue, 
+                    MaxValue = (short)point.MaxValue
+                });
             }
         }
 

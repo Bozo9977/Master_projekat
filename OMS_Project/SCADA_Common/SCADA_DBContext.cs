@@ -11,7 +11,7 @@ namespace SCADA_Common
 {
     public class SCADA_DBContext: DbContext
     {
-        public DbSet<PointItemDB> PointItems { get; set; }
+        //public DbSet<PointItemDB> PointItems { get; set; }
         public DbSet<AnalogPointItemDB> AnalogPointItems { get; set; }
         public DbSet<DiscretePointItemDB> DiscretePointItems { get; set; }
 

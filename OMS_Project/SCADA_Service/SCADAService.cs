@@ -1,4 +1,6 @@
-﻿using Common.GDA;
+﻿using Common.DataModel;
+using Common.GDA;
+using Common.SCADA;
 using Common.Transaction;
 using Common.WCF;
 using Messages.Commands;
@@ -17,7 +19,7 @@ using System.Threading.Tasks;
 namespace SCADA_Service
 {
     [CallbackBehavior(ConcurrencyMode = ConcurrencyMode.Reentrant)]
-    public class SCADAService : IDisposable, ITransaction
+    public class SCADAService : IDisposable, ITransaction, ISCADAServiceContract
     {
         private ChannelFactory<INetworkModelGDAContract> factory;
         private INetworkModelGDAContract proxy;
@@ -78,14 +80,14 @@ namespace SCADA_Service
             ProcessHandler.ActiveProcesses.Add(server);
         }
 
-        /*public void ImportSCADAModel(INetworkModelGDAContract proxy)
+        public void ImportSCADAModel(INetworkModelGDAContract proxy)
         {
             scadaModel = new SCADAModel(proxy);
             scadaModel.ImportModel();
-        }*/
+        }
 
         //MASIVNA METODA
-        public UpdateResult ImportSCADAModel(INetworkModelGDAContract proxy)
+        /*public UpdateResult ImportSCADAModel(INetworkModelGDAContract proxy)
         {
             lock (updateLock)
             {
@@ -150,7 +152,14 @@ namespace SCADA_Service
                     return scadaModel == tModel ? new UpdateResult(null, null, ResultType.Success) : new UpdateResult(null, null, ResultType.Failure);
                 }
             }
+        }*/
+
+
+        public UpdateResult ApplyUpdate(List<IdentifiedObject> inserted, List<IdentifiedObject> updated, List<IdentifiedObject> deleted)
+        {
+            throw new NotImplementedException();
         }
+
 
         public bool Prepare()
         {

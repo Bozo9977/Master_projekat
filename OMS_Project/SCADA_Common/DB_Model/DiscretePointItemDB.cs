@@ -8,7 +8,9 @@ namespace SCADA_Common.DB_Model
 {
     public class DiscretePointItemDB: PointItemDB
     {
-        public ushort CurrentValue { get; set; }
+        public short MaxValue { get; set; }
+        public short MinValue { get; set; }
+        public short CurrentValue { get; set; }
 
     }
 }

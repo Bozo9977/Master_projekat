@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Common.DataModel;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,6 +14,5 @@ namespace SCADA_Common.DAO
         void Insert(TEntity entity);
         void Delete(object id);
         void Update(TEntity entityToUpdate);
-
     }
 }

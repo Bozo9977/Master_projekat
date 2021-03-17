@@ -53,6 +53,7 @@
   <ItemGroup>
     <Compile Include="DAO\IRepository.cs" />
     <Compile Include="DAO\RepoAccess.cs" />
+    <Compile Include="DAO\ScadaDBUpdater.cs" />
     <Compile Include="Data\IAnalogSCADAModelPointItem.cs" />
     <Compile Include="Data\IDiscreteSCADAModelPointItem.cs" />
     <Compile Include="Data\ISCADAModelPointItem.cs" />
@@ -78,6 +79,12 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj">
+      <Project>{41f506dd-503a-4de8-9c46-1d8c0bd8ff68}</Project>
+      <Name>Common</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
