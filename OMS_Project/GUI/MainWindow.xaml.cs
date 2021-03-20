@@ -44,7 +44,7 @@ namespace GUI
 			InitializeComponent();
 
 			keyActions = new Action[(byte)EKey.Count] { Up, Down, Left, Right, In, Out };
-			timer = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(32) };
+			timer = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(48) };
 			timer.Tick += Timer_Tick;
 		}
 

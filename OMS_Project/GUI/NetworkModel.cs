@@ -22,9 +22,21 @@ namespace GUI
 		}
 	}
 
+	class RecloserNode
+	{
+		public Node node1, node2;
+		public IdentifiedObject io;
+
+		public RecloserNode(IdentifiedObject io)
+		{
+			this.io = io;
+		}
+	}
+
 	class NetworkModel
 	{
 		List<Node> trees;
+		Dictionary<long, RecloserNode> reclosers;
 
 		public NetworkModel(NetworkModelDownload download)
 		{
@@ -33,6 +45,7 @@ namespace GUI
 			Dictionary<long, IdentifiedObject> conNodeContainer = download.Containers[DMSType.ConnectivityNode];
 
 			List<Node> trees = new List<Node>();
+			Dictionary<long, RecloserNode> reclosers = new Dictionary<long, RecloserNode>();
 
 			foreach(KeyValuePair<long, IdentifiedObject> source in download.Containers[DMSType.EnergySource])
 			{
@@ -61,7 +74,20 @@ namespace GUI
 								ConductingEquipment condEq = (ConductingEquipment)download.Containers[condEqType][condEqGID];
 
 								if(condEq is Recloser)
+								{
+									RecloserNode rn;
+									if(reclosers.TryGetValue(condEqGID, out rn))
+									{
+										if(rn.node2 == null)
+											rn.node2 = node;
+									}
+									else
+									{
+										reclosers.Add(condEqGID, new RecloserNode(condEq) { node1 = node });
+									}
+
 									continue;
+								}
 
 								Node childNode = new Node(node, condEq);
 								node.children.Add(childNode);
@@ -97,11 +123,12 @@ namespace GUI
 			}
 
 			this.trees = trees;
+			this.reclosers = reclosers;
 		}
 
-		public List<Node> GetTrees()
+		public Tuple<List<Node>, List<RecloserNode>> GetTreesAndReclosers()
 		{
-			return trees;
+			return new Tuple<List<Node>, List<RecloserNode>>(trees, reclosers.Values.ToList());
 		}
 	}
 }

@@ -13,6 +13,6 @@
 				<MenuItem Header="E_xit" Click="menuItemExit_Click"/>
 			</MenuItem>
 		</Menu>
-		<Canvas x:Name="canvas" Background="White" SizeChanged="canvas_SizeChanged" Loaded="canvas_Loaded"/>
+		<Canvas x:Name="canvas" Background="White" SizeChanged="canvas_SizeChanged" Loaded="canvas_Loaded" ClipToBounds="True"/>
 	</DockPanel>
 </Window>
