@@ -11,7 +11,5 @@ namespace SCADA_Common.Data
         ushort MinValue { get; set; }
         ushort MaxValue { get; set; }
         ushort NormalValue { get; set; }
-        ushort CurrentValue { get; set; }
-        ushort AbnormalValue { get; set; }
     }
 }

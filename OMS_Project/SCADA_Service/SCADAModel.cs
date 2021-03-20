@@ -3,13 +3,10 @@ using SCADA_Common;
 using SCADA_Common.DAO;
 using SCADA_Common.Data;
 using SCADA_Common.DB_Model;
-using SCADA_Service.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace SCADA_Service
 {
@@ -21,7 +18,7 @@ namespace SCADA_Service
 
         INetworkModelGDAContract proxy;
 
-        private Dictionary<PointType, Dictionary<ushort, long>> addressToGidMap;
+        private Dictionary<PointType, Dictionary<short, long>> addressToGidMap;
 
         public SCADAModel()
         {
@@ -46,19 +43,20 @@ namespace SCADA_Service
         public Dictionary<long, ISCADAModelPointItem> ScadaModel
         {
             get { return scadaModel ?? (scadaModel = new Dictionary<long, ISCADAModelPointItem>()); }
+            set { scadaModel = value; }
         }
 
 
-        public Dictionary<PointType, Dictionary<ushort, long>> AddressToGidMap
+        public Dictionary<PointType, Dictionary<short, long>> AddressToGidMap
         {
             get
             {
-                return addressToGidMap ?? (addressToGidMap = new Dictionary<PointType, Dictionary<ushort, long>>()
+                return addressToGidMap ?? (addressToGidMap = new Dictionary<PointType, Dictionary<short, long>>()
                 {
-                    { PointType.ANALOG_INPUT,   new Dictionary<ushort, long>()  },
-                    { PointType.ANALOG_OUTPUT,  new Dictionary<ushort, long>()  },
-                    { PointType.DIGITAL_INPUT,  new Dictionary<ushort, long>()  },
-                    { PointType.DIGITAL_OUTPUT, new Dictionary<ushort, long>()  },
+                    { PointType.ANALOG_INPUT,   new Dictionary<short, long>()  },
+                    { PointType.ANALOG_OUTPUT,  new Dictionary<short, long>()  },
+                    { PointType.DIGITAL_INPUT,  new Dictionary<short, long>()  },
+                    { PointType.DIGITAL_OUTPUT, new Dictionary<short, long>()  },
                 });
             }
         }
@@ -75,39 +73,21 @@ namespace SCADA_Service
             Console.WriteLine("Discrete finished!");
             
             configUpdater = new ConfigUpdater();
-
-
-            /*RepoAccess<PointItemDB> ra = new SCADA_Common.DAO.RepoAccess<PointItemDB>();
-            foreach(var item in scadaModel.Values)
-            {
-                try
-                {
-                    if (ra.GetAll().SingleOrDefault(x => x.Gid == item.Gid) == null)
-                    {
-                        ra.Insert(new PointItemDB()
-                        {
-                            Address = item.Address,
-                            Gid = item.Gid,
-                            Alarm = false,
-                            Name = item.Name,
-                            RegisterType = item.RegisterType
-                        });
-                    }
-                    else
-                        continue;
-                }
-                catch(Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                }
-                
-            }
-
-            */
             configUpdater.UpdateServerConfigFile(ScadaModel);
             configUpdater.UpdateClientConfigFile(ScadaModel);
         }
 
+        public void ImportModelFromDB()
+        {
+            using (ScadaDB scadaDB = new ScadaDB())
+            {
+                ScadaModel = scadaDB.GetModel();
+            }
+
+            configUpdater = new ConfigUpdater();
+            configUpdater.UpdateServerConfigFile(ScadaModel);
+            configUpdater.UpdateClientConfigFile(ScadaModel);
+        }
 
         private void ImportAnalog()
         {
@@ -186,17 +166,7 @@ namespace SCADA_Service
 
             if (ra.GetAll().SingleOrDefault(x => x.Gid == point.Gid) == null)
             {
-                ra.Insert(new AnalogPointItemDB()
-                {
-                    Address = point.Address,
-                    Gid = point.Gid,
-                    Alarm = false,
-                    Name = point.Name,
-                    RegisterType = point.RegisterType,
-                    NormalValue = point.NormalValue,
-                    MinValue = point.EGU_Min,
-                    MaxValue = point.EGU_Max
-                }) ;
+                ra.Insert(point.ToDBEntity()) ;
             }
         }
 
@@ -207,17 +177,7 @@ namespace SCADA_Service
 
             if (ra.GetAll().SingleOrDefault(x => x.Gid == point.Gid) == null)
             {
-                ra.Insert(new DiscretePointItemDB()
-                {
-                    Address = point.Address,
-                    Gid = point.Gid,
-                    Alarm = false,
-                    Name = point.Name,
-                    RegisterType = point.RegisterType,
-                    CurrentValue = (short)point.CurrentValue,
-                    MinValue = (short)point.MinValue, 
-                    MaxValue = (short)point.MaxValue
-                });
+                ra.Insert(point.ToDBEntity());
             }
         }
 

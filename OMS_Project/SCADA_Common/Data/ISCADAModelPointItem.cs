@@ -9,7 +9,7 @@ namespace SCADA_Common.Data
     public interface ISCADAModelPointItem
     {
         long Gid { get; set; }
-        ushort Address { get; set; }
+        short Address { get; set; }
         string Name { get; set; }
         PointType RegisterType { get; set; }
         AlarmType Alarm { get; set; }

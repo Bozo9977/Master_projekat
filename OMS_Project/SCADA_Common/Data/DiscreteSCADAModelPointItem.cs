@@ -1,16 +1,15 @@
 ﻿using Common.GDA;
-using SCADA_Common.Data;
-using System;
+using SCADA_Common.DB_Model;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace SCADA_Service.Data
+namespace SCADA_Common.Data
 {
     public class DiscreteSCADAModelPointItem : SCADAModelPointItem, IDiscreteSCADAModelPointItem
     {
-        private ushort currentValue;
+
+        public ushort MinValue { get; set; }
+        public ushort MaxValue { get; set; }
+        public ushort NormalValue { get; set; }
 
         public DiscreteSCADAModelPointItem(List<Property> props, ModelCode type)
             : base(props, type)
@@ -39,17 +38,27 @@ namespace SCADA_Service.Data
             Initialized = true;
         }
 
-        public ushort MinValue { get; set; }
-        public ushort MaxValue { get; set; }
-        public ushort NormalValue { get; set; }
-        public ushort CurrentValue
+        public DiscreteSCADAModelPointItem(PointItemDB dbPoint) : base(dbPoint)
         {
-            get { return currentValue; }
-            set
-            {
-                currentValue = value;
-            }
+            MinValue = (ushort)((DiscretePointItemDB)dbPoint).MinValue;
+            MaxValue = (ushort)((DiscretePointItemDB)dbPoint).MaxValue;
+            NormalValue = (ushort)((DiscretePointItemDB)dbPoint).CurrentValue;
         }
-        public ushort AbnormalValue { get; set; }
+
+
+        public DiscretePointItemDB ToDBEntity()
+        {
+            return new DiscretePointItemDB
+            {
+                Gid = base.Gid,
+                Address = base.Address,
+                Name = base.Name,
+                RegisterType = base.RegisterType,
+                Alarm = false,
+                MinValue = (short)this.MinValue,
+                MaxValue = (short)this.MaxValue,
+                CurrentValue = (short)this.NormalValue
+            };
+        }
     }
 }

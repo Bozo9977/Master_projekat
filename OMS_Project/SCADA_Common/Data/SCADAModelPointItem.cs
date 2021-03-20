@@ -1,18 +1,19 @@
 ﻿using Common.GDA;
 using SCADA_Common;
 using SCADA_Common.Data;
+using SCADA_Common.DB_Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SCADA_Service.Data
+namespace SCADA_Common.Data
 {
     public abstract class SCADAModelPointItem : ISCADAModelPointItem
     {
         public long Gid { get; set; }
-        public ushort Address { get; set; }
+        public short Address { get; set; }
         public string Name { get; set; }
         public PointType RegisterType { get; set; }
         public AlarmType Alarm { get; set; }
@@ -35,7 +36,7 @@ namespace SCADA_Service.Data
                         break;
 
                     case ModelCode.MEASUREMENT_BASEADDRESS:
-                        Address = ushort.Parse(((Int32Property)item).Value.ToString());
+                        Address = short.Parse(((Int32Property)item).Value.ToString());
                         break;
 
                     case ModelCode.MEASUREMENT_DIRECTION:
@@ -58,6 +59,16 @@ namespace SCADA_Service.Data
                         break;
                 }
             }
+        }
+
+        protected SCADAModelPointItem(PointItemDB dbPoint)
+        {
+            Gid = dbPoint.Gid;
+            Address = dbPoint.Address;
+            Name = dbPoint.Name;
+            RegisterType = dbPoint.RegisterType;
+            Alarm = AlarmType.NO_ALARM;
+            Initialized = true;
         }
     }
 }

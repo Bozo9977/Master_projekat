@@ -11,8 +11,6 @@ namespace SCADA_Common.DB_Model
         public float MaxValue { get; set; }
         public float MinValue { get; set; }
         public float NormalValue { get; set; }
-        public float CurrentEguValue { get; set; }
-        public int CurrentRawValue { get; set; }
 
     }
 }

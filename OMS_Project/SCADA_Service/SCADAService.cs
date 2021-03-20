@@ -2,19 +2,12 @@
 using Common.GDA;
 using Common.SCADA;
 using Common.Transaction;
-using Common.WCF;
-using Messages.Commands;
-using NServiceBus;
-using SCADA_Client.ViewModel.PointViewModels;
+using SCADA_Common.DAO;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.ServiceModel;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace SCADA_Service
 {
@@ -35,14 +28,6 @@ namespace SCADA_Service
             Console.WriteLine("Started!");
         }
 
-        public void Dispose()
-        {
-            ProcessHandler.KillProcesses();
-            Disconnect();
-            Console.WriteLine("Disposed!");
-            GC.SuppressFinalize(this);
-        }
-
         public void Start()
         {
             try
@@ -55,7 +40,25 @@ namespace SCADA_Service
                 Console.WriteLine("ERROR: " + e.Message);
             }
 
-            ImportSCADAModel(proxy);
+            Console.WriteLine("F1 Import SCADA model from NMS");
+            Console.WriteLine("F2 Import SCADA model from DB");
+            Console.Write(">> ");
+
+            ConsoleKeyInfo key =  Console.ReadKey();
+
+            switch(key.Key)
+            {
+                case ConsoleKey.F1:
+                    ImportSCADAModel(proxy);
+                    break;
+                case ConsoleKey.F2:
+                    ImportSCADAModelFromDB();
+                    break;
+                default:
+                    break;
+            }
+           
+            
             InitializeSCADAClient();
             InitializeSCADAServer();
         }
@@ -84,6 +87,11 @@ namespace SCADA_Service
         {
             scadaModel = new SCADAModel(proxy);
             scadaModel.ImportModel();
+        }
+
+        public void ImportSCADAModelFromDB()
+        {
+            scadaModel.ImportModelFromDB();
         }
 
         //MASIVNA METODA
@@ -222,6 +230,14 @@ namespace SCADA_Service
 
             proxy = null;
             factory = null;
+        }
+
+        public void Dispose()
+        {
+            ProcessHandler.KillProcesses();
+            Disconnect();
+            Console.WriteLine("Disposed!");
+            GC.SuppressFinalize(this);
         }
     }
 }

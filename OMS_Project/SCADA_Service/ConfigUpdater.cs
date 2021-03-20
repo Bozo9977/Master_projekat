@@ -39,15 +39,15 @@ namespace SCADA_Service
                 {
                     case PointType.ANALOG_INPUT:
                         sbServer.Append("IN_REG ");
-                        minValue = ((IAnalogSCADAModelPointItem)point).EGU_Min.ToString();
-                        maxValue = ((IAnalogSCADAModelPointItem)point).EGU_Max.ToString();
+                        minValue = ((IAnalogSCADAModelPointItem)point).MinValue.ToString();
+                        maxValue = ((IAnalogSCADAModelPointItem)point).MaxValue.ToString();
                         nominalValue = ((IAnalogSCADAModelPointItem)point).NormalValue.ToString();
                         type = "AI";
                         break;
                     case PointType.ANALOG_OUTPUT:
                         sbServer.Append("HR_INT ");
-                        minValue = ((IAnalogSCADAModelPointItem)point).EGU_Min.ToString();
-                        maxValue = ((IAnalogSCADAModelPointItem)point).EGU_Max.ToString();
+                        minValue = ((IAnalogSCADAModelPointItem)point).MinValue.ToString();
+                        maxValue = ((IAnalogSCADAModelPointItem)point).MaxValue.ToString();
                         nominalValue = ((IAnalogSCADAModelPointItem)point).NormalValue.ToString();
                         type = "AO";
                         break;
@@ -99,15 +99,15 @@ namespace SCADA_Service
                 {
                     case PointType.ANALOG_INPUT:
                         sbClient.Append("IN_REG ");
-                        minValue = ((IAnalogSCADAModelPointItem)point).EGU_Min.ToString();
-                        maxValue = ((IAnalogSCADAModelPointItem)point).EGU_Max.ToString();
+                        minValue = ((IAnalogSCADAModelPointItem)point).MinValue.ToString();
+                        maxValue = ((IAnalogSCADAModelPointItem)point).MaxValue.ToString();
                         nominalValue = ((IAnalogSCADAModelPointItem)point).NormalValue.ToString();
                         type = "AI";
                         break;
                     case PointType.ANALOG_OUTPUT:
                         sbClient.Append("HR_INT ");
-                        minValue = ((IAnalogSCADAModelPointItem)point).EGU_Min.ToString();
-                        maxValue = ((IAnalogSCADAModelPointItem)point).EGU_Max.ToString();
+                        minValue = ((IAnalogSCADAModelPointItem)point).MinValue.ToString();
+                        maxValue = ((IAnalogSCADAModelPointItem)point).MaxValue.ToString();
                         nominalValue = ((IAnalogSCADAModelPointItem)point).NormalValue.ToString();
                         type = "AO";
                         break;

@@ -11,11 +11,9 @@ namespace SCADA_Common.DB_Model
 {
     public class PointItemDB
     {
-        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public long ID { get; set; }
-        [Index(IsUnique= true)]
+        [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
         public long Gid { get; set; }
-        public ushort Address { get; set; }
+        public short Address { get; set; }
         public string Name { get; set; }
         public PointType RegisterType { get; set; }
         public bool Alarm { get; set; }
