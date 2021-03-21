@@ -1,4 +1,5 @@
 ﻿using Common.GDA;
+using Common.SCADA;
 using Common.Transaction;
 using Common.WCF;
 using System;
@@ -63,10 +64,19 @@ namespace NMS
 					return new UpdateResult(null, null, ResultType.Failure);
 				}
 
+				// Call SCADA
+				Client<ISCADAServiceContract> scadaClient = new Client<ISCADAServiceContract>("SCADAEndpoint");
+				scadaClient.Connect();
+
+				UpdateResult okResult = new UpdateResult(null, null, ResultType.Success);
+
+				scadaClient.Call<UpdateResult>(ss => ss.ApplyUpdate(), out okResult);
+				scadaClient.Disconnect();
+
 				//if(!SCADA.ApplyUpdate(affectedGIDs)) { ... }
 				//if(!CE.ApplyUpdate(affectedGIDs)) { ... }
 
-				if(!client.Call<bool>(tm => tm.EndEnlist(true), out ok) || !ok)   //TM.EndEnlist(true)
+				if (!client.Call<bool>(tm => tm.EndEnlist(true), out ok) || !ok)   //TM.EndEnlist(true)
 				{
 					lock(modelLock)
 					{

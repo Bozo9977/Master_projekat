@@ -13,6 +13,6 @@ namespace Common.SCADA
     public interface ISCADAServiceContract
     {
         [OperationContract]
-        UpdateResult ApplyUpdate(List<IdentifiedObject> inserted, List<IdentifiedObject> updated, List<IdentifiedObject> deleted);
+        UpdateResult ApplyUpdate();
     }
 }

@@ -16,6 +16,7 @@ namespace SCADA_Service
     {
         private ChannelFactory<INetworkModelGDAContract> factory;
         private INetworkModelGDAContract proxy;
+        ServiceHost scadaHost;
 
         //novo
         static readonly object updateLock = new object();
@@ -25,6 +26,7 @@ namespace SCADA_Service
 
         public SCADAService()
         {
+            scadaHost = new ServiceHost(typeof(SCADAService));
             Console.WriteLine("Started!");
         }
 
@@ -32,6 +34,7 @@ namespace SCADA_Service
         {
             try
             {
+                scadaHost.Open();
                 ConnectToNMS("net.tcp://localhost:11123/NMS/GDA/");
                 Console.WriteLine("Connected to NMS.");
             }
@@ -162,11 +165,12 @@ namespace SCADA_Service
             }
         }*/
 
+        public UpdateResult ApplyUpdate()
+		{
+			Console.WriteLine("Connection established.");
 
-        public UpdateResult ApplyUpdate(List<IdentifiedObject> inserted, List<IdentifiedObject> updated, List<IdentifiedObject> deleted)
-        {
-            throw new NotImplementedException();
-        }
+            return new UpdateResult(null, null, ResultType.Success);
+		}
 
 
         public bool Prepare()
@@ -234,10 +238,11 @@ namespace SCADA_Service
 
         public void Dispose()
         {
+            scadaHost.Close();
             ProcessHandler.KillProcesses();
             Disconnect();
             Console.WriteLine("Disposed!");
             GC.SuppressFinalize(this);
         }
-    }
+	}
 }
