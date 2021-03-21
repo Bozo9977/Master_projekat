@@ -105,5 +105,15 @@ namespace Common.DataModel
 		{
 			return new DistributionGeneratorDBModel() { GID = GID, MRID = MRID, Name = Name, BaseVoltage = BaseVoltage, RatedCosPhi = RatedCosPhi, RatedPower = RatedPower, RatedVoltage = RatedVoltage };
 		}
-	}
+
+        // validation
+
+        public override bool Validate(Func<long, IdentifiedObject> entityGetter)
+        {
+			if (RatedVoltage < 0 || RatedPower < 0)
+				return false;
+
+            return base.Validate(entityGetter);
+        }
+    }
 }

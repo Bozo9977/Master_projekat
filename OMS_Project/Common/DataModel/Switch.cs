@@ -54,5 +54,11 @@ namespace Common.DataModel
 
 			return base.SetProperty(p, force);
 		}
-	}
+
+        //validation 
+        public override bool Validate(Func<long, IdentifiedObject> entityGetter)
+        {
+            return base.Validate(entityGetter);
+        }
+    }
 }

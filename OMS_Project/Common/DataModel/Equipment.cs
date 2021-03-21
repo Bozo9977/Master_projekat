@@ -12,5 +12,11 @@ namespace Common.DataModel
 
 		public Equipment(Equipment e) : base(e)
 		{ }
-	}
+
+        // validation
+        public override bool Validate(Func<long, IdentifiedObject> entityGetter)
+        {
+            return base.Validate(entityGetter);
+        }
+    }
 }
