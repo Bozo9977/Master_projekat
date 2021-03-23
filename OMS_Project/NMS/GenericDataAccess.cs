@@ -116,7 +116,7 @@ namespace NMS
 			return RemoveIterator(id);
 		}
 
-		public List<ResourceDescription> IteratorNext(int n, int id)
+		public List<ResourceDescription> IteratorNext(int n, int id, bool transaction)
 		{
 			ResourceIterator ri = GetIterator(id);
 
@@ -125,7 +125,7 @@ namespace NMS
 
 			lock(ri)
 			{
-				return ri.Next(n, model);
+				return ri.Next(n, transaction ? transactionModel : model);
 			}
 		}
 

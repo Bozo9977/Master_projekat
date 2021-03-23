@@ -23,7 +23,7 @@ namespace Common.GDA
 		int GetRelatedValues(long source, List<ModelCode> propIds, Association association, bool transaction);
 
 		[OperationContract]
-		List<ResourceDescription> IteratorNext(int n, int id);
+		List<ResourceDescription> IteratorNext(int n, int id, bool transaction);
 
 		[OperationContract]
 		bool IteratorRewind(int id);

@@ -45,7 +45,7 @@ namespace GUI
 
 				do
 				{
-					result = nms.IteratorNext(iteratorCount, iterator);
+					result = nms.IteratorNext(iteratorCount, iterator, false);
 
 					if(result == null)
 						return false;

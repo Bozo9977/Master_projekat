@@ -108,7 +108,7 @@ namespace SCADA_Service
 
             while (resourcesLeft > 0)
             {
-                List<ResourceDescription> rds = proxy.IteratorNext(numberOfResources, iteratorId);
+                List<ResourceDescription> rds = proxy.IteratorNext(numberOfResources, iteratorId, false);
                 for (int i = 0; i < rds.Count; i++)
                 {
                     if (rds[i] != null)
@@ -143,7 +143,7 @@ namespace SCADA_Service
 
             while (resourcesLeft > 0)
             {
-                List<ResourceDescription> rds = proxy.IteratorNext(numberOfResources, iteratorId);
+                List<ResourceDescription> rds = proxy.IteratorNext(numberOfResources, iteratorId, false);
                 for (int i = 0; i < rds.Count; i++)
                 {
                     if (rds[i] != null)
