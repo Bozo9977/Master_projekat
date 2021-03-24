@@ -15,15 +15,14 @@ namespace SCADA_Host
         {
             string message = "Starting SCADA Service...";
             Console.WriteLine("\n{0}\n", message);
+            SCADAService scadaService = new SCADAService();
 
-            using (SCADAService scadaService = new SCADAService())
-            {
-                scadaService.Start();
+            scadaService.Start();
 
-                message = "Press <Enter> to stop the service.";
-                Console.WriteLine(message);
-                Console.ReadLine();
-            }
+            message = "Press <Enter> to stop the service.";
+            Console.WriteLine(message);
+            Console.ReadLine();
+            scadaService.CloseSCADA();
         }
   
     }

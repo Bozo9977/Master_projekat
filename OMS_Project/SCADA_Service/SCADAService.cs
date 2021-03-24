@@ -2,6 +2,7 @@
 using Common.GDA;
 using Common.SCADA;
 using Common.Transaction;
+using Common.WCF;
 using SCADA_Common.DAO;
 using System;
 using System.Collections.Generic;
@@ -12,11 +13,12 @@ using System.ServiceModel;
 namespace SCADA_Service
 {
     [CallbackBehavior(ConcurrencyMode = ConcurrencyMode.Reentrant)]
-    public class SCADAService : IDisposable, ITransaction, ISCADAServiceContract
+    public class SCADAService :  ITransaction, ISCADAServiceContract
     {
         private ChannelFactory<INetworkModelGDAContract> factory;
         private INetworkModelGDAContract proxy;
-        ServiceHost scadaHost;
+        DuplexClient<ITransactionManager, ITransaction> client;
+        private ServiceHost scadaHost;
 
         //novo
         static readonly object updateLock = new object();
@@ -97,79 +99,50 @@ namespace SCADA_Service
             scadaModel.ImportModelFromDB();
         }
 
-        //MASIVNA METODA
-        /*public UpdateResult ImportSCADAModel(INetworkModelGDAContract proxy)
-        {
-            lock (updateLock)
-            {
-                bool ok;
-                SCADAModel tModel;
-                scadaModel = new SCADAModel(proxy);
-                DuplexClient<ITransactionManager, ITransaction> client = new DuplexClient<ITransactionManager, ITransaction>("callbackEndpointScada", this);
-
-                client.Connect();
-
-                if (!client.Call<bool>(tm => tm.StartEnlist(), out ok) || !ok)   //TM.StartEnlist()
-                {
-                    client.Disconnect();
-                    return new UpdateResult(null, null, ResultType.Failure);
-                }
-
-                tModel = new SCADAModel(scadaModel);
-                tModel.ImportModel();
-
-                if (tModel == null || tModel.ScadaModel == null)
-                {
-                    client.Call<bool>(tm => tm.EndEnlist(false), out ok);   //TM.EndEnlist(false)
-                    client.Disconnect();
-                    return new UpdateResult(null, null, ResultType.Failure);
-                }
-
-                lock (modelLock)
-                {
-                    transactionModel = tModel;
-                }
-
-                if (!client.Call<bool>(tm => tm.Enlist(), out ok) || !ok)   //TM.Enlist()
-                {
-                    lock (modelLock)
-                    {
-                        transactionModel = scadaModel;
-                    }
-
-                    client.Call<bool>(tm => tm.EndEnlist(false), out ok);   //TM.EndEnlist(false)
-                    client.Disconnect();
-                    return new UpdateResult(null, null, ResultType.Failure);
-                }
-
-                //if(!SCADA.ApplyUpdate(affectedGIDs)) { ... }
-                //if(!CE.ApplyUpdate(affectedGIDs)) { ... }
-
-                if (!client.Call<bool>(tm => tm.EndEnlist(true), out ok) || !ok)   //TM.EndEnlist(true)
-                {
-                    lock (modelLock)
-                    {
-                        transactionModel = scadaModel;
-                    }
-
-                    client.Disconnect();
-                    return new UpdateResult(null, null, ResultType.Failure);
-                }
-
-                client.Disconnect();
-
-                lock (modelLock)
-                {
-                    return scadaModel == tModel ? new UpdateResult(null, null, ResultType.Success) : new UpdateResult(null, null, ResultType.Failure);
-                }
-            }
-        }*/
-
         public UpdateResult ApplyUpdate()
 		{
 			Console.WriteLine("Connection established.");
 
-            return new UpdateResult(null, null, ResultType.Success);
+            ConnectToNMS("net.tcp://localhost:11123/NMS/GDA/");
+            bool ok;
+            SCADAModel tModel;
+            scadaModel = new SCADAModel(proxy);
+            scadaModel.ImportModelFromDB();
+
+            client = new DuplexClient<ITransactionManager, ITransaction>("callbackEndpointScada", this);
+            client.Connect();
+
+            tModel = new SCADAModel(scadaModel);
+            tModel.ImportTransactionModel();
+
+            if (tModel == null || tModel.ScadaModel == null)
+            {
+                client.Call<bool>(tm => tm.EndEnlist(false), out ok);   //TM.EndEnlist(false)
+                client.Disconnect();
+                return new UpdateResult(null, null, ResultType.Failure);
+            }
+
+            lock (modelLock)
+            {
+                transactionModel = tModel;
+            }
+
+            if (!client.Call<bool>(tm => tm.Enlist(), out ok) || !ok)   //TM.Enlist()
+            {
+                lock (modelLock)
+                {
+                    transactionModel = scadaModel;
+                }
+
+                client.Call<bool>(tm => tm.EndEnlist(false), out ok);   //TM.EndEnlist(false)
+                client.Disconnect();
+                return new UpdateResult(null, null, ResultType.Failure);
+            }
+
+            lock (modelLock)
+            {
+                return scadaModel == tModel ? new UpdateResult(null, null, ResultType.Success) : new UpdateResult(null, null, ResultType.Failure);
+            }
 		}
 
 
@@ -181,9 +154,7 @@ namespace SCADA_Service
                     return false;
             }
 
-            // Srediti bazu
-            //return transactionModel.PersistUpdate();
-            return true;
+            return transactionModel.PersistUpdate();
         }
 
         public void Commit()
@@ -196,8 +167,7 @@ namespace SCADA_Service
 
         public void Rollback()
         {
-            // Srediti bazu
-            //transactionModel.RollbackUpdate();
+            transactionModel.RollbackUpdate();
 
             lock (modelLock)
             {
@@ -236,13 +206,13 @@ namespace SCADA_Service
             factory = null;
         }
 
-        public void Dispose()
+        public void CloseSCADA()
         {
             scadaHost.Close();
             ProcessHandler.KillProcesses();
             Disconnect();
-            Console.WriteLine("Disposed!");
-            GC.SuppressFinalize(this);
+            client.Disconnect();
+            Console.WriteLine("SCADA Closed!");
         }
 	}
 }

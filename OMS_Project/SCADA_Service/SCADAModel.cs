@@ -13,6 +13,7 @@ namespace SCADA_Service
     public class SCADAModel
     {
         private Dictionary<long, ISCADAModelPointItem> scadaModel;
+        private Dictionary<long, ISCADAModelPointItem> newScadaModel;
         private ConfigUpdater configUpdater;
         readonly ReaderWriterLockSlim rwLock;
 
@@ -23,27 +24,48 @@ namespace SCADA_Service
         public SCADAModel()
         {
             scadaModel = new Dictionary<long, ISCADAModelPointItem>();
+            newScadaModel = new Dictionary<long, ISCADAModelPointItem>();
+
+            rwLock = new ReaderWriterLockSlim();
         }
 
         public SCADAModel(SCADAModel model)
         {
+            scadaModel = new Dictionary<long, ISCADAModelPointItem>();
+            newScadaModel = new Dictionary<long, ISCADAModelPointItem>();
+
             foreach (var point in model.scadaModel)
             {
                 scadaModel.Add(point.Key, point.Value);
             }
+            foreach (var point in model.newScadaModel)
+            {
+                newScadaModel.Add(point.Key, point.Value);
+            }
             proxy = model.proxy;
+
+            rwLock = new ReaderWriterLockSlim();
         }
 
         public SCADAModel(INetworkModelGDAContract p)
         {
             scadaModel = new Dictionary<long, ISCADAModelPointItem>();
+            newScadaModel = new Dictionary<long, ISCADAModelPointItem>();
             proxy = p;
+
+            rwLock = new ReaderWriterLockSlim();
         }
 
         public Dictionary<long, ISCADAModelPointItem> ScadaModel
         {
             get { return scadaModel ?? (scadaModel = new Dictionary<long, ISCADAModelPointItem>()); }
             set { scadaModel = value; }
+        }
+
+        public Dictionary<long, ISCADAModelPointItem> NewScadaModel
+        {
+            get { return newScadaModel ?? (newScadaModel = new Dictionary<long, ISCADAModelPointItem>()); }
+            set { newScadaModel = value; }
         }
 
 
@@ -65,11 +87,11 @@ namespace SCADA_Service
         public void ImportModel()
         {
             Console.WriteLine("Importing analog values...");
-            ImportAnalog();
+            ImportAnalog(false);
             Console.WriteLine("Analog finished!");
 
             Console.WriteLine("Importing discrete values...");
-            ImportDiscrete();
+            ImportDiscrete(false);
             Console.WriteLine("Discrete finished!");
             
             configUpdater = new ConfigUpdater();
@@ -77,19 +99,32 @@ namespace SCADA_Service
             configUpdater.UpdateClientConfigFile(ScadaModel);
         }
 
+        public void ImportTransactionModel()
+        {
+            Console.WriteLine("Importing analog values...");
+            ImportAnalog(true);
+            Console.WriteLine("Analog finished!");
+
+            Console.WriteLine("Importing discrete values...");
+            ImportDiscrete(true);
+            Console.WriteLine("Discrete finished!");
+        }
+
         public void ImportModelFromDB()
         {
+            Console.WriteLine("Importing values from database...");
             using (ScadaDB scadaDB = new ScadaDB())
             {
                 ScadaModel = scadaDB.GetModel();
             }
+            Console.WriteLine("Imported from database!");
 
             configUpdater = new ConfigUpdater();
             configUpdater.UpdateServerConfigFile(ScadaModel);
             configUpdater.UpdateClientConfigFile(ScadaModel);
         }
 
-        private void ImportAnalog()
+        private void ImportAnalog(bool transactionValue)
         {
             int numberOfResources = 1000;
             List<ModelCode> props = new List<ModelCode>();
@@ -101,14 +136,14 @@ namespace SCADA_Service
             props.Add(ModelCode.MEASUREMENT_BASEADDRESS);
             props.Add(ModelCode.MEASUREMENT_DIRECTION);
 
-            int iteratorId = proxy.GetExtentValues(DMSType.Analog, props, false);
+            int iteratorId = proxy.GetExtentValues(DMSType.Analog, props, transactionValue);
             int resourcesLeft = proxy.IteratorResourcesLeft(iteratorId);
 
             RepoAccess<PointItemDB> ra = new SCADA_Common.DAO.RepoAccess<PointItemDB>();
 
             while (resourcesLeft > 0)
             {
-                List<ResourceDescription> rds = proxy.IteratorNext(numberOfResources, iteratorId, false);
+                List<ResourceDescription> rds = proxy.IteratorNext(numberOfResources, iteratorId, transactionValue);
                 for (int i = 0; i < rds.Count; i++)
                 {
                     if (rds[i] != null)
@@ -116,9 +151,13 @@ namespace SCADA_Service
                         long gid = rds[i].Id;
                         //ModelCode type = modelResourceDesc.GetModelCodeFromId(gid);
                         ISCADAModelPointItem pointItem = new AnalogSCADAModelPointItem(rds[i].Properties.Values.ToList(), ModelCode.ANALOG);
-                        ScadaModel.Add(rds[i].Id, pointItem);
+                        if (!transactionValue)
+                            ScadaModel.Add(rds[i].Id, pointItem);
+                        else
+                            NewScadaModel.Add(rds[i].Id, pointItem);
                         AddressToGidMap[pointItem.RegisterType].Add(pointItem.Address, rds[i].Id);
-                        WriteAnalogIntoDB((AnalogSCADAModelPointItem)pointItem);
+                        if (!transactionValue)
+                            WriteAnalogIntoDB((AnalogSCADAModelPointItem)pointItem);
                     }
 
                 }
@@ -126,7 +165,7 @@ namespace SCADA_Service
             }
         }
 
-        private void ImportDiscrete()
+        private void ImportDiscrete(bool transactionValue)
         {
             int numberOfResources = 1000;
             List<ModelCode> props = new List<ModelCode>();
@@ -138,21 +177,25 @@ namespace SCADA_Service
             props.Add(ModelCode.MEASUREMENT_BASEADDRESS);
             props.Add(ModelCode.MEASUREMENT_DIRECTION);
 
-            int iteratorId = proxy.GetExtentValues(DMSType.Discrete, props, false);
+            int iteratorId = proxy.GetExtentValues(DMSType.Discrete, props, transactionValue);
             int resourcesLeft = proxy.IteratorResourcesLeft(iteratorId);
 
             while (resourcesLeft > 0)
             {
-                List<ResourceDescription> rds = proxy.IteratorNext(numberOfResources, iteratorId, false);
+                List<ResourceDescription> rds = proxy.IteratorNext(numberOfResources, iteratorId, transactionValue);
                 for (int i = 0; i < rds.Count; i++)
                 {
                     if (rds[i] != null)
                     {
                         long gid = rds[i].Id;
                         ISCADAModelPointItem pointItem = new DiscreteSCADAModelPointItem(rds[i].Properties.Values.ToList(), ModelCode.DISCRETE);
-                        ScadaModel.Add(gid, pointItem);
+                        if (!transactionValue)
+                            ScadaModel.Add(rds[i].Id, pointItem);
+                        else
+                            NewScadaModel.Add(rds[i].Id, pointItem);
                         AddressToGidMap[pointItem.RegisterType].Add(pointItem.Address, gid);
-                        WriteDiscreteIntoDB((DiscreteSCADAModelPointItem)pointItem);
+                        if (!transactionValue)
+                            WriteDiscreteIntoDB((DiscreteSCADAModelPointItem)pointItem);
                     }
                 }
                 resourcesLeft = proxy.IteratorResourcesLeft(iteratorId);
@@ -182,18 +225,23 @@ namespace SCADA_Service
         }
 
         // Srediti bazu prvo
-        /*public bool PersistUpdate()
+        public bool PersistUpdate()
         {
             rwLock.EnterReadLock();
 
             try
             {
-                return db != null && inserted != null && db.PersistDelta(inserted, updatedNew, deleted);
+                using (ScadaDB scadaDB = new ScadaDB())
+                {
+                    scadaDB.PersistUpdate(NewScadaModel);
+                }
             }
             finally
             {
                 rwLock.ExitReadLock();
             }
+
+            return true;
         }
 
         public bool RollbackUpdate()
@@ -202,12 +250,17 @@ namespace SCADA_Service
 
             try
             {
-                return db != null && inserted != null && db.RollbackDelta(inserted, updatedOld, deleted);
+                using (ScadaDB scadaDB = new ScadaDB())
+                {
+                    scadaDB.RollbackUpdate(ScadaModel);
+                }
             }
             finally
             {
                 rwLock.ExitReadLock();
             }
-        }*/
+
+            return true;
+        }
     }
 }

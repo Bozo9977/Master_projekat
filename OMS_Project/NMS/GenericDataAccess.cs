@@ -14,6 +14,7 @@ namespace NMS
 	class GenericDataAccess : INetworkModelGDAContract, ITransaction
 	{
 		static readonly object updateLock = new object();
+		static readonly object scadaLock = new object();
 		static readonly object modelLock = new object();
 		static NetworkModel model = new NetworkModel(new NMSEFDatabase());
 		static NetworkModel transactionModel = model;
@@ -70,8 +71,12 @@ namespace NMS
 
 				UpdateResult okResult = new UpdateResult(null, null, ResultType.Success);
 
-				scadaClient.Call<UpdateResult>(ss => ss.ApplyUpdate(), out okResult);
-				scadaClient.Disconnect();
+				lock (scadaLock)
+                {
+					scadaClient.Call<UpdateResult>(ss => ss.ApplyUpdate(), out okResult);
+                }					
+
+				
 
 				//if(!SCADA.ApplyUpdate(affectedGIDs)) { ... }
 				//if(!CE.ApplyUpdate(affectedGIDs)) { ... }
@@ -88,8 +93,9 @@ namespace NMS
 				}
 
 				client.Disconnect();
+				scadaClient.Disconnect();
 
-				lock(modelLock)
+				lock (modelLock)
 				{
 					return model == tModel ? new UpdateResult(mappings, null, ResultType.Success) : new UpdateResult(null, null, ResultType.Failure);
 				}
