@@ -154,7 +154,10 @@ namespace SCADA_Service
                     return false;
             }
 
-            return transactionModel.PersistUpdate();
+            transactionModel.PersistUpdate();
+            transactionModel.UpdateConfigFiles(transactionModel.NewScadaModel);
+            
+            return true;
         }
 
         public void Commit()
@@ -162,6 +165,7 @@ namespace SCADA_Service
             lock (modelLock)
             {
                 scadaModel = transactionModel;
+                ResetSCADA();
             }
         }
 
@@ -172,6 +176,7 @@ namespace SCADA_Service
             lock (modelLock)
             {
                 transactionModel = scadaModel;
+                transactionModel.UpdateConfigFiles(transactionModel.ScadaModel);
             }
         }
 
@@ -213,6 +218,14 @@ namespace SCADA_Service
             Disconnect();
             client.Disconnect();
             Console.WriteLine("SCADA Closed!");
+        }
+
+        public void ResetSCADA()
+		{
+            ProcessHandler.KillProcesses();
+            InitializeSCADAClient();
+            InitializeSCADAServer();
+			Console.WriteLine("SCADA reset completed!");
         }
 	}
 }

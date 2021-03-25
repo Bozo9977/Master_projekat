@@ -93,10 +93,8 @@ namespace SCADA_Service
             Console.WriteLine("Importing discrete values...");
             ImportDiscrete(false);
             Console.WriteLine("Discrete finished!");
-            
-            configUpdater = new ConfigUpdater();
-            configUpdater.UpdateServerConfigFile(ScadaModel);
-            configUpdater.UpdateClientConfigFile(ScadaModel);
+
+            UpdateConfigFiles(ScadaModel);
         }
 
         public void ImportTransactionModel()
@@ -119,9 +117,7 @@ namespace SCADA_Service
             }
             Console.WriteLine("Imported from database!");
 
-            configUpdater = new ConfigUpdater();
-            configUpdater.UpdateServerConfigFile(ScadaModel);
-            configUpdater.UpdateClientConfigFile(ScadaModel);
+            UpdateConfigFiles(ScadaModel);
         }
 
         private void ImportAnalog(bool transactionValue)
@@ -261,6 +257,13 @@ namespace SCADA_Service
             }
 
             return true;
+        }
+
+        public void UpdateConfigFiles(Dictionary<long, ISCADAModelPointItem> model)
+        {
+            configUpdater = new ConfigUpdater();
+            configUpdater.UpdateServerConfigFile(model);
+            configUpdater.UpdateClientConfigFile(model);
         }
     }
 }
