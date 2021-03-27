@@ -1,4 +1,5 @@
 ﻿using Common.GDA;
+using Common.WCF;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,8 +12,9 @@ namespace Importer
 {
 	class Program
 	{
-		const string menu = "1. Apply delta from CIMXML file\n" +
-							"2. Quit\n";
+		const string menu =	"1. Apply delta from CIMXML file\n" +
+									"2. Clear network model\n" +
+									"3. Quit\n";
 		static ChannelFactory<INetworkModelGDAContract> factory;
 		static INetworkModelGDAContract proxy;
 
@@ -26,6 +28,7 @@ namespace Importer
 				switch(Console.ReadLine())
 				{
 					case "1":
+					{
 						Console.Write("CIMXML file path: ");
 						Delta delta;
 
@@ -46,62 +49,78 @@ namespace Importer
 							Console.WriteLine("ERROR: Delta not created.");
 							break;
 						}
-						
-						try
+
+						Client<INetworkModelGDAContract> client = new Client<INetworkModelGDAContract>("endpointNMS");
+						client.Connect();
+						UpdateResult result;
+						bool ok = client.Call<UpdateResult>(nms => nms.ApplyUpdate(delta), out result);
+						client.Disconnect();
+
+						if(!ok || result == null)
 						{
-							Connect("net.tcp://localhost:11123/NMS/GDA/");
-							UpdateResult result = proxy.ApplyUpdate(delta);
-							Disconnect();
-							Console.WriteLine(result.ToString());
+							Console.WriteLine("ERROR: Update failed.");
+							break;
 						}
-						catch(Exception e)
-						{
-							Console.WriteLine("ERROR: " + e.Message);
-						}
-						
-						break;
+
+						Console.WriteLine(result.ToString());
+					}
+					break;
 
 					case "2":
+					{
+						Client<INetworkModelGDAContract> client = new Client<INetworkModelGDAContract>("endpointNMS");
+						client.Connect();
+						UpdateResult result;
+						bool ok = client.Call<UpdateResult>(nms =>
+						{
+							Array types = Enum.GetValues(typeof(DMSType));
+							List<long> gids = new List<long>();
+							List<ModelCode> props = new List<ModelCode>();
+							Delta delta = new Delta();
+
+							foreach(DMSType type in types)
+							{
+								int iterator = nms.GetExtentValues(type, props, false);
+
+								if(iterator < 0)
+									return null;
+
+								List<ResourceDescription> rds;
+
+								do
+								{
+									rds = nms.IteratorNext(512, iterator, false);
+
+									if(rds == null)
+										return null;
+
+									delta.DeleteOperations.AddRange(rds);
+								}
+								while(rds.Count > 0);
+
+								nms.IteratorClose(iterator);
+							}
+
+							return nms.ApplyUpdate(delta);
+						}, out result);
+						client.Disconnect();
+
+						if(!ok || result == null)
+						{
+							Console.WriteLine("ERROR: Clear failed.");
+							break;
+						}
+
+						Console.WriteLine(result.ToString());
+					}
+					break;
+
+					case "3":
 						return;
 				}
 
 				Console.WriteLine();
 			}
-		}
-
-		static bool Connect(string uri)
-		{
-			Disconnect();
-
-			try
-			{
-				factory = new ChannelFactory<INetworkModelGDAContract>(new NetTcpBinding() { TransferMode = TransferMode.Streamed, MaxReceivedMessageSize = 2147483647 }, new EndpointAddress(new Uri(uri)));
-				proxy = factory.CreateChannel();
-			}
-			catch(Exception e)
-			{
-				Console.WriteLine("ERROR: " + e.Message);
-				Disconnect();
-				return false;
-			}
-
-			return true;
-		}
-
-		static void Disconnect()
-		{
-			if(factory != null)
-			{
-				try
-				{
-					factory.Close();
-				}
-				catch(Exception e)
-				{ }
-			}
-
-			proxy = null;
-			factory = null;
 		}
 	}
 }

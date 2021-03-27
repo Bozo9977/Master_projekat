@@ -126,13 +126,12 @@ namespace Common.DataModel
 			return new RatioTapChangerDBModel() { GID = GID, MRID = MRID, Name = Name, StepCount = StepCount, NominalStep = NominalStep, VoltageStep = VoltageStep = TransformerWinding = TransformerWinding };
 		}
 
-        // validation 
-        public override bool Validate(Func<long, IdentifiedObject> entityGetter)
-        {
-			if (StepCount < 0 || NominalStep < 0 || VoltageStep < 0)
+		public override bool Validate(Func<long, IdentifiedObject> entityGetter)
+		{
+			if(StepCount < 0 || NominalStep < 0 || VoltageStep < 0)
 				return false;
 
-            return base.Validate(entityGetter);
-        }
-    }
+			return base.Validate(entityGetter);
+		}
+	}
 }

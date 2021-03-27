@@ -139,23 +139,20 @@ namespace Common.DataModel
 			return new BaseVoltageDBModel() { GID = GID, MRID = MRID, Name = Name, NominalVoltage = NominalVoltage };
 		}
 
-        //validation
-        public override void GetEntitiesToValidate(Func<long, IdentifiedObject> entityGetter, HashSet<long> dst)
-        {
-			foreach(var cE in ConductingEquipment)
-            {
-				dst.Add(cE);
-            }
+		public override void GetEntitiesToValidate(Func<long, IdentifiedObject> entityGetter, HashSet<long> dst)
+		{
+			foreach(long ce in ConductingEquipment)
+				dst.Add(ce);
 
-            base.GetEntitiesToValidate(entityGetter, dst);
-        }
+			base.GetEntitiesToValidate(entityGetter, dst);
+		}
 
-        public override bool Validate(Func<long, IdentifiedObject> entityGetter)
-        {
-			if (NominalVoltage < 0)
+		public override bool Validate(Func<long, IdentifiedObject> entityGetter)
+		{
+			if(NominalVoltage < 0)
 				return false;
 
-            return base.Validate(entityGetter);
-        }
-    }
+			return base.Validate(entityGetter);
+		}
+	}
 }

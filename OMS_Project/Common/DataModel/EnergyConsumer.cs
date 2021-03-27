@@ -106,15 +106,12 @@ namespace Common.DataModel
 			return new EnergyConsumerDBModel() { GID = GID, MRID = MRID, Name = Name, BaseVoltage = BaseVoltage, PFixed = PFixed, QFixed = QFixed, ConsumerClass = ConsumerClass };
 		}
 
-
-        //validation
-
-        public override bool Validate(Func<long, IdentifiedObject> entityGetter)
-        {
-			if (PFixed <= 0 || QFixed <= 0)
+		public override bool Validate(Func<long, IdentifiedObject> entityGetter)
+		{
+			if(PFixed < 0 || QFixed < 0)
 				return false;
 
-            return base.Validate(entityGetter);
-        }
-    }
+			return base.Validate(entityGetter);
+		}
+	}
 }

@@ -36,13 +36,16 @@ namespace NMS
 
 			int left = ResourcesLeft();
 			int count = n < left ? n : left;
-			List<long> resultGIDs = gids.GetRange(position, count);
-			position += count;
 			List<ResourceDescription> result = new List<ResourceDescription>(count);
+			int i;
 
-			foreach(long gid in resultGIDs)
+			for(i = position; i < position + count; ++i)
+			{
+				long gid = gids[i];
 				result.Add(model.GetValues(gid, properties[ModelCodeHelper.GetTypeFromGID(gid)]));
+			}
 
+			position = i;
 			return result;
 		}
 

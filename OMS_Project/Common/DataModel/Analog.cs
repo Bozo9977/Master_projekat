@@ -118,23 +118,22 @@ namespace Common.DataModel
 			return new AnalogDBModel() { GID = GID, MRID = MRID, Name = Name, BaseAddress = BaseAddress, Direction = Direction, MeasurementType = MeasurementType, PowerSystemResource = PowerSystemResource, Terminal = Terminal, MinValue = MinValue, MaxValue = MaxValue, NormalValue = NormalValue };
 		}
 
-		// VALIDATION
-        public override bool Validate(Func<long, IdentifiedObject> entityGetter)
-        {
-			if (MinValue < 0)
+		public override bool Validate(Func<long, IdentifiedObject> entityGetter)
+		{
+			if(MinValue < 0)
 				return false;
-			if (MaxValue < 0)
+			if(MaxValue < 0)
 				return false;
-			if (NormalValue < 0)
+			if(NormalValue < 0)
 				return false;
-			if (MaxValue < MinValue)
+			if(MaxValue < MinValue)
 				return false;
-			if (NormalValue < MinValue)
+			if(NormalValue < MinValue)
 				return false;
-			if (NormalValue > MaxValue)
+			if(NormalValue > MaxValue)
 				return false;
 
-            return base.Validate(entityGetter);
-        }
-    }
+			return base.Validate(entityGetter);
+		}
+	}
 }

@@ -123,16 +123,5 @@ namespace Common.DataModel
 		{
 			return new ConnectivityNodeDBModel() { GID = GID, MRID = MRID, Name = Name };
 		}
-
-        //validation
-        public override void GetEntitiesToValidate(Func<long, IdentifiedObject> entityGetter, HashSet<long> dst)
-        {
-			foreach (var terminal in Terminals)
-            {
-				dst.Add(terminal);
-            }
-
-            base.GetEntitiesToValidate(entityGetter, dst);
-        }
-    }
+	}
 }

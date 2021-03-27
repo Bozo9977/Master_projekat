@@ -118,17 +118,16 @@ namespace Common.DataModel
 			return new DiscreteDBModel() { GID = GID, MRID = MRID, Name = Name, BaseAddress = BaseAddress, Direction = Direction, MeasurementType = MeasurementType, PowerSystemResource = PowerSystemResource, Terminal = Terminal, MinValue = MinValue, MaxValue = MaxValue, NormalValue = NormalValue };
 		}
 
-        //validation 
-        public override bool Validate(Func<long, IdentifiedObject> entityGetter)
-        {
-			if (MaxValue < MinValue)
+		public override bool Validate(Func<long, IdentifiedObject> entityGetter)
+		{
+			if(MaxValue < MinValue)
 				return false;
-			if (NormalValue < MinValue)
+			if(NormalValue < MinValue)
 				return false;
-			if (NormalValue > MaxValue)
+			if(NormalValue > MaxValue)
 				return false;
 
-            return base.Validate(entityGetter);
-        }
-    }
+			return base.Validate(entityGetter);
+		}
+	}
 }

@@ -12,11 +12,5 @@ namespace Common.DataModel
 
 		public ProtectedSwitch(ProtectedSwitch p) : base(p)
 		{ }
-
-        // validation 
-        public override bool Validate(Func<long, IdentifiedObject> entityGetter)
-        {
-            return base.Validate(entityGetter);
-        }
-    }
+	}
 }

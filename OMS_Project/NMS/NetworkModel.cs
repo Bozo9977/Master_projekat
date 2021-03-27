@@ -325,7 +325,7 @@ namespace NMS
 				if(pair.Value != 0 && TryGetEntity(pair.Value, out target, out targetContainer))
 				{
 					target = target.Clone();
-					target.RemoveTargetReference(pair.Key, pair.Value);
+					target.RemoveTargetReference(pair.Key, io.GID);
 					targetContainer.Set(target);
 				}
 			}

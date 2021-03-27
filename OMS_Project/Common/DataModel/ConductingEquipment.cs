@@ -114,13 +114,12 @@ namespace Common.DataModel
 			base.GetSourceReferences(dst);
 		}
 
-        // VALIDATION
-        public override void GetEntitiesToValidate(Func<long, IdentifiedObject> entityGetter, HashSet<long> dst)
-        {
-			foreach (var k in Terminals)
-				dst.Add(k);
+		public override void GetEntitiesToValidate(Func<long, IdentifiedObject> entityGetter, HashSet<long> dst)
+		{
+			foreach(var t in Terminals)
+				dst.Add(t);
 
-            base.GetEntitiesToValidate(entityGetter, dst);
-        }
-    }
+			base.GetEntitiesToValidate(entityGetter, dst);
+		}
+	}
 }

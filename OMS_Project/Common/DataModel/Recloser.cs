@@ -43,12 +43,5 @@ namespace Common.DataModel
 		{
 			return new RecloserDBModel() { GID = GID, MRID = MRID, Name = Name, BaseVoltage = BaseVoltage, NormalOpen = NormalOpen };
 		}
-
-        // validation
-        public override bool Validate(Func<long, IdentifiedObject> entityGetter)
-        {
-
-            return base.Validate(entityGetter);
-        }
-    }
+	}
 }

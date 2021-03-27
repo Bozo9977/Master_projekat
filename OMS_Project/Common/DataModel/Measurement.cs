@@ -86,14 +86,12 @@ namespace Common.DataModel
 			base.GetSourceReferences(dst);
 		}
 
-
-        // VALIDATION
-        public override bool Validate(Func<long, IdentifiedObject> entityGetter)
-        {
-			if (BaseAddress < 0)
+		public override bool Validate(Func<long, IdentifiedObject> entityGetter)
+		{
+			if(BaseAddress < 0)
 				return false;
 
-            return base.Validate(entityGetter);
-        }
-    }
+			return base.Validate(entityGetter);
+		}
+	}
 }

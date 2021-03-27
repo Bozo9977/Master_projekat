@@ -155,14 +155,12 @@ namespace Common.DataModel
 			return new TerminalDBModel() { GID = GID, MRID = MRID, Name = Name, ConnectivityNode = ConnectivityNode, ConductingEquipment = ConductingEquipment };
 		}
 
+		public override void GetEntitiesToValidate(Func<long, IdentifiedObject> entityGetter, HashSet<long> dst)
+		{
+			foreach(long m in Measurements)
+				dst.Add(m);
 
-		// VALIDATION
-        public override void GetEntitiesToValidate(Func<long, IdentifiedObject> entityGetter, HashSet<long> dst)
-        {
-			foreach (var k in Measurements)
-				dst.Add(k);
-
-            base.GetEntitiesToValidate(entityGetter, dst);
-        }
-    }
+			base.GetEntitiesToValidate(entityGetter, dst);
+		}
+	}
 }

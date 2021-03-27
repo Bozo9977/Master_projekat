@@ -146,14 +146,12 @@ namespace Common.DataModel
 			return new TransformerWindingDBModel() { GID = GID, MRID = MRID, Name = Name, BaseVoltage = BaseVoltage, PowerTransformer = PowerTransformer };
 		}
 
+		public override void GetEntitiesToValidate(Func<long, IdentifiedObject> entityGetter, HashSet<long> dst)
+		{
+			foreach(var r in RatioTapChanger)
+				dst.Add(r);
 
-        // VALIDATION
-        public override void GetEntitiesToValidate(Func<long, IdentifiedObject> entityGetter, HashSet<long> dst)
-        {
-			foreach (var k in RatioTapChanger)
-				dst.Add(k);
-
-            base.GetEntitiesToValidate(entityGetter, dst);
-        }
-    }
+			base.GetEntitiesToValidate(entityGetter, dst);
+		}
+	}
 }
