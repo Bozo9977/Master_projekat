@@ -68,6 +68,8 @@
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="PubSubCode\AnalogUpdated.cs" />
+    <Compile Include="PubSubCode\DiscreteUpdated.cs" />
     <Compile Include="PubSubCode\EndpointHandler.cs" />
     <Compile Include="Utils\RelayCommand.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
@@ -123,10 +125,6 @@
     <ProjectReference Include="..\Common\Common.csproj">
       <Project>{41f506dd-503a-4de8-9c46-1d8c0bd8ff68}</Project>
       <Name>Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Messages\Messages.csproj">
-      <Project>{bf91d7a7-e09c-4405-a975-d75ca2c0c1e7}</Project>
-      <Name>Messages</Name>
     </ProjectReference>
     <ProjectReference Include="..\Modbus\Modbus.csproj">
       <Project>{1fd62e42-fa68-4529-a8a8-815d25cbedc3}</Project>

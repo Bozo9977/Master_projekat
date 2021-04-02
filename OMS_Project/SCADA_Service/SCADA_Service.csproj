@@ -69,10 +69,6 @@
       <Project>{41f506dd-503a-4de8-9c46-1d8c0bd8ff68}</Project>
       <Name>Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Messages\Messages.csproj">
-      <Project>{bf91d7a7-e09c-4405-a975-d75ca2c0c1e7}</Project>
-      <Name>Messages</Name>
-    </ProjectReference>
     <ProjectReference Include="..\SCADA_Client\SCADA_Client.csproj">
       <Project>{379d64b2-8e24-442b-9ed7-6a34b371807a}</Project>
       <Name>SCADA_Client</Name>

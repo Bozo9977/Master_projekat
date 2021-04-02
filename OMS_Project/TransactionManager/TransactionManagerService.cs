@@ -11,7 +11,7 @@ using Common.Transaction;
 
 namespace TransactionManager
 {
-	[ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Reentrant)]
+	[ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Multiple)]
 	class TransactionManagerService : ITransactionManager
 	{
 		static TransactionManager transactionManager = new TransactionManager();

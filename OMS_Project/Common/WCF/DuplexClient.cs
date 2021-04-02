@@ -11,10 +11,10 @@ namespace Common.WCF
 	public class DuplexClient<IContract, ICallback>
 	{
 		DuplexChannelFactory<IContract> factory;
-		object instance;
+		ICallback instance;
 		public string EndpointName { get; private set; }
 
-		public DuplexClient(string endpointName, object callbackInstance)
+		public DuplexClient(string endpointName, ICallback callbackInstance)
 		{
 			EndpointName = endpointName;
 			instance = callbackInstance;

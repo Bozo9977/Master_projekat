@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Common;
+using Common.PubSub;
+using Common.WCF;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -20,7 +23,7 @@ namespace GUI
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
 	/// </summary>
-	public partial class MainWindow : Window
+	public partial class MainWindow : Window, IPubSubClient
 	{
 		enum EKey : byte { Up, Down, Left, Right, In, Out, Count }
 		uint keys;
@@ -38,6 +41,7 @@ namespace GUI
 		bool drawn;
 
 		NetworkModelDrawing drawing;
+		DuplexClient<ISubscribing, IPubSubClient> subClient;
 
 		public MainWindow()
 		{
@@ -46,6 +50,11 @@ namespace GUI
 			keyActions = new Action[(byte)EKey.Count] { Up, Down, Left, Right, In, Out };
 			timer = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(48) };
 			timer.Tick += Timer_Tick;
+
+			subClient = new DuplexClient<ISubscribing, IPubSubClient>("callbackEndpoint", this);
+			subClient.Connect();
+			subClient.Call<bool>(sub => { sub.Subscribe(ETopic.NetworkModelChanged); return true; }, out _);
+			Logger.Instance.Level = ELogLevel.INFO;
 		}
 
 		private void InitView()
@@ -297,7 +306,13 @@ namespace GUI
 
 		void Exit()
 		{
-			
+			subClient.Call<bool>(sub => { sub.Disconnect(); return true; }, out _);
+			subClient.Disconnect();
+		}
+
+		public void Receive(PubSubMessage m)
+		{
+			Logger.Instance.Log(ELogLevel.INFO, "Model changed.");
 		}
 	}
 }

@@ -80,13 +80,16 @@
     <Compile Include="GDA\Property.cs" />
     <Compile Include="GDA\ResourceDescription.cs" />
     <Compile Include="GDA\UpdateResult.cs" />
+    <Compile Include="Logger.cs" />
+    <Compile Include="PubSub\IPubSubClient.cs" />
+    <Compile Include="PubSub\Messages.cs" />
     <Compile Include="SCADA\ISCADAServiceContract.cs" />
     <Compile Include="Transaction\ITransaction.cs" />
     <Compile Include="Transaction\ITransactionManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PubSub\IPublishing.cs" />
-    <Compile Include="PubSub\ISubscription.cs" />
-    <Compile Include="PubSub\Message.cs" />
+    <Compile Include="PubSub\ISubscribing.cs" />
+    <Compile Include="PubSub\PubSubMessage.cs" />
     <Compile Include="WCF\Client.cs" />
     <Compile Include="WCF\DuplexClient.cs" />
   </ItemGroup>

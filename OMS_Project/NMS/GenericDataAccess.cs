@@ -1,4 +1,5 @@
 ﻿using Common.GDA;
+using Common.PubSub;
 using Common.SCADA;
 using Common.Transaction;
 using Common.WCF;
@@ -29,7 +30,6 @@ namespace NMS
 				Dictionary<long, long> mappings;
 				NetworkModel tModel;
 				DuplexClient<ITransactionManager, ITransaction> client = new DuplexClient<ITransactionManager, ITransaction>("callbackEndpoint", this);
-
 				client.Connect();
 
 				if(!client.Call<bool>(tm => tm.StartEnlist(), out ok) || !ok)   //TM.StartEnlist()
@@ -95,10 +95,28 @@ namespace NMS
 				client.Disconnect();
 				//scadaClient.Disconnect();
 
+				bool success;
+
 				lock(modelLock)
 				{
-					return model == tModel ? new UpdateResult(mappings, null, ResultType.Success) : new UpdateResult(null, null, ResultType.Failure);
+					success = model == tModel;
 				}
+
+				if(success)
+				{
+					Client<IPublishing> pubClient = new Client<IPublishing>("publishingEndpoint");
+					pubClient.Connect();
+
+					pubClient.Call<bool>(pub =>
+					{
+						pub.Publish(new NetworkModelChanged());
+						return true;
+					}, out ok);
+
+					pubClient.Disconnect();
+				}
+
+				return success ? new UpdateResult(mappings, null, ResultType.Success) : new UpdateResult(null, null, ResultType.Failure);
 			}
 		}
 

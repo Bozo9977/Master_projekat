@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.ServiceModel;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ServiceModel;
 
 namespace Common.PubSub
 {
-    [ServiceContract]
-    public interface IPublishing
-    {
-        [OperationContract(IsOneWay = true)]
-        void Publish(Message e, string topicName);
-    }
+	[ServiceContract]
+	public interface IPublishing
+	{
+		[OperationContract]
+		void Publish(PubSubMessage m);
+	}
 }
