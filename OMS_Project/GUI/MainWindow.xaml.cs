@@ -1,20 +1,10 @@
 ﻿using Common;
 using Common.PubSub;
-using Common.WCF;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 
@@ -23,7 +13,7 @@ namespace GUI
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
 	/// </summary>
-	public partial class MainWindow : Window, IPubSubClient
+	public partial class MainWindow : Window, IObserver<ObservableMessage>
 	{
 		enum EKey : byte { Up, Down, Left, Right, In, Out, Count }
 		uint keys;
@@ -41,7 +31,7 @@ namespace GUI
 		bool drawn;
 
 		NetworkModelDrawing drawing;
-		DuplexClient<ISubscribing, IPubSubClient> subClient;
+		PubSubClient client;
 
 		public MainWindow()
 		{
@@ -50,11 +40,11 @@ namespace GUI
 			keyActions = new Action[(byte)EKey.Count] { Up, Down, Left, Right, In, Out };
 			timer = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(48) };
 			timer.Tick += Timer_Tick;
-
-			subClient = new DuplexClient<ISubscribing, IPubSubClient>("callbackEndpoint", this);
-			subClient.Connect();
-			subClient.Call<bool>(sub => { sub.Subscribe(ETopic.NetworkModelChanged); return true; }, out _);
 			Logger.Instance.Level = ELogLevel.INFO;
+			client = new PubSubClient();
+			client.Subscribe(this);
+			client.Connect();
+			canvas.Focus();
 		}
 
 		private void InitView()
@@ -220,17 +210,6 @@ namespace GUI
 			canvasPos = new Rect(canvasPos.Left, canvasPos.Top, canvasPos.Width * (e.NewSize.Width / canvasSize.X), canvasPos.Height * (e.NewSize.Height / canvasSize.Y));
 			canvasSize = new Vector(e.NewSize.Width, e.NewSize.Height);
 			aspectRatio = canvasSize.X / canvasSize.Y;
-			Redraw();
-		}
-
-		private void menuItemImport_Click(object sender, RoutedEventArgs e)
-		{
-			NetworkModelDownload download = new NetworkModelDownload();
-
-			if(!download.Download())
-				return;
-
-			drawing = new NetworkModelDrawing(new NetworkModel(download));
 			Redraw(true);
 		}
 
@@ -306,13 +285,29 @@ namespace GUI
 
 		void Exit()
 		{
-			subClient.Call<bool>(sub => { sub.Disconnect(); return true; }, out _);
-			subClient.Disconnect();
+			client.Disconnect();
 		}
 
-		public void Receive(PubSubMessage m)
+		public void Notify(ObservableMessage message)
 		{
-			Logger.Instance.Log(ELogLevel.INFO, "Model changed.");
+			switch(message.Type)
+			{
+				case EObservableMessageType.NetworkModelChanged:
+					Dispatcher.BeginInvoke(new Action(UpdateModel));
+					break;
+			}
+		}
+
+		private void menuItemRefresh_Click(object sender, RoutedEventArgs e)
+		{
+			UpdateModel();
+		}
+
+		void UpdateModel()
+		{
+			drawing = new NetworkModelDrawing(client.Model);
+			Redraw(true);
+			Logger.Instance.Log(ELogLevel.INFO, "Model updated.");
 		}
 	}
 }

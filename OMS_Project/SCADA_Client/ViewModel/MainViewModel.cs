@@ -1,5 +1,4 @@
-﻿using Messages.Commands;
-using Messages.Events;
+﻿using Messages.Events;
 using Modbus.Connection;
 using NServiceBus;
 using ProcessingModule;

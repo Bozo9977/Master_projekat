@@ -37,7 +37,7 @@ namespace Common
 
 		Logger()
 		{
-			Level = ELogLevel.WARNING;
+			level = ELogLevel.WARNING;
 
 			try
 			{

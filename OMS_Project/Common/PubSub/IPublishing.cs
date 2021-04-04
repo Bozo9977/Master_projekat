@@ -5,7 +5,7 @@ namespace Common.PubSub
 	[ServiceContract]
 	public interface IPublishing
 	{
-		[OperationContract]
+		[OperationContract(IsOneWay = true)]
 		void Publish(PubSubMessage m);
 	}
 }
