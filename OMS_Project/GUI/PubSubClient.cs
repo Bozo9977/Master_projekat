@@ -40,6 +40,11 @@ namespace GUI
 			}
 		}
 
+		public bool Download()
+		{
+			return DownloadModel();
+		}
+
 		bool DownloadModel()
 		{
 			NetworkModelDownload download = new NetworkModelDownload();
@@ -68,6 +73,9 @@ namespace GUI
 
 		public bool Subscribe(IObserver<ObservableMessage> observer)
 		{
+			if(observer == null)
+				return false;
+
 			observersLock.EnterWriteLock();
 
 			try
@@ -86,6 +94,9 @@ namespace GUI
 
 		public bool Unsubscribe(IObserver<ObservableMessage> observer)
 		{
+			if(observer == null)
+				return false;
+
 			observersLock.EnterWriteLock();
 
 			try

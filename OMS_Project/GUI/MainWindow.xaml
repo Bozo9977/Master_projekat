@@ -13,6 +13,6 @@
 				<MenuItem Header="E_xit" Click="menuItemExit_Click"/>
 			</MenuItem>
 		</Menu>
-		<Canvas x:Name="canvas" Background="White" SizeChanged="canvas_SizeChanged" Loaded="canvas_Loaded" ClipToBounds="True" Focusable="True" LostKeyboardFocus="Window_LostKeyboardFocus" KeyDown="Window_KeyDown" KeyUp="Window_KeyUp"/>
+		<Canvas x:Name="canvas" Background="White" SizeChanged="canvas_SizeChanged" Loaded="canvas_Loaded" ClipToBounds="True" Focusable="True" LostKeyboardFocus="Window_LostKeyboardFocus" KeyDown="Window_KeyDown" KeyUp="Window_KeyUp" MouseLeftButtonDown="canvas_MouseLeftButtonDown"/>
 	</DockPanel>
 </Window>

@@ -1,6 +1,7 @@
 ﻿using Common;
 using Common.PubSub;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
@@ -32,18 +33,24 @@ namespace GUI
 
 		NetworkModelDrawing drawing;
 		PubSubClient client;
+		Tuple<List<GraphicsElement>, List<GraphicsLine>> elements;
 
 		public MainWindow()
 		{
 			InitializeComponent();
 
+			Logger.Instance.Level = ELogLevel.INFO;
+
 			keyActions = new Action[(byte)EKey.Count] { Up, Down, Left, Right, In, Out };
 			timer = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(48) };
 			timer.Tick += Timer_Tick;
-			Logger.Instance.Level = ELogLevel.INFO;
+			
 			client = new PubSubClient();
 			client.Subscribe(this);
 			client.Connect();
+			client.Download();
+
+			elements = new Tuple<List<GraphicsElement>, List<GraphicsLine>>(new List<GraphicsElement>(), new List<GraphicsLine>());
 			canvas.Focus();
 		}
 
@@ -221,7 +228,7 @@ namespace GUI
 			if(drawing == null)
 				return;
 
-			var result = drawing.Draw();
+			Tuple<List<GraphicsElement>, List<GraphicsLine>> result = drawing.Draw();
 			canvas.Children.Clear();
 
 			TranslateTransform tt = new TranslateTransform(-canvasPos.Left, -canvasPos.Top);
@@ -260,6 +267,7 @@ namespace GUI
 				}
 			}
 
+			elements = result;
 			drawn = true;
 		}
 
@@ -308,6 +316,38 @@ namespace GUI
 			drawing = new NetworkModelDrawing(client.Model);
 			Redraw(true);
 			Logger.Instance.Log(ELogLevel.INFO, "Model updated.");
+		}
+
+		const double DX = 1;
+		const double DY = 1;
+
+		private void canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+		{
+			Point mousePos = e.GetPosition(canvas);
+			Point globalPoint = new Point((mousePos.X / canvasSize.X) * canvasPos.Width + canvasPos.Left, (mousePos.Y / canvasSize.Y) * canvasPos.Height + canvasPos.Top);
+
+			List<GraphicsElement> selected = new List<GraphicsElement>();
+
+			double x = globalPoint.X - DX / 2;
+			double y = globalPoint.Y - DY / 2;
+
+			foreach(GraphicsElement element in elements.Item1)
+			{
+				double dx = element.X - x;
+				double dy = element.Y - y;
+
+				if(dx >= 0 && dx < DX && dy >= 0 && dy < DY)
+				{
+					selected.Add(element);
+				}
+			}
+
+			if(selected.Count != 1)
+			{
+				return;
+			}
+
+			new ElementWindow(selected[0].Element.IO.GID).ShowDialog();
 		}
 	}
 }

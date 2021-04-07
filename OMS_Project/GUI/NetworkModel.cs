@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace GUI
 {
-	class Node
+	public class Node
 	{
 		public Node parent;
 		public IdentifiedObject io;
@@ -22,7 +22,7 @@ namespace GUI
 		}
 	}
 
-	class RecloserNode
+	public class RecloserNode
 	{
 		public Node node1, node2;
 		public IdentifiedObject io;

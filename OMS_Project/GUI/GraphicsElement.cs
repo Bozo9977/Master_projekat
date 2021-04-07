@@ -9,24 +9,46 @@ using System.Windows.Shapes;
 
 namespace GUI
 {
-	public class GraphicsElement
+	public interface IGraphicsElement
 	{
-		public double X { get; set; }
-		public double Y { get; set; }
-		public double Angle { get; set; }
-		public double Scale { get; set; }
-		public GraphicsModel Model { get; set; }
+		double X { get; }
+		double Y { get; }
+		double Angle { get; }
+		double Scale { get; }
+		GraphicsModel Model { get; }
+		Rect AABB { get; }
+
+		Shape[] Draw();
+	}
+
+	public class GraphicsElement : IGraphicsElement
+	{
+		public double X { get { return Element.X; } }
+		public double Y { get { return Element.Y; } }
+		public double Angle { get { return 0; } }
+		public double Scale { get { return 0.5; } }
+		public GraphicsModel Model { get; private set; }
+		public IElementLayout Element { get; private set; }
+
+		public GraphicsElement(IElementLayout element)
+		{
+			Element = element;
+			Model = GraphicsModelMapping.Instance.GetGraphicsModel(Element.IO);
+		}
 
 		public Shape[] Draw()
 		{
 			Shape[] s = Model.Draw();
+			ScaleTransform st = new ScaleTransform(Scale, Scale);
+			RotateTransform rt = new RotateTransform(Angle);
+			TranslateTransform tt = new TranslateTransform(X, Y);
 
 			for(int i = 0; i < s.Length; ++i)
 			{
 				TransformCollection tc = ((TransformGroup)s[i].RenderTransform).Children;
-				tc.Add(new ScaleTransform(Scale, Scale));
-				tc.Add(new RotateTransform(Angle));
-				tc.Add(new TranslateTransform(X, Y));
+				tc.Add(st);
+				tc.Add(rt);
+				tc.Add(tt);
 			}
 			
 			return s;

@@ -7,13 +7,32 @@ using System.Windows;
 
 namespace GUI
 {
-	class GraphicsLine
+	interface IGraphicsLine
+	{
+		double X1 { get; }
+		double Y1 { get; }
+		double X2 { get; }
+		double Y2 { get; }
+		double Thickness { get; }
+		Rect AABB { get; }
+	}
+
+	class GraphicsLine : IGraphicsLine
 	{
 		public double X1 { get; set; }
 		public double Y1 { get; set; }
 		public double X2 { get; set; }
 		public double Y2 { get; set; }
 		public double Thickness { get; set; }
+
+		public GraphicsLine(IElementLayout element1, IElementLayout element2)
+		{
+			X1 = element1.X;
+			Y1 = element1.Y;
+			X2 = element2.X;
+			Y2 = element2.Y;
+			Thickness = 2;
+		}
 
 		public Rect AABB
 		{

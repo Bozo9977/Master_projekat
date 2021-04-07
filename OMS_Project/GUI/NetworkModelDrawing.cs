@@ -5,7 +5,14 @@ using System.Collections.Generic;
 
 namespace GUI
 {
-	class NodeLayout
+	public interface IElementLayout
+	{
+		uint X { get; }
+		uint Y { get; }
+		IdentifiedObject IO { get; }
+	}
+
+	public class NodeLayout : IElementLayout
 	{
 		public uint X { get; set; }
 		public uint Y { get; set; }
@@ -13,6 +20,8 @@ namespace GUI
 		public Node Node { get; private set; }
 		public NodeLayout Parent { get; private set; }
 		public List<NodeLayout> Children { get; private set; }
+
+		public IdentifiedObject IO { get { return Node.io; } }
 
 		public NodeLayout(NodeLayout parent, Node node)
 		{
@@ -22,15 +31,20 @@ namespace GUI
 		}
 	}
 
-	class RecloserLayout
+	public class RecloserLayout : IElementLayout
 	{
+		public uint X { get { return Node1.X / 2 + Node2.X / 2 + (Node1.X % 2 + Node2.X % 2) / 2; } }
+		public uint Y { get { return Node1.Y / 2 + Node2.Y / 2 + (Node1.Y % 2 + Node2.Y % 2) / 2; } }
 		public NodeLayout Node1 { get; private set; }
 		public NodeLayout Node2 { get; private set; }
+		public RecloserNode Recloser { get; private set; }
+		public IdentifiedObject IO { get { return Recloser.io; } }
 
-		public RecloserLayout(NodeLayout node1, NodeLayout node2)
+		public RecloserLayout(RecloserNode r, NodeLayout node1, NodeLayout node2)
 		{
 			Node1 = node1;
 			Node2 = node2;
+			Recloser = r;
 		}
 	}
 
@@ -95,22 +109,9 @@ namespace GUI
 		List<GraphicsLine> lines;
 		NodeLayout root;
 		List<RecloserLayout> reclosers;
-		Dictionary<DMSType, object> typeToGE;
 
 		public NetworkModelDrawing(NetworkModel networkModel)
 		{
-			typeToGE = new Dictionary<DMSType, object>();
-
-			typeToGE[DMSType.ACLineSegment] = new GraphicsModels.ACLineSegment();
-			typeToGE[DMSType.Breaker] = new GraphicsModels.Breaker();
-			typeToGE[DMSType.ConnectivityNode] = new GraphicsModels.ConnectivityNode();
-			typeToGE[DMSType.Disconnector] = new GraphicsModels.Disconnector();
-			typeToGE[DMSType.DistributionGenerator] = new GraphicsModels.DistributionGenerator();
-			typeToGE[DMSType.EnergyConsumer] = new Dictionary<ConsumerClass, GraphicsModel> { { ConsumerClass.Administrative, new GraphicsModels.AdministrativeConsumer() }, { ConsumerClass.Residential, new GraphicsModels.ResidentialConsumer() }, { ConsumerClass.Industrial, new GraphicsModels.IndustrialConsumer() } };
-			typeToGE[DMSType.EnergySource] = new GraphicsModels.EnergySource();
-			typeToGE[DMSType.Recloser] = new GraphicsModels.Recloser();
-			typeToGE[DMSType.TransformerWinding] = new GraphicsModels.TransformerWinding();
-
 			nm = networkModel;
 			Reload();
 		}
@@ -175,7 +176,7 @@ namespace GUI
 
 			foreach(RecloserNode rn in model.Item2)
 			{
-				RecloserLayout r = new RecloserLayout(recloserConNodes[rn.node1], recloserConNodes[rn.node2]);
+				RecloserLayout r = new RecloserLayout(rn, recloserConNodes[rn.node1], recloserConNodes[rn.node2]);
 				reclosers.Add(r);
 				recloserStates.Add(new RecloserState(r));
 			}
@@ -476,11 +477,11 @@ namespace GUI
 				while(stack.Count > 0)
 				{
 					NodeLayout node = stack.Pop();
-					elements.Add(GetElement(node));
+					elements.Add(new GraphicsElement(node));
 
 					foreach(NodeLayout child in node.Children)
 					{
-						lines.Add(GetLine(node, child));
+						lines.Add(new GraphicsLine(node, child));
 						stack.Push(child);
 					}
 				}
@@ -488,33 +489,12 @@ namespace GUI
 
 			foreach(RecloserLayout r in reclosers)
 			{
-				elements.Add(new GraphicsElement() { Scale = 0.5, Model = (GraphicsModel)typeToGE[DMSType.Recloser], X = r.Node1.X * 0.5 + r.Node2.X * 0.5, Y = r.Node1.Y * 0.5 + r.Node2.Y * 0.5 });
-				lines.Add(GetLine(r.Node1, r.Node2));
+				elements.Add(new GraphicsElement(r));
+				lines.Add(new GraphicsLine(r.Node1, r.Node2));
 			}
 
 			this.elements = elements;
 			this.lines = lines;
-		}
-
-		GraphicsElement GetElement(NodeLayout node)
-		{
-			DMSType type = ModelCodeHelper.GetTypeFromGID(node.Node.io.GID);
-			object model;
-
-			if(!typeToGE.TryGetValue(type, out model))
-				return null;
-
-			if(type == DMSType.EnergyConsumer)
-			{
-				model = ((Dictionary<ConsumerClass, GraphicsModel>)model)[((EnergyConsumer)(node.Node.io)).ConsumerClass];
-			}
-
-			return new GraphicsElement() { Scale = 0.5, Model = (GraphicsModel)model, X = node.X, Y = node.Y };
-		}
-
-		GraphicsLine GetLine(NodeLayout node1, NodeLayout node2)
-		{
-			return new GraphicsLine() { X1 = node1.X, Y1 = node1.Y, X2 = node2.X, Y2 = node2.Y, Thickness = 2 };
 		}
 
 		public Tuple<List<GraphicsElement>, List<GraphicsLine>> Draw()
