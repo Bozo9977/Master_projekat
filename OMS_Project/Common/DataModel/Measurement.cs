@@ -33,6 +33,8 @@ namespace Common.DataModel
 				case ModelCode.MEASUREMENT_BASEADDRESS:
 				case ModelCode.MEASUREMENT_DIRECTION:
 				case ModelCode.MEASUREMENT_MEASUREMENTTYPE:
+				case ModelCode.MEASUREMENT_POWERSYSTEMRESOURCE:
+				case ModelCode.MEASUREMENT_TERMINAL:
 					return true;
 			}
 
@@ -51,6 +53,12 @@ namespace Common.DataModel
 
 				case ModelCode.MEASUREMENT_MEASUREMENTTYPE:
 					return new EnumProperty(ModelCode.MEASUREMENT_MEASUREMENTTYPE, (short)MeasurementType);
+
+				case ModelCode.MEASUREMENT_POWERSYSTEMRESOURCE:
+					return new ReferenceProperty(ModelCode.MEASUREMENT_POWERSYSTEMRESOURCE, PowerSystemResource);
+
+				case ModelCode.MEASUREMENT_TERMINAL:
+					return new ReferenceProperty(ModelCode.MEASUREMENT_TERMINAL, Terminal);
 			}
 
 			return base.GetProperty(p);
@@ -73,6 +81,14 @@ namespace Common.DataModel
 
 				case ModelCode.MEASUREMENT_MEASUREMENTTYPE:
 					MeasurementType = (MeasurementType)((EnumProperty)p).Value;
+					return true;
+
+				case ModelCode.MEASUREMENT_POWERSYSTEMRESOURCE:
+					PowerSystemResource = ((ReferenceProperty)p).Value;
+					return true;
+
+				case ModelCode.MEASUREMENT_TERMINAL:
+					Terminal = ((ReferenceProperty)p).Value;
 					return true;
 			}
 

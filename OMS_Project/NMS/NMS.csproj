@@ -56,10 +56,8 @@
   <ItemGroup>
     <Compile Include="Container.cs" />
     <Compile Include="DBContext.cs" />
-    <Compile Include="EFTable.cs" />
     <Compile Include="GenericDataAccess.cs" />
     <Compile Include="INMSDatabase.cs" />
-    <Compile Include="IEFTable.cs" />
     <Compile Include="NetworkModel.cs" />
     <Compile Include="NMSEFDatabase.cs" />
     <Compile Include="Program.cs" />

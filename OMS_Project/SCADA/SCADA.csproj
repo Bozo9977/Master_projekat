@@ -5,18 +5,19 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{41F506DD-503A-4DE8-9C46-1D8C0BD8FF68}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Common</RootNamespace>
-    <AssemblyName>Common</AssemblyName>
+    <ProjectGuid>{DAB2BD22-5C29-4005-B86E-4BF898699107}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>SCADA</RootNamespace>
+    <AssemblyName>SCADA</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -26,6 +27,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -43,12 +45,7 @@
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
-    <Reference Include="System.IdentityModel" />
-    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
-    <Reference Include="System.ServiceModel.Primitives, Version=4.8.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.ServiceModel.Primitives.4.8.0\lib\net461\System.ServiceModel.Primitives.dll</HintPath>
-    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -57,58 +54,25 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DataModel\ACLineSegment.cs" />
-    <Compile Include="DataModel\Analog.cs" />
-    <Compile Include="DataModel\BaseVoltage.cs" />
-    <Compile Include="DataModel\Breaker.cs" />
-    <Compile Include="DataModel\ConductingEquipment.cs" />
-    <Compile Include="DataModel\Conductor.cs" />
-    <Compile Include="DataModel\ConnectivityNode.cs" />
-    <Compile Include="DataModel\Disconnector.cs" />
-    <Compile Include="DataModel\Discrete.cs" />
-    <Compile Include="DataModel\DistributionGenerator.cs" />
-    <Compile Include="DataModel\EnergyConsumer.cs" />
-    <Compile Include="DataModel\EnergySource.cs" />
-    <Compile Include="DataModel\Equipment.cs" />
-    <Compile Include="DataModel\IdentifiedObject.cs" />
-    <Compile Include="DataModel\Measurement.cs" />
-    <Compile Include="DataModel\PowerSystemResource.cs" />
-    <Compile Include="DataModel\PowerTransformer.cs" />
-    <Compile Include="DataModel\ProtectedSwitch.cs" />
-    <Compile Include="DataModel\RatioTapChanger.cs" />
-    <Compile Include="DataModel\Recloser.cs" />
-    <Compile Include="DataModel\Switch.cs" />
-    <Compile Include="DataModel\TapChanger.cs" />
-    <Compile Include="DataModel\Terminal.cs" />
-    <Compile Include="DataModel\TransformerWinding.cs" />
-    <Compile Include="EntityFramework\EFTable.cs" />
-    <Compile Include="EntityFramework\IEFTable.cs" />
-    <Compile Include="GDA\Association.cs" />
-    <Compile Include="GDA\Delta.cs" />
-    <Compile Include="GDA\INetworkModelGDAContract.cs" />
-    <Compile Include="GDA\ModelCodeHelper.cs" />
-    <Compile Include="GDA\Profile.cs" />
-    <Compile Include="GDA\Property.cs" />
-    <Compile Include="GDA\ResourceDescription.cs" />
-    <Compile Include="GDA\UpdateResult.cs" />
-    <Compile Include="Logger.cs" />
-    <Compile Include="PubSub\IPubSubClient.cs" />
-    <Compile Include="PubSub\Messages.cs" />
-    <Compile Include="SCADA\ISCADAServiceContract.cs" />
-    <Compile Include="Transaction\ITransaction.cs" />
-    <Compile Include="Transaction\ITransactionManager.cs" />
+    <Compile Include="ISCADAModelDatabase.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="PubSub\IPublishing.cs" />
-    <Compile Include="PubSub\ISubscribing.cs" />
-    <Compile Include="PubSub\PubSubMessage.cs" />
-    <Compile Include="WCF\Client.cs" />
-    <Compile Include="WCF\DuplexClient.cs" />
+    <Compile Include="SCADAModel.cs" />
+    <Compile Include="SCADAModelDBContext.cs" />
+    <Compile Include="SCADAModelDownload.cs" />
+    <Compile Include="SCADAModelEFDatabase.cs" />
+    <Compile Include="SCADAService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj">
+      <Project>{41f506dd-503a-4de8-9c46-1d8c0bd8ff68}</Project>
+      <Name>Common</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

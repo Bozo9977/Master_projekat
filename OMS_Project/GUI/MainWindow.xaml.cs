@@ -347,7 +347,7 @@ namespace GUI
 				return;
 			}
 
-			new ElementWindow(selected[0].Element.IO.GID).ShowDialog();
+			new ElementWindow(selected[0].Element.IO.GID, client).ShowDialog();
 		}
 	}
 }

@@ -1,11 +1,15 @@
-﻿using Common.GDA;
+﻿using Common.DataModel;
+using Common.GDA;
 using Common.WCF;
-using Common.DataModel;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace GUI
+namespace SCADA
 {
-	public class NetworkModelDownload
+	public class SCADAModelDownload
 	{
 		const int iteratorCount = 256;
 		public Dictionary<DMSType, Dictionary<long, IdentifiedObject>> Containers { get; private set; }
@@ -29,7 +33,7 @@ namespace GUI
 		{
 			Dictionary<DMSType, List<ModelCode>> typeToPropertiesMap = ModelResourcesDesc.GetTypeToPropertiesMap();
 
-			DMSType[] types = ModelResourcesDesc.TypeIdsInInsertOrder;
+			DMSType[] types = new DMSType[] { DMSType.Analog, DMSType.Discrete };
 			Dictionary<DMSType, Dictionary<long, IdentifiedObject>> containers = new Dictionary<DMSType, Dictionary<long, IdentifiedObject>>(types.Length);
 
 			foreach(DMSType type in types)

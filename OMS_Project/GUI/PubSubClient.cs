@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace GUI
 {
-	public enum EObservableMessageType { NetworkModelChanged }
+	public enum EObservableMessageType { NetworkModelChanged, MeasurementValuesChanged }
 
 	public class ObservableMessage
 	{
@@ -17,11 +17,14 @@ namespace GUI
 		}
 	}
 
-	class PubSubClient : IPubSubClient, IObservable<ObservableMessage>
+	public class PubSubClient : IPubSubClient, IObservable<ObservableMessage>
 	{
 		NetworkModel model;
+		Measurements measurements;
+
 		List<IObserver<ObservableMessage>> observers;
 		ReaderWriterLockSlim observersLock;
+
 		DuplexClient<ISubscribing, IPubSubClient> client;
 		ReaderWriterLockSlim clientLock;
 
@@ -30,6 +33,7 @@ namespace GUI
 			observers = new List<IObserver<ObservableMessage>>();
 			observersLock = new ReaderWriterLockSlim();
 			clientLock = new ReaderWriterLockSlim();
+			measurements = new Measurements();
 		}
 
 		public NetworkModel Model
@@ -40,12 +44,20 @@ namespace GUI
 			}
 		}
 
-		public bool Download()
+		public Measurements Measurements
 		{
-			return DownloadModel();
+			get
+			{
+				return measurements;
+			}
 		}
 
-		bool DownloadModel()
+		public bool Download()
+		{
+			return DownloadModel(null) && DownloadMeasurementValues(null);
+		}
+
+		bool DownloadModel(NetworkModelChanged msg)
 		{
 			NetworkModelDownload download = new NetworkModelDownload();
 
@@ -61,12 +73,31 @@ namespace GUI
 			return true;
 		}
 
+		bool DownloadMeasurementValues(MeasurementValuesChanged msg)
+		{
+			/*MeasurementValuesDownload download = new MeasurementValuesDownload(msg.GIDs);
+
+			if(!download.Download())
+			{
+				return false;
+			}
+
+			measurements.Update(download);
+			*/
+			Notify(new ObservableMessage(EObservableMessageType.MeasurementValuesChanged));
+			return true;
+		}
+
 		public void Receive(PubSubMessage m)
 		{
 			switch(m.Topic)
 			{
 				case ETopic.NetworkModelChanged:
-					DownloadModel();
+					DownloadModel((NetworkModelChanged)m);
+					break;
+
+				case ETopic.MeasurementValuesChanged:
+					DownloadMeasurementValues((MeasurementValuesChanged)m);
 					break;
 			}
 		}
@@ -146,8 +177,7 @@ namespace GUI
 			{
 				clientLock.ExitWriteLock();
 			}
-
-			DownloadModel();
+			
 			return true;
 		}
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GUI
 {
-	interface IObserver<TMessage>
+	public interface IObserver<TMessage>
 	{
 		void Notify(TMessage message);
 	}

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NMS
+namespace Common.EntityFramework
 {
 	public class EFTable<TEntity> : IEFTable where TEntity : class
 	{

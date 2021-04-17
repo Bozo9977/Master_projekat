@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NMS
+namespace Common.EntityFramework
 {
-	interface IEFTable
+	public interface IEFTable
 	{
 		object Get(DbContext context, params object[] key);
 		List<object> GetList(DbContext context);

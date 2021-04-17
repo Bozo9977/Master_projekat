@@ -1,29 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using Common.DataModel;
-using Common.GDA;
+﻿using Common.DataModel;
 using Common.EntityFramework;
+using Common.GDA;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace NMS
+namespace SCADA
 {
-	public class NMSEFDatabase : INMSDatabase
+	public class SCADAModelEFDatabase : ISCADAModelDatabase
 	{
-		IEFTable[] tables;
+		Dictionary<DMSType, IEFTable> tables;
 
-		public NMSEFDatabase()
+		public SCADAModelEFDatabase()
 		{
-			tables = new IEFTable[] { new EFTable<AnalogDBModel>(), new EFTable<DiscreteDBModel>(), new EFTable<ConnectivityNodeDBModel>(), new EFTable<TerminalDBModel>(), new EFTable<BaseVoltageDBModel>(), new EFTable<PowerTransformerDBModel>(), new EFTable<TransformerWindingDBModel>(), new EFTable<RatioTapChangerDBModel>(), new EFTable<EnergySourceDBModel>(), new EFTable<DistributionGeneratorDBModel>(), new EFTable<EnergyConsumerDBModel>(), new EFTable<ACLineSegmentDBModel>(), new EFTable<BreakerDBModel>(), new EFTable<RecloserDBModel>(), new EFTable<DisconnectorDBModel>() };
+			tables = new Dictionary<DMSType, IEFTable> { { DMSType.Analog, new EFTable<AnalogDBModel>() }, { DMSType.Discrete, new EFTable<DiscreteDBModel>() } };
 		}
 
 		public List<IdentifiedObject> GetList(DMSType type)
 		{
 			List<IdentifiedObject> l = new List<IdentifiedObject>();
+			IEFTable table;
+
+			if(!tables.TryGetValue(type, out table))
+			{
+				return null;
+			}
 
 			try
 			{
-				using(DBContext context = new DBContext())
+				using(SCADAModelDBContext context = new SCADAModelDBContext())
 				{
-					foreach(object entity in tables[(int)type - 1].GetList(context))
+					foreach(object entity in table.GetList(context))
 					{
 						l.Add(IdentifiedObject.Load(type, entity));
 					}
@@ -41,25 +50,43 @@ namespace NMS
 		{
 			try
 			{
-				using(DBContext context = new DBContext())
+				using(SCADAModelDBContext context = new SCADAModelDBContext())
 				{
 					foreach(IdentifiedObject io in inserted)
 					{
-						IEFTable table = tables[(int)ModelCodeHelper.GetTypeFromGID(io.GID) - 1];
+						IEFTable table;
+
+						if(!tables.TryGetValue(ModelCodeHelper.GetTypeFromGID(io.GID), out table))
+						{
+							return false;
+						}
+
 						object entity = io.ToDBEntity();
 						table.Insert(context, entity);
 					}
 
 					foreach(IdentifiedObject io in updatedNew)
 					{
-						IEFTable table = tables[(int)ModelCodeHelper.GetTypeFromGID(io.GID) - 1];
+						IEFTable table;
+
+						if(!tables.TryGetValue(ModelCodeHelper.GetTypeFromGID(io.GID), out table))
+						{
+							return false;
+						}
+
 						object entity = io.ToDBEntity();
 						table.Update(context, entity);
 					}
 
 					foreach(IdentifiedObject io in deleted)
 					{
-						IEFTable table = tables[(int)ModelCodeHelper.GetTypeFromGID(io.GID) - 1];
+						IEFTable table;
+
+						if(!tables.TryGetValue(ModelCodeHelper.GetTypeFromGID(io.GID), out table))
+						{
+							return false;
+						}
+
 						object entity = io.ToDBEntity();
 						table.Delete(context, entity);
 					}
@@ -79,12 +106,18 @@ namespace NMS
 		{
 			try
 			{
-				using(DBContext context = new DBContext())
+				using(SCADAModelDBContext context = new SCADAModelDBContext())
 				{
 					for(int i = deleted.Count - 1; i >= 0; --i)
 					{
 						IdentifiedObject io = deleted[i];
-						IEFTable table = tables[(int)ModelCodeHelper.GetTypeFromGID(io.GID) - 1];
+						IEFTable table;
+
+						if(!tables.TryGetValue(ModelCodeHelper.GetTypeFromGID(io.GID), out table))
+						{
+							return false;
+						}
+
 						object entity = io.ToDBEntity();
 						table.Insert(context, entity);
 					}
@@ -92,7 +125,13 @@ namespace NMS
 					for(int i = updatedOld.Count - 1; i >= 0; --i)
 					{
 						IdentifiedObject io = updatedOld[i];
-						IEFTable table = tables[(int)ModelCodeHelper.GetTypeFromGID(io.GID) - 1];
+						IEFTable table;
+
+						if(!tables.TryGetValue(ModelCodeHelper.GetTypeFromGID(io.GID), out table))
+						{
+							return false;
+						}
+
 						object entity = io.ToDBEntity();
 						table.Update(context, entity);
 					}
@@ -100,7 +139,13 @@ namespace NMS
 					for(int i = inserted.Count - 1; i >= 0; --i)
 					{
 						IdentifiedObject io = inserted[i];
-						IEFTable table = tables[(int)ModelCodeHelper.GetTypeFromGID(io.GID) - 1];
+						IEFTable table;
+
+						if(!tables.TryGetValue(ModelCodeHelper.GetTypeFromGID(io.GID), out table))
+						{
+							return false;
+						}
+
 						object entity = io.ToDBEntity();
 						table.Delete(context, entity);
 					}

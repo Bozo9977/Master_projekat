@@ -60,6 +60,7 @@
     </Compile>
     <Compile Include="IObservable.cs" />
     <Compile Include="IObserver.cs" />
+    <Compile Include="Measurements.cs" />
     <Compile Include="PubSubClient.cs" />
     <Compile Include="GraphicsModelMapping.cs" />
     <Page Include="ElementWindow.xaml">

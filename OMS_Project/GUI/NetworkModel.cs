@@ -33,8 +33,9 @@ namespace GUI
 		}
 	}
 
-	class NetworkModel
+	public class NetworkModel
 	{
+		Dictionary<DMSType, Dictionary<long, IdentifiedObject>> containers;
 		List<Node> trees;
 		Dictionary<long, RecloserNode> reclosers;
 
@@ -49,6 +50,11 @@ namespace GUI
 
 			foreach(KeyValuePair<long, IdentifiedObject> source in download.Containers[DMSType.EnergySource])
 			{
+				if(source.Value == null)
+				{
+					continue;
+				}	
+
 				Node root = new Node(null, source.Value);
 				Stack<Node> stack = new Stack<Node>();
 				stack.Push(root);
@@ -124,11 +130,25 @@ namespace GUI
 
 			this.trees = trees;
 			this.reclosers = reclosers;
+			this.containers = download.Containers;
 		}
 
 		public Tuple<List<Node>, List<RecloserNode>> GetTreesAndReclosers()
 		{
 			return new Tuple<List<Node>, List<RecloserNode>>(trees, reclosers.Values.ToList());
+		}
+
+		bool TryGet(long gid, out IdentifiedObject io, out Dictionary<long, IdentifiedObject> container)
+		{
+			io = null;
+			return containers.TryGetValue(ModelCodeHelper.GetTypeFromGID(gid), out container) && container.TryGetValue(gid, out io);
+		}
+
+		public IdentifiedObject Get(long gid)
+		{
+			IdentifiedObject io;
+			TryGet(gid, out io, out _);
+			return io;
 		}
 	}
 }
