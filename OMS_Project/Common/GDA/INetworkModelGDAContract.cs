@@ -17,6 +17,9 @@ namespace Common.GDA
 		ResourceDescription GetValues(long resourceId, List<ModelCode> propIds, bool transaction);
 
 		[OperationContract]
+		int GetMultipleValues(List<long> resourceIds, Dictionary<DMSType, List<ModelCode>> typeToProps, bool transaction);
+
+		[OperationContract]
 		int GetExtentValues(DMSType entityType, List<ModelCode> propIds, bool transaction);
 
 		[OperationContract]

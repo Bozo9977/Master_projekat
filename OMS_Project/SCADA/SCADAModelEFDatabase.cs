@@ -1,4 +1,5 @@
-﻿using Common.DataModel;
+﻿using Common.Database;
+using Common.DataModel;
 using Common.EntityFramework;
 using Common.GDA;
 using System;
@@ -9,148 +10,41 @@ using System.Threading.Tasks;
 
 namespace SCADA
 {
-	public class SCADAModelEFDatabase : ISCADAModelDatabase
+	public enum ESCADAModelDatabaseTables { Analogs, Discretes }
+
+	class SCADAModelEFDatabaseTransaction : IDatabaseTransaction<ESCADAModelDatabaseTables>
 	{
-		Dictionary<DMSType, IEFTable> tables;
+		Dictionary<ESCADAModelDatabaseTables, ITableContext> tables;
 
-		public SCADAModelEFDatabase()
+		public SCADAModelEFDatabaseTransaction(SCADAModelDBContext context)
 		{
-			tables = new Dictionary<DMSType, IEFTable> { { DMSType.Analog, new EFTable<AnalogDBModel>() }, { DMSType.Discrete, new EFTable<DiscreteDBModel>() } };
+			tables = new Dictionary<ESCADAModelDatabaseTables, ITableContext>(3)
+			{
+				{ ESCADAModelDatabaseTables.Analogs, new EFTableContext(new EFTable<AnalogDBModel>(), context) },
+				{ ESCADAModelDatabaseTables.Discretes, new EFTableContext(new EFTable<DiscreteDBModel>(), context) }
+			};
 		}
 
-		public List<IdentifiedObject> GetList(DMSType type)
+		public ITableContext GetTable(ESCADAModelDatabaseTables table)
 		{
-			List<IdentifiedObject> l = new List<IdentifiedObject>();
-			IEFTable table;
-
-			if(!tables.TryGetValue(type, out table))
-			{
-				return null;
-			}
-
-			try
-			{
-				using(SCADAModelDBContext context = new SCADAModelDBContext())
-				{
-					foreach(object entity in table.GetList(context))
-					{
-						l.Add(IdentifiedObject.Load(type, entity));
-					}
-				}
-			}
-			catch(Exception e)
-			{
-				return null;
-			}
-
-			return l;
+			ITableContext tableContext;
+			tables.TryGetValue(table, out tableContext);
+			return tableContext;
 		}
+	}
 
-		public bool PersistDelta(List<IdentifiedObject> inserted, List<IdentifiedObject> updatedNew, List<IdentifiedObject> deleted)
+	public class SCADAModelEFDatabase : IDatabase<ESCADAModelDatabaseTables>
+	{
+		public bool Transact(Func<IDatabaseTransaction<ESCADAModelDatabaseTables>, bool> f)
 		{
 			try
 			{
 				using(SCADAModelDBContext context = new SCADAModelDBContext())
 				{
-					foreach(IdentifiedObject io in inserted)
+					if(f(new SCADAModelEFDatabaseTransaction(context)))
 					{
-						IEFTable table;
-
-						if(!tables.TryGetValue(ModelCodeHelper.GetTypeFromGID(io.GID), out table))
-						{
-							return false;
-						}
-
-						object entity = io.ToDBEntity();
-						table.Insert(context, entity);
+						context.SaveChanges();
 					}
-
-					foreach(IdentifiedObject io in updatedNew)
-					{
-						IEFTable table;
-
-						if(!tables.TryGetValue(ModelCodeHelper.GetTypeFromGID(io.GID), out table))
-						{
-							return false;
-						}
-
-						object entity = io.ToDBEntity();
-						table.Update(context, entity);
-					}
-
-					foreach(IdentifiedObject io in deleted)
-					{
-						IEFTable table;
-
-						if(!tables.TryGetValue(ModelCodeHelper.GetTypeFromGID(io.GID), out table))
-						{
-							return false;
-						}
-
-						object entity = io.ToDBEntity();
-						table.Delete(context, entity);
-					}
-
-					context.SaveChanges();
-				}
-			}
-			catch(Exception e)
-			{
-				return false;
-			}
-
-			return true;
-		}
-
-		public bool RollbackDelta(List<IdentifiedObject> inserted, List<IdentifiedObject> updatedOld, List<IdentifiedObject> deleted)
-		{
-			try
-			{
-				using(SCADAModelDBContext context = new SCADAModelDBContext())
-				{
-					for(int i = deleted.Count - 1; i >= 0; --i)
-					{
-						IdentifiedObject io = deleted[i];
-						IEFTable table;
-
-						if(!tables.TryGetValue(ModelCodeHelper.GetTypeFromGID(io.GID), out table))
-						{
-							return false;
-						}
-
-						object entity = io.ToDBEntity();
-						table.Insert(context, entity);
-					}
-
-					for(int i = updatedOld.Count - 1; i >= 0; --i)
-					{
-						IdentifiedObject io = updatedOld[i];
-						IEFTable table;
-
-						if(!tables.TryGetValue(ModelCodeHelper.GetTypeFromGID(io.GID), out table))
-						{
-							return false;
-						}
-
-						object entity = io.ToDBEntity();
-						table.Update(context, entity);
-					}
-
-					for(int i = inserted.Count - 1; i >= 0; --i)
-					{
-						IdentifiedObject io = inserted[i];
-						IEFTable table;
-
-						if(!tables.TryGetValue(ModelCodeHelper.GetTypeFromGID(io.GID), out table))
-						{
-							return false;
-						}
-
-						object entity = io.ToDBEntity();
-						table.Delete(context, entity);
-					}
-
-					context.SaveChanges();
 				}
 			}
 			catch(Exception e)

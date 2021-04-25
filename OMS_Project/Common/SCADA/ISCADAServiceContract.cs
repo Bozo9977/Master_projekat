@@ -7,7 +7,7 @@ namespace Common.SCADA
 	public interface ISCADAServiceContract
 	{
 		[OperationContract]
-		bool ApplyUpdate();
+		bool ApplyUpdate(List<long> inserted, List<long> updated, List<long> deleted);
 
 		[OperationContract]
 		List<float> ReadAnalog(List<long> gids);

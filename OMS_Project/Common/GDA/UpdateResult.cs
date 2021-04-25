@@ -11,22 +11,38 @@ namespace Common.GDA
 	public class UpdateResult
 	{
 		[DataMember]
-		Dictionary<long, long> globalIdPairs;
+		Dictionary<long, long> inserted;
+		[DataMember]
+		List<long> updated;
+		[DataMember]
+		List<long> deleted;
 		[DataMember]
 		string message;
 		[DataMember]
 		ResultType result;
 
-		public UpdateResult(Dictionary<long, long> ids, string msg, ResultType res)
+		public UpdateResult(ResultType res, string msg = null, Dictionary<long, long> inserted = null, List<long> updated = null, List<long> deleted = null)
 		{
-			globalIdPairs = ids;
+			this.inserted = inserted;
+			this.updated = updated;
+			this.deleted = deleted;
 			message = msg;
 			result = res;
 		}
 
-		public IReadOnlyDictionary<long, long> GlobalIdPairs
+		public IReadOnlyDictionary<long, long> Inserted
 		{
-			get { return globalIdPairs; }
+			get { return inserted; }
+		}
+
+		public IReadOnlyList<long> Updated
+		{
+			get { return updated; }
+		}
+
+		public IReadOnlyList<long> Deleted
+		{
+			get { return deleted; }
 		}
 		
 		public string Message
@@ -43,10 +59,17 @@ namespace Common.GDA
 		{
 			StringBuilder sb = new StringBuilder();
 
-			sb.AppendFormat("Update result: {0}\n", result);
-			sb.AppendFormat("Message: {0}\n", message == null ? "N/A" : message);
-			sb.Append("Count: ");
-			sb.Append(globalIdPairs == null ? "N/A" : globalIdPairs.Count.ToString());
+			sb.Append("Update result: ");
+			sb.AppendLine(result.ToString());
+			sb.Append("Message: ");
+			sb.AppendLine(message == null ? "N/A" : message);
+			sb.Append("Inserted: ");
+			sb.AppendLine(inserted == null ? "N/A" : inserted.Count.ToString());
+			sb.Append("Updated: ");
+			sb.AppendLine(updated == null ? "N/A" : updated.Count.ToString());
+			sb.Append("Deleted: ");
+			sb.AppendLine(deleted == null ? "N/A" : deleted.Count.ToString());
+
 			return sb.ToString();
 		}
 	}

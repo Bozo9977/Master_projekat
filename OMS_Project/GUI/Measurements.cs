@@ -1,36 +1,77 @@
 ﻿using Common.PubSub;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 
 namespace GUI
 {
 	public class Measurements
 	{
 		Dictionary<long, float> analogValues;
-		Dictionary<long, int> digitalValues;
+		Dictionary<long, int> discreteValues;
+		ReaderWriterLockSlim rwLock;
 
 		public Measurements()
 		{
 			analogValues = new Dictionary<long, float>();
-			digitalValues = new Dictionary<long, int>();
+			discreteValues = new Dictionary<long, int>();
+			rwLock = new ReaderWriterLockSlim();
 		}
 
 		public float GetAnalogValue(long gid)
 		{
-			return 0;
+			rwLock.EnterReadLock();
+
+			try
+			{
+				float value;
+				analogValues.TryGetValue(gid, out value);
+				return value;
+			}
+			finally
+			{
+				rwLock.ExitReadLock();
+			}
 		}
 
-		public int GetDigitalValue(long gid)
+		public int GetDiscreteValue(long gid)
 		{
-			return 0;
+			rwLock.EnterReadLock();
+
+			try
+			{
+				int value;
+				discreteValues.TryGetValue(gid, out value);
+				return value;
+			}
+			finally
+			{
+				rwLock.ExitReadLock();
+			}
 		}
 
 		public bool Update(MeasurementValuesChanged message)
 		{
-			return true;
+			rwLock.EnterWriteLock();
+
+			try
+			{
+				foreach(Tuple<long, float> a in message.AnalogValues)
+				{
+					analogValues[a.Item1] = a.Item2;
+				}
+
+				foreach(Tuple<long, int> d in message.DiscreteValues)
+				{
+					discreteValues[d.Item1] = d.Item2;
+				}
+
+				return true;
+			}
+			finally
+			{
+				rwLock.ExitWriteLock();
+			}
 		}
 	}
 }

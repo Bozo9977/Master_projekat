@@ -54,7 +54,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ISCADAModelDatabase.cs" />
+    <Compile Include="AddressMapping.cs" />
+    <Compile Include="FieldProxy.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SCADAModel.cs" />

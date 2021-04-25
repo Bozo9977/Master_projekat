@@ -16,7 +16,7 @@ namespace Common.EntityFramework
 			set.Remove(entity);
 		}
 
-		public virtual TEntity Get(DbContext context, params object[] key)
+		public virtual TEntity Get(DbContext context, object key)
 		{
 			return context.Set<TEntity>().Find(key);
 		}
@@ -42,7 +42,7 @@ namespace Common.EntityFramework
 			context.Entry(entity).State = System.Data.Entity.EntityState.Modified;
 		}
 
-		object IEFTable.Get(DbContext context, params object[] key)
+		object IEFTable.Get(DbContext context, object key)
 		{
 			return Get(context, key);
 		}

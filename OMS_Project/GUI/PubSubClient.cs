@@ -54,10 +54,10 @@ namespace GUI
 
 		public bool Download()
 		{
-			return DownloadModel(null) && DownloadMeasurementValues(null);
+			return HandleNetworkModelChange(null);
 		}
 
-		bool DownloadModel(NetworkModelChanged msg)
+		bool HandleNetworkModelChange(NetworkModelChanged msg)
 		{
 			NetworkModelDownload download = new NetworkModelDownload();
 
@@ -73,17 +73,11 @@ namespace GUI
 			return true;
 		}
 
-		bool DownloadMeasurementValues(MeasurementValuesChanged msg)
+		bool HandleMeasurementValuesChange(MeasurementValuesChanged msg)
 		{
-			/*MeasurementValuesDownload download = new MeasurementValuesDownload(msg.GIDs);
-
-			if(!download.Download())
-			{
+			if(!measurements.Update(msg))
 				return false;
-			}
 
-			measurements.Update(download);
-			*/
 			Notify(new ObservableMessage(EObservableMessageType.MeasurementValuesChanged));
 			return true;
 		}
@@ -93,11 +87,11 @@ namespace GUI
 			switch(m.Topic)
 			{
 				case ETopic.NetworkModelChanged:
-					DownloadModel((NetworkModelChanged)m);
+					HandleNetworkModelChange((NetworkModelChanged)m);
 					break;
 
 				case ETopic.MeasurementValuesChanged:
-					DownloadMeasurementValues((MeasurementValuesChanged)m);
+					HandleMeasurementValuesChange((MeasurementValuesChanged)m);
 					break;
 			}
 		}
@@ -166,7 +160,7 @@ namespace GUI
 				DuplexClient<ISubscribing, IPubSubClient> client = new DuplexClient<ISubscribing, IPubSubClient>("callbackEndpoint", this);
 				client.Connect();
 
-				if(!client.Call<bool>(sub => { sub.Subscribe(ETopic.NetworkModelChanged); return true; }, out _))
+				if(!client.Call<bool>(sub => { sub.Subscribe(ETopic.NetworkModelChanged); sub.Subscribe(ETopic.MeasurementValuesChanged); return true; }, out _))
 				{
 					return false;
 				}

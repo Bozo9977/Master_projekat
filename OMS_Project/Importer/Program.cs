@@ -62,7 +62,7 @@ namespace Importer
 							break;
 						}
 
-						Console.WriteLine(result.ToString());
+						Console.Write(result.ToString());
 					}
 					break;
 
@@ -111,7 +111,7 @@ namespace Importer
 							break;
 						}
 
-						Console.WriteLine(result.ToString());
+						Console.Write(result.ToString());
 					}
 					break;
 

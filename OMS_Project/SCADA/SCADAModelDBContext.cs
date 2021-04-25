@@ -16,11 +16,8 @@ namespace SCADA
 
 		public SCADAModelDBContext()
 		{
-			Database.SetInitializer(new Initializer());
+			Database.SetInitializer(new DropCreateDatabaseIfModelChanges<SCADAModelDBContext>());
 			((IObjectContextAdapter)this).ObjectContext.CommandTimeout = int.MaxValue;
 		}
 	}
-
-	class Initializer : DropCreateDatabaseIfModelChanges<SCADAModelDBContext>
-	{ }
 }

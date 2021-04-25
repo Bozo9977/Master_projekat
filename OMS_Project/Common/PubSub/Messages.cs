@@ -23,5 +23,11 @@ namespace Common.PubSub
 		{
 			get { return ETopic.MeasurementValuesChanged; }
 		}
+
+		[DataMember]
+		public List<Tuple<long, float>> AnalogValues { get; set; }
+
+		[DataMember]
+		public List<Tuple<long, int>> DiscreteValues { get; set; }
 	}
 }

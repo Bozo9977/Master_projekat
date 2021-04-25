@@ -308,7 +308,7 @@ namespace GUI
 
 		private void menuItemRefresh_Click(object sender, RoutedEventArgs e)
 		{
-			UpdateModel();
+			client.Download();
 		}
 
 		void UpdateModel()

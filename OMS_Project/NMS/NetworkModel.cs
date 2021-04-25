@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
+using System.Linq;
 
 namespace NMS
 {
@@ -30,13 +31,22 @@ namespace NMS
 
 		public NetworkModel(NetworkModel nm)
 		{
-			containers = new Dictionary<DMSType, Container>(nm.containers.Count);
+			nm.rwLock.EnterReadLock();
 
-			foreach(KeyValuePair<DMSType, Container> container in nm.containers)
-				containers.Add(container.Key, new Container(container.Value));
+			try
+			{
+				containers = new Dictionary<DMSType, Container>(nm.containers.Count);
 
-			db = nm.db;
-			rwLock = new ReaderWriterLockSlim();
+				foreach(KeyValuePair<DMSType, Container> container in nm.containers)
+					containers.Add(container.Key, new Container(container.Value));
+
+				db = nm.db;
+				rwLock = new ReaderWriterLockSlim();
+			}
+			finally
+			{
+				nm.rwLock.ExitReadLock();
+			}
 		}
 
 		public NetworkModel(INMSDatabase db)
@@ -72,7 +82,7 @@ namespace NMS
 			rwLock = new ReaderWriterLockSlim();
 		}
 
-		public Dictionary<long, long> ApplyUpdate(Delta delta)
+		public Tuple<Dictionary<long, long>, List<long>, List<long>> ApplyUpdate(Delta delta)
 		{
 			rwLock.EnterWriteLock();
 
@@ -154,7 +164,7 @@ namespace NMS
 					this.deleted = deleted;
 				}
 
-				return ids;
+				return new Tuple<Dictionary<long, long>, List<long>, List<long>>(ids, updatedOld.Select(x => x.GID).ToList(), deleted.Select(x => x.GID).ToList());
 			}
 			finally
 			{
@@ -176,13 +186,29 @@ namespace NMS
 			}
 		}
 
+		public bool CommitUpdate()
+		{
+			inserted = null;
+			updatedNew = null;
+			updatedOld = null;
+			deleted = null;
+			return true;
+		}
+
 		public bool RollbackUpdate()
 		{
 			rwLock.EnterReadLock();
 
 			try
 			{
-				return db != null && inserted != null && db.RollbackDelta(inserted, updatedOld, deleted);
+				bool ok = db != null && inserted != null && db.RollbackDelta(inserted, updatedOld, deleted);
+
+				inserted = null;
+				updatedNew = null;
+				updatedOld = null;
+				deleted = null;
+
+				return ok;
 			}
 			finally
 			{
@@ -363,6 +389,11 @@ namespace NMS
 			{
 				rwLock.ExitReadLock();
 			}
+		}
+
+		public ResourceIterator GetMultipleValues(List<long> resourceIds, Dictionary<DMSType, List<ModelCode>> typeToProps)
+		{
+			return new ResourceIterator(resourceIds, typeToProps);
 		}
 
 		public ResourceIterator GetExtentValues(DMSType entityType, List<ModelCode> propIds)

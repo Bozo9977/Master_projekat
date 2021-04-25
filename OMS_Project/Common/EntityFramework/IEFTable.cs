@@ -9,7 +9,7 @@ namespace Common.EntityFramework
 {
 	public interface IEFTable
 	{
-		object Get(DbContext context, params object[] key);
+		object Get(DbContext context, object key);
 		List<object> GetList(DbContext context);
 		List<object> Where(DbContext context, Func<object, bool> predicate);
 		void Insert(DbContext context, object entity);

@@ -15,7 +15,6 @@ namespace NMS
 	class GenericDataAccess : INetworkModelGDAContract, ITransaction
 	{
 		static readonly object updateLock = new object();
-		//static readonly object scadaLock = new object();
 		static readonly object modelLock = new object();
 		static NetworkModel model = new NetworkModel(new NMSEFDatabase());
 		static NetworkModel transactionModel = model;
@@ -27,25 +26,23 @@ namespace NMS
 			lock(updateLock)
 			{
 				bool ok;
-				Dictionary<long, long> mappings;
-				NetworkModel tModel;
 				DuplexClient<ITransactionManager, ITransaction> client = new DuplexClient<ITransactionManager, ITransaction>("callbackEndpoint", this);
 				client.Connect();
 
 				if(!client.Call<bool>(tm => tm.StartEnlist(), out ok) || !ok)   //TM.StartEnlist()
 				{
 					client.Disconnect();
-					return new UpdateResult(null, null, ResultType.Failure);
+					return new UpdateResult(ResultType.Failure);
 				}
 
-				tModel = new NetworkModel(model);
-				mappings = tModel.ApplyUpdate(delta);
+				NetworkModel tModel = new NetworkModel(model);
+				Tuple<Dictionary<long, long>, List<long>, List<long>> result = tModel.ApplyUpdate(delta);
 
-				if(mappings == null)
+				if(result == null)
 				{
 					client.Call<bool>(tm => tm.EndEnlist(false), out ok);   //TM.EndEnlist(false)
 					client.Disconnect();
-					return new UpdateResult(null, null, ResultType.Failure);
+					return new UpdateResult(ResultType.Failure);
 				}
 
 				lock(modelLock)
@@ -62,23 +59,28 @@ namespace NMS
 
 					client.Call<bool>(tm => tm.EndEnlist(false), out ok);   //TM.EndEnlist(false)
 					client.Disconnect();
-					return new UpdateResult(null, null, ResultType.Failure);
+					return new UpdateResult(ResultType.Failure);
 				}
 
-				// Call SCADA
-				/*Client<ISCADAServiceContract> scadaClient = new Client<ISCADAServiceContract>("SCADAEndpoint");
+				Client<ISCADAServiceContract> scadaClient = new Client<ISCADAServiceContract>("SCADAEndpoint"); // Call SCADA
 				scadaClient.Connect();
 
-				UpdateResult okResult = new UpdateResult(null, null, ResultType.Success);
+				if(!scadaClient.Call<bool>(scada => scada.ApplyUpdate(new List<long>(result.Item1.Values), result.Item2, result.Item3), out ok) || !ok)
+				{
+					scadaClient.Disconnect();
 
-				lock (scadaLock)
-                {
-					scadaClient.Call<UpdateResult>(ss => ss.ApplyUpdate(), out okResult);
-                }		*/			
+					lock(modelLock)
+					{
+						transactionModel = model;
+					}
 
-				
+					client.Call<bool>(tm => tm.EndEnlist(false), out ok);   //TM.EndEnlist(false)
+					client.Disconnect();
+					return new UpdateResult(ResultType.Failure);
+				}
 
-				//if(!SCADA.ApplyUpdate(affectedGIDs)) { ... }
+				scadaClient.Disconnect();
+
 				//if(!CE.ApplyUpdate(affectedGIDs)) { ... }
 
 				if(!client.Call<bool>(tm => tm.EndEnlist(true), out ok) || !ok)   //TM.EndEnlist(true)
@@ -89,11 +91,10 @@ namespace NMS
 					}
 
 					client.Disconnect();
-					return new UpdateResult(null, null, ResultType.Failure);
+					return new UpdateResult(ResultType.Failure);
 				}
 
 				client.Disconnect();
-				//scadaClient.Disconnect();
 
 				bool success;
 
@@ -116,8 +117,18 @@ namespace NMS
 					pubClient.Disconnect();
 				}
 
-				return success ? new UpdateResult(mappings, null, ResultType.Success) : new UpdateResult(null, null, ResultType.Failure);
+				return success ? new UpdateResult(ResultType.Success, null, result.Item1, result.Item2, result.Item3) : new UpdateResult(ResultType.Failure);
 			}
+		}
+
+		public ResourceDescription GetValues(long resourceId, List<ModelCode> propIds, bool transaction)
+		{
+			return (transaction ? transactionModel : model).GetValues(resourceId, propIds);
+		}
+
+		public int GetMultipleValues(List<long> resourceIds, Dictionary<DMSType, List<ModelCode>> typeToProps, bool transaction)
+		{
+			return AddIterator((transaction ? transactionModel : model).GetMultipleValues(resourceIds, typeToProps));
 		}
 
 		public int GetExtentValues(DMSType entityType, List<ModelCode> propIds, bool transaction)
@@ -128,11 +139,6 @@ namespace NMS
 		public int GetRelatedValues(long source, List<ModelCode> propIds, Association association, bool transaction)
 		{
 			return AddIterator((transaction ? transactionModel : model).GetRelatedValues(source, propIds, association));
-		}
-
-		public ResourceDescription GetValues(long resourceId, List<ModelCode> propIds, bool transaction)
-		{
-			return (transaction ? transactionModel : model).GetValues(resourceId, propIds);
 		}
 
 		public bool IteratorClose(int id)
@@ -229,6 +235,8 @@ namespace NMS
 			{
 				model = transactionModel;
 			}
+
+			model.CommitUpdate();
 		}
 
 		public void Rollback()

@@ -57,6 +57,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Database\IDatabase.cs" />
+    <Compile Include="Database\IDatabaseTransaction.cs" />
+    <Compile Include="Database\ITableContext.cs" />
     <Compile Include="DataModel\ACLineSegment.cs" />
     <Compile Include="DataModel\Analog.cs" />
     <Compile Include="DataModel\BaseVoltage.cs" />
@@ -82,6 +85,7 @@
     <Compile Include="DataModel\Terminal.cs" />
     <Compile Include="DataModel\TransformerWinding.cs" />
     <Compile Include="EntityFramework\EFTable.cs" />
+    <Compile Include="EntityFramework\EFTableContext.cs" />
     <Compile Include="EntityFramework\IEFTable.cs" />
     <Compile Include="GDA\Association.cs" />
     <Compile Include="GDA\Delta.cs" />

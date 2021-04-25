@@ -13,6 +13,8 @@ namespace SCADA
 		static void Main(string[] args)
 		{
 			SCADAModel.Instance = new SCADAModel(new SCADAModelEFDatabase());
+			FieldProxy.Instance = new FieldProxy();
+			FieldProxy.Instance.UpdateModel();
 
 			ServiceHost host = new ServiceHost(typeof(SCADAService));
 			host.Open();
@@ -23,6 +25,8 @@ namespace SCADA
 			Console.WriteLine("[Press any key to stop the service]");
 			Console.ReadKey();
 			host.Close();
+
+			FieldProxy.Instance.Stop();
 		}
 	}
 }
