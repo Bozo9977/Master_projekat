@@ -224,9 +224,9 @@ namespace NMS
 			{
 				if(model == transactionModel)
 					return false;
-			}
 
-			return transactionModel.PersistUpdate();
+				return transactionModel.PersistUpdate();
+			}
 		}
 
 		public void Commit()
@@ -234,17 +234,15 @@ namespace NMS
 			lock(modelLock)
 			{
 				model = transactionModel;
+				model.CommitUpdate();
 			}
-
-			model.CommitUpdate();
 		}
 
 		public void Rollback()
 		{
-			transactionModel.RollbackUpdate();
-
 			lock(modelLock)
 			{
+				transactionModel.RollbackUpdate();
 				transactionModel = model;
 			}
 		}

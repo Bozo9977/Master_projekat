@@ -25,9 +25,15 @@ namespace Common.PubSub
 		}
 
 		[DataMember]
-		public List<Tuple<long, float>> AnalogValues { get; set; }
+		public List<Tuple<long, float>> AnalogInputs { get; set; }
 
 		[DataMember]
-		public List<Tuple<long, int>> DiscreteValues { get; set; }
+		public List<Tuple<long, float>> AnalogOutputs { get; set; }
+
+		[DataMember]
+		public List<Tuple<long, int>> DiscreteInputs { get; set; }
+
+		[DataMember]
+		public List<Tuple<long, int>> DiscreteOutputs { get; set; }
 	}
 }

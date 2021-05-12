@@ -1,5 +1,4 @@
 ﻿using Common;
-using Common.PubSub;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -14,7 +13,7 @@ namespace GUI
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
 	/// </summary>
-	public partial class MainWindow : Window, IObserver<ObservableMessage>
+	public partial class MainWindow : Window, Common.IObserver<ObservableMessage>
 	{
 		enum EKey : byte { Up, Down, Left, Right, In, Out, Count }
 		uint keys;
@@ -47,7 +46,7 @@ namespace GUI
 			
 			client = new PubSubClient();
 			client.Subscribe(this);
-			client.Connect();
+			client.Reconnect();
 			client.Download();
 
 			elements = new Tuple<List<GraphicsElement>, List<GraphicsLine>>(new List<GraphicsElement>(), new List<GraphicsLine>());
@@ -308,6 +307,7 @@ namespace GUI
 
 		private void menuItemRefresh_Click(object sender, RoutedEventArgs e)
 		{
+			client.Reconnect();
 			client.Download();
 		}
 
@@ -347,7 +347,7 @@ namespace GUI
 				return;
 			}
 
-			new ElementWindow(selected[0].Element.IO.GID, client).ShowDialog();
+			new ElementWindow(selected[0].Element.IO.GID, client).Show();
 		}
 	}
 }

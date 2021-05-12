@@ -15,6 +15,7 @@ namespace SCADA
 			SCADAModel.Instance = new SCADAModel(new SCADAModelEFDatabase());
 			FieldProxy.Instance = new FieldProxy();
 			FieldProxy.Instance.UpdateModel();
+			FieldProxy.Instance.Start();
 
 			ServiceHost host = new ServiceHost(typeof(SCADAService));
 			host.Open();
@@ -22,8 +23,8 @@ namespace SCADA
 			foreach(ServiceEndpoint endpoint in host.Description.Endpoints)
 				Console.WriteLine(endpoint.ListenUri);
 
-			Console.WriteLine("[Press any key to stop the service]");
-			Console.ReadKey();
+			Console.WriteLine("[Press Enter to stop]");
+			Console.ReadLine();
 			host.Close();
 
 			FieldProxy.Instance.Stop();

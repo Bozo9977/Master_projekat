@@ -55,14 +55,16 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="View\ConductingEquipmentView.cs" />
     <Compile Include="ElementWindow.xaml.cs">
       <DependentUpon>ElementWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="IObservable.cs" />
-    <Compile Include="IObserver.cs" />
     <Compile Include="Measurements.cs" />
     <Compile Include="PubSubClient.cs" />
     <Compile Include="GraphicsModelMapping.cs" />
+    <Compile Include="View\ConnectivityNodeView.cs" />
+    <Compile Include="View\ElementView.cs" />
+    <Compile Include="View\MeasurementView.cs" />
     <Page Include="ElementWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

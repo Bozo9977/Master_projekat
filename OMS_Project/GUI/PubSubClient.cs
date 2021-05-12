@@ -1,4 +1,5 @@
-﻿using Common.PubSub;
+﻿using Common;
+using Common.PubSub;
 using Common.WCF;
 using System.Collections.Generic;
 using System.Threading;
@@ -52,6 +53,23 @@ namespace GUI
 			}
 		}
 
+		public bool Connected
+		{
+			get
+			{
+				clientLock.EnterReadLock();
+
+				try
+				{
+					return client != null;
+				}
+				finally
+				{
+					clientLock.ExitReadLock();
+				}
+			}
+		}
+
 		public bool Download()
 		{
 			return HandleNetworkModelChange(null);
@@ -75,9 +93,7 @@ namespace GUI
 
 		bool HandleMeasurementValuesChange(MeasurementValuesChanged msg)
 		{
-			if(!measurements.Update(msg))
-				return false;
-
+			measurements.Update(msg);
 			Notify(new ObservableMessage(EObservableMessageType.MeasurementValuesChanged));
 			return true;
 		}
@@ -151,12 +167,15 @@ namespace GUI
 			}
 		}
 
-		public bool Connect()
+		public bool Reconnect()
 		{
 			clientLock.EnterWriteLock();
 
 			try
 			{
+				if(this.client != null)
+					this.client.Disconnect();
+
 				DuplexClient<ISubscribing, IPubSubClient> client = new DuplexClient<ISubscribing, IPubSubClient>("callbackEndpoint", this);
 				client.Connect();
 

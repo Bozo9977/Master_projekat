@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ServiceModel;
 
 namespace Common.SCADA
@@ -10,10 +11,10 @@ namespace Common.SCADA
 		bool ApplyUpdate(List<long> inserted, List<long> updated, List<long> deleted);
 
 		[OperationContract]
-		List<float> ReadAnalog(List<long> gids);
+		List<Tuple<long, float>> ReadAnalog(List<long> gids);
 
 		[OperationContract]
-		List<int> ReadDiscrete(List<long> gids);
+		List<Tuple<long, int>> ReadDiscrete(List<long> gids);
 
 		[OperationContract]
 		void CommandAnalog(List<long> gids, List<float> values);

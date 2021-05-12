@@ -1,5 +1,6 @@
 ﻿using Common.PubSub;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -7,70 +8,59 @@ namespace GUI
 {
 	public class Measurements
 	{
-		Dictionary<long, float> analogValues;
-		Dictionary<long, int> discreteValues;
-		ReaderWriterLockSlim rwLock;
+		ConcurrentDictionary<long, float> analogInputs;
+		ConcurrentDictionary<long, float> analogOutputs;
+		ConcurrentDictionary<long, int> discreteInputs;
+		ConcurrentDictionary<long, int> discreteOutputs;
 
 		public Measurements()
 		{
-			analogValues = new Dictionary<long, float>();
-			discreteValues = new Dictionary<long, int>();
-			rwLock = new ReaderWriterLockSlim();
+			analogInputs = new ConcurrentDictionary<long, float>();
+			analogOutputs = new ConcurrentDictionary<long, float>();
+			discreteInputs = new ConcurrentDictionary<long, int>();
+			discreteOutputs = new ConcurrentDictionary<long, int>();
 		}
 
-		public float GetAnalogValue(long gid)
+		public bool GetAnalogInput(long gid, out float value)
 		{
-			rwLock.EnterReadLock();
-
-			try
-			{
-				float value;
-				analogValues.TryGetValue(gid, out value);
-				return value;
-			}
-			finally
-			{
-				rwLock.ExitReadLock();
-			}
+			return analogInputs.TryGetValue(gid, out value);
 		}
 
-		public int GetDiscreteValue(long gid)
+		public bool GetAnalogOutput(long gid, out float value)
 		{
-			rwLock.EnterReadLock();
-
-			try
-			{
-				int value;
-				discreteValues.TryGetValue(gid, out value);
-				return value;
-			}
-			finally
-			{
-				rwLock.ExitReadLock();
-			}
+			return analogOutputs.TryGetValue(gid, out value);
 		}
 
-		public bool Update(MeasurementValuesChanged message)
+		public bool GetDiscreteInput(long gid, out int value)
 		{
-			rwLock.EnterWriteLock();
+			return discreteInputs.TryGetValue(gid, out value);
+		}
 
-			try
+		public bool GetDiscreteOutput(long gid, out int value)
+		{
+			return discreteOutputs.TryGetValue(gid, out value);
+		}
+
+		public void Update(MeasurementValuesChanged message)
+		{
+			foreach(Tuple<long, float> a in message.AnalogInputs)
 			{
-				foreach(Tuple<long, float> a in message.AnalogValues)
-				{
-					analogValues[a.Item1] = a.Item2;
-				}
-
-				foreach(Tuple<long, int> d in message.DiscreteValues)
-				{
-					discreteValues[d.Item1] = d.Item2;
-				}
-
-				return true;
+				analogInputs[a.Item1] = a.Item2;
 			}
-			finally
+
+			foreach(Tuple<long, float> a in message.AnalogOutputs)
 			{
-				rwLock.ExitWriteLock();
+				analogOutputs[a.Item1] = a.Item2;
+			}
+
+			foreach(Tuple<long, int> d in message.DiscreteInputs)
+			{
+				discreteInputs[d.Item1] = d.Item2;
+			}
+
+			foreach(Tuple<long, int> d in message.DiscreteOutputs)
+			{
+				discreteOutputs[d.Item1] = d.Item2;
 			}
 		}
 	}

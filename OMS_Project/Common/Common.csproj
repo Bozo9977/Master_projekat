@@ -95,9 +95,12 @@
     <Compile Include="GDA\Property.cs" />
     <Compile Include="GDA\ResourceDescription.cs" />
     <Compile Include="GDA\UpdateResult.cs" />
+    <Compile Include="IObservable.cs" />
+    <Compile Include="IObserver.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="PubSub\IPubSubClient.cs" />
     <Compile Include="PubSub\Messages.cs" />
+    <Compile Include="SCADA\Enums.cs" />
     <Compile Include="SCADA\ISCADAServiceContract.cs" />
     <Compile Include="Transaction\ITransaction.cs" />
     <Compile Include="Transaction\ITransactionManager.cs" />

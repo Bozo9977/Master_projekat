@@ -12,7 +12,7 @@ namespace SCADA
 {
 	public class SCADAModel
 	{
-		static SCADAModel instance;
+		static volatile SCADAModel instance;
 
 		Dictionary<long, Analog> analogs;
 		Dictionary<long, Discrete> discretes;
@@ -32,7 +32,7 @@ namespace SCADA
 			}
 			set
 			{
-				Interlocked.Exchange(ref instance, value);
+				instance = value;
 			}
 		}
 
