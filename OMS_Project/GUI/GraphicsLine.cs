@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Media;
 
 namespace GUI
 {
@@ -15,6 +16,7 @@ namespace GUI
 		double Y2 { get; }
 		double Thickness { get; }
 		Rect AABB { get; }
+		Brush Fill { get; }
 	}
 
 	class GraphicsLine : IGraphicsLine
@@ -24,14 +26,16 @@ namespace GUI
 		public double X2 { get; set; }
 		public double Y2 { get; set; }
 		public double Thickness { get; set; }
+		public Brush Fill { get; set; }
 
-		public GraphicsLine(IElementLayout element1, IElementLayout element2)
+		public GraphicsLine(IElementLayout element1, IElementLayout element2, Brush fill)
 		{
 			X1 = element1.X;
 			Y1 = element1.Y;
 			X2 = element2.X;
 			Y2 = element2.Y;
 			Thickness = 2;
+			Fill = fill;
 		}
 
 		public Rect AABB

@@ -344,6 +344,9 @@ namespace SCADA
 				}
 			}
 
+			if(updatedAnalogInputs.Count == 0 && updatedAnalogOutputs.Count == 0 && updatedDiscreteInputs.Count == 0 && updatedDiscreteOutputs.Count == 0)
+				return;
+
 			List<Tuple<long, float>> analogInputs = new List<Tuple<long, float>>();
 			List<Tuple<long, float>> analogOutputs = new List<Tuple<long, float>>();
 			List<Tuple<long, int>> discreteInputs = new List<Tuple<long, int>>();

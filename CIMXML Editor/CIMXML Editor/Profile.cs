@@ -93,6 +93,10 @@ namespace CIMXML_Editor
 
 			attrs = new Dictionary<string, Attribute>();
 			c = new Class("MeasurementType", attrs, null);
+			a = new Attribute("Other", AttributeType.String, null);
+			attrs.Add(a.Name, a);
+			a = new Attribute("SwitchState", AttributeType.String, null);
+			attrs.Add(a.Name, a);
 			Classes.Add(c.Name, c);
 
 			attrs = new Dictionary<string, Attribute>();

@@ -29,11 +29,13 @@ namespace GUI
 		public double Scale { get { return 0.5; } }
 		public GraphicsModel Model { get; private set; }
 		public IElementLayout Element { get; private set; }
+		public Brush Fill { get; private set; }
 
-		public GraphicsElement(IElementLayout element)
+		public GraphicsElement(IElementLayout element, Brush fill)
 		{
 			Element = element;
 			Model = GraphicsModelMapping.Instance.GetGraphicsModel(Element.IO);
+			Fill = fill;
 		}
 
 		public Shape[] Draw()
@@ -49,6 +51,7 @@ namespace GUI
 				tc.Add(st);
 				tc.Add(rt);
 				tc.Add(tt);
+				s[i].Fill = Fill;
 			}
 			
 			return s;

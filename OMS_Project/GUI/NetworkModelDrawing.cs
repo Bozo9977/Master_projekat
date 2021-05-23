@@ -2,6 +2,7 @@
 using Common.GDA;
 using System;
 using System.Collections.Generic;
+using System.Windows.Media;
 
 namespace GUI
 {
@@ -10,6 +11,7 @@ namespace GUI
 		uint X { get; }
 		uint Y { get; }
 		IdentifiedObject IO { get; }
+		EEnergization Energization { get; }
 	}
 
 	public class NodeLayout : IElementLayout
@@ -20,8 +22,8 @@ namespace GUI
 		public Node Node { get; private set; }
 		public NodeLayout Parent { get; private set; }
 		public List<NodeLayout> Children { get; private set; }
-
 		public IdentifiedObject IO { get { return Node.io; } }
+		public EEnergization Energization { get; set; }
 
 		public NodeLayout(NodeLayout parent, Node node)
 		{
@@ -39,6 +41,7 @@ namespace GUI
 		public NodeLayout Node2 { get; private set; }
 		public RecloserNode Recloser { get; private set; }
 		public IdentifiedObject IO { get { return Recloser.io; } }
+		public EEnergization Energization { get; set; }
 
 		public RecloserLayout(RecloserNode r, NodeLayout node1, NodeLayout node2)
 		{
@@ -104,26 +107,74 @@ namespace GUI
 
 	class NetworkModelDrawing
 	{
-		NetworkModel nm;
-		List<GraphicsElement> elements;
-		List<GraphicsLine> lines;
+		NetworkModel networkModel;
+		Topology topology;
+		Measurements measurements;
+
+		bool networkModelChanged;
+		bool topologyChanged;
+
 		NodeLayout root;
 		List<RecloserLayout> reclosers;
 
-		public NetworkModelDrawing(NetworkModel networkModel)
+		List<GraphicsElement> elements;
+		List<GraphicsLine> lines;
+
+		public NetworkModelDrawing()
 		{
-			nm = networkModel;
-			Reload();
+			networkModelChanged = true;
+			topologyChanged = true;
+			elements = new List<GraphicsElement>(0);
+			lines = new List<GraphicsLine>(0);
 		}
 
-		public void Reload()
+		public NetworkModel NetworkModel
 		{
-			Layout(nm.GetTreesAndReclosers());
-			Redraw();
+			get
+			{
+				return networkModel;
+			}
+			set
+			{
+				networkModel = value;
+				networkModelChanged = true;
+			}
 		}
 
-		void Layout(Tuple<List<Node>, List<RecloserNode>> model)
+		public Topology Topology
 		{
+			get
+			{
+				return topology;
+			}
+			set
+			{
+				topology = value;
+				topologyChanged = true;
+			}
+		}
+
+		public Measurements Measurements
+		{
+			get
+			{
+				return measurements;
+			}
+			set
+			{
+				measurements = value;
+			}
+		}
+
+		void Layout()
+		{
+			if(!networkModelChanged || networkModel == null)
+				return;
+
+			networkModelChanged = false;
+
+			Tuple<List<Node>, List<RecloserNode>> model = networkModel.GetTreesAndReclosers();
+
 			Dictionary<Node, NodeLayout> recloserConNodes = new Dictionary<Node, NodeLayout>(model.Item2.Count * 2);
 
 			foreach(RecloserNode rn in model.Item2)
@@ -227,16 +278,6 @@ namespace GUI
 
 			this.root = root;
 			this.reclosers = reclosers;
-		}
-
-		uint Min(uint x, uint y)
-		{
-			return x < y ? x : y;
-		}
-
-		uint Max(uint x, uint y)
-		{
-			return x > y ? x : y;
 		}
 
 		void ReorderChildren(NodeLayout node, List<RecloserState> recloserStates)
@@ -352,7 +393,7 @@ namespace GUI
 
 						for(int i = i1; i < i2; ++i)
 						{
-							depths[i] = Min(depths[i], r.Depth);
+							depths[i] = Math.Min(depths[i], r.Depth);
 						}
 					}
 					else
@@ -375,7 +416,7 @@ namespace GUI
 							}
 
 							children.Insert(maxi + 1, n1);
-							depths.Insert(maxi + 1, Min(r.Depth, maxd));
+							depths.Insert(maxi + 1, Math.Min(r.Depth, maxd));
 
 							for(int i = maxi + 2; i < depths.Count; ++i)
 							{
@@ -415,7 +456,7 @@ namespace GUI
 							}
 
 							children.Insert(maxi + 1, n2);
-							depths.Insert(maxi, Min(r.Depth, maxd));
+							depths.Insert(maxi, Math.Min(r.Depth, maxd));
 
 							for(int i = maxi - 1; i >= 0; --i)
 							{
@@ -466,6 +507,11 @@ namespace GUI
 
 		void Redraw()
 		{
+			if(!topologyChanged || topology == null || measurements == null || root == null)
+				return;
+
+			topologyChanged = false;
+
 			List<GraphicsElement> elements = new List<GraphicsElement>();
 			List<GraphicsLine> lines = new List<GraphicsLine>();
 
@@ -477,11 +523,11 @@ namespace GUI
 				while(stack.Count > 0)
 				{
 					NodeLayout node = stack.Pop();
-					elements.Add(new GraphicsElement(node));
+					elements.Add(new GraphicsElement(node, GetNodeColor(node.IO)));
 
 					foreach(NodeLayout child in node.Children)
 					{
-						lines.Add(new GraphicsLine(node, child));
+						lines.Add(new GraphicsLine(node, child, GetLineColor(node.IO, child.IO)));
 						stack.Push(child);
 					}
 				}
@@ -489,16 +535,78 @@ namespace GUI
 
 			foreach(RecloserLayout r in reclosers)
 			{
-				elements.Add(new GraphicsElement(r));
-				lines.Add(new GraphicsLine(r.Node1, r.Node2));
+				elements.Add(new GraphicsElement(r, GetNodeColor(r.IO)));
+				lines.Add(new GraphicsLine(r.Node1, r, GetLineColor(r.Node1.IO, r.IO)));
+				lines.Add(new GraphicsLine(r.Node2, r, GetLineColor(r.Node2.IO, r.IO)));
 			}
 
 			this.elements = elements;
 			this.lines = lines;
 		}
 
+		Brush GetNodeColor(IdentifiedObject io)
+		{
+			ModelCode mc = ModelCodeHelper.GetModelCodeByType(ModelCodeHelper.GetTypeFromGID(io.GID));
+
+			if(mc == 0)
+				return Brushes.Black;
+
+			if(!ModelCodeHelper.ModelCodeClassIsSubClassOf(mc, ModelCode.SWITCH))
+				return GetColor(topology.GetNodeEnergization(io.GID));
+
+			Switch s = (Switch)io;
+
+			foreach(long measGID in s.Measurements)
+			{
+				Measurement m = (Measurement)networkModel.Get(measGID);
+
+				if(m == null)
+					continue;
+
+				if(m.MeasurementType == MeasurementType.SwitchState)
+				{
+					int value;
+
+					if(!measurements.GetDiscreteInput(m.GID, out value))
+						continue;
+
+					if(value == 0)
+					{
+						return Brushes.Green;	//closed
+					}
+					else
+					{
+						return Brushes.Blue;		//open
+					}
+				}
+			}
+
+			return Brushes.Black;
+		}
+
+		Brush GetLineColor(IdentifiedObject io1, IdentifiedObject io2)
+		{
+			return GetColor(topology.GetLineEnergization(io1.GID, io2.GID));
+		}
+
+		Brush GetColor(EEnergization energization)
+		{
+			switch(energization)
+			{
+				case EEnergization.Energized:
+					return Brushes.Green;
+
+				case EEnergization.NotEnergized:
+					return Brushes.Blue;
+			}
+
+			return Brushes.Black;
+		}
+
 		public Tuple<List<GraphicsElement>, List<GraphicsLine>> Draw()
 		{
+			Layout();
+			Redraw();
 			return new Tuple<List<GraphicsElement>, List<GraphicsLine>>(elements, lines);
 		}
 	}

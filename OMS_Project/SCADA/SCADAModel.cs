@@ -3,10 +3,6 @@ using Common.DataModel;
 using Common.GDA;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace SCADA
 {
@@ -16,7 +12,6 @@ namespace SCADA
 
 		Dictionary<long, Analog> analogs;
 		Dictionary<long, Discrete> discretes;
-		Dictionary<int, List<long>> byAddress;
 		IDatabase<ESCADAModelDatabaseTables> db;
 
 		List<IdentifiedObject> inserted;
@@ -40,20 +35,12 @@ namespace SCADA
 		{
 			analogs = new Dictionary<long, Analog>();
 			discretes = new Dictionary<long, Discrete>();
-			byAddress = new Dictionary<int, List<long>>();
 		}
 
 		public SCADAModel(SCADAModel model)
 		{
 			analogs = new Dictionary<long, Analog>(model.analogs);
 			discretes = new Dictionary<long, Discrete>(model.discretes);
-			byAddress = new Dictionary<int, List<long>>(model.byAddress.Count);
-
-			foreach(KeyValuePair<int, List<long>> pair in model.byAddress)
-			{
-				byAddress.Add(pair.Key, new List<long>(pair.Value));
-			}
-
 			db = model.db;
 		}
 
@@ -71,7 +58,6 @@ namespace SCADA
 		{
 			analogs = new Dictionary<long, Analog>();
 			discretes = new Dictionary<long, Discrete>();
-			byAddress = new Dictionary<int, List<long>>();
 
 			if(!db.Transact(transaction =>
 			{
@@ -82,34 +68,12 @@ namespace SCADA
 				{
 					Analog analog = (Analog)IdentifiedObject.Load(DMSType.Analog, a);
 					this.analogs.Add(analog.GID, analog);
-
-					List<long> gids;
-
-					if(byAddress.TryGetValue(analog.BaseAddress, out gids))
-					{
-						gids.Add(analog.GID);
-					}
-					else
-					{
-						byAddress.Add(analog.BaseAddress, new List<long>(1) { analog.GID });
-					}
 				}
 
 				foreach(DiscreteDBModel d in discretes.GetList())
 				{
 					Discrete discrete = (Discrete)IdentifiedObject.Load(DMSType.Discrete, d);
 					this.discretes.Add(discrete.GID, discrete);
-
-					List<long> gids;
-
-					if(byAddress.TryGetValue(discrete.BaseAddress, out gids))
-					{
-						gids.Add(discrete.GID);
-					}
-					else
-					{
-						byAddress.Add(discrete.BaseAddress, new List<long>(1) { discrete.GID });
-					}
 				}
 
 				return true;
@@ -155,8 +119,6 @@ namespace SCADA
 
 					if(oldCount == analogs.Count)
 						return false;
-
-					AddAddress(analog.GID, analog.BaseAddress);
 				}
 				else if(type == DMSType.Discrete)
 				{
@@ -166,8 +128,6 @@ namespace SCADA
 
 					if(oldCount == discretes.Count)
 						return false;
-
-					AddAddress(discrete.GID, discrete.BaseAddress);
 				}
 				else
 				{
@@ -194,14 +154,6 @@ namespace SCADA
 					Analog newAnalog = (Analog)io;
 					analogs[io.GID] = newAnalog;
 
-					if(newAnalog.BaseAddress != oldAnalog.BaseAddress)
-					{
-						if(!RemoveAddress(oldAnalog.GID, oldAnalog.BaseAddress))
-							return false;
-
-						AddAddress(newAnalog.GID, newAnalog.BaseAddress);
-					}
-
 					updatedOld.Add(oldAnalog);
 				}
 				else if(type == DMSType.Discrete)
@@ -213,14 +165,6 @@ namespace SCADA
 
 					Discrete newDiscrete = (Discrete)io;
 					discretes[io.GID] = newDiscrete;
-
-					if(newDiscrete.BaseAddress != oldDiscrete.BaseAddress)
-					{
-						if(!RemoveAddress(oldDiscrete.GID, oldDiscrete.BaseAddress))
-							return false;
-
-						AddAddress(newDiscrete.GID, newDiscrete.BaseAddress);
-					}
 
 					updatedOld.Add(oldDiscrete);
 				}
@@ -241,32 +185,18 @@ namespace SCADA
 				if(type == DMSType.Analog)
 				{
 					Analog analog;
-					List<long> gids;
 
-					if(!analogs.TryGetValue(gid, out analog) || !analogs.Remove(gid) || !byAddress.TryGetValue(analog.BaseAddress, out gids))
+					if(!analogs.TryGetValue(gid, out analog) || !analogs.Remove(gid))
 						return false;
-
-					if(!gids.Remove(gid))
-						return false;
-
-					if(gids.Count == 0)
-						byAddress.Remove(analog.BaseAddress);
 
 					deleted.Add(analog);
 				}
 				else if(type == DMSType.Discrete)
 				{
 					Discrete discrete;
-					List<long> gids;
 
-					if(!discretes.TryGetValue(gid, out discrete) || !discretes.Remove(gid) || !byAddress.TryGetValue(discrete.BaseAddress, out gids))
+					if(!discretes.TryGetValue(gid, out discrete) || !discretes.Remove(gid))
 						return false;
-
-					if(!gids.Remove(gid))
-						return false;
-
-					if(gids.Count == 0)
-						byAddress.Remove(discrete.BaseAddress);
 
 					deleted.Add(discrete);
 				}
@@ -280,31 +210,6 @@ namespace SCADA
 			this.updatedOld = updatedOld;
 			this.updatedNew = updatedNew;
 			this.deleted = deleted;
-
-			return true;
-		}
-
-		void AddAddress(long gid, int address)
-		{
-			List<long> gids;
-			if(byAddress.TryGetValue(address, out gids))
-			{
-				gids.Add(gid);
-			}
-			else
-			{
-				byAddress.Add(address, new List<long>(1) { gid });
-			}
-		}
-
-		bool RemoveAddress(long gid, int address)
-		{
-			List<long> gids;
-			if(!byAddress.TryGetValue(address, out gids) || !gids.Remove(gid))
-				return false;
-
-			if(gids.Count == 0)
-				byAddress.Remove(address);
 
 			return true;
 		}

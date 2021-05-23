@@ -85,6 +85,8 @@ namespace SCADA
 			}
 			while(result.Count >= iteratorCount);
 
+			nms.IteratorClose(iterator);
+
 			Inserted = inserted;
 			Updated = updated;
 			Deleted = deletedGids;

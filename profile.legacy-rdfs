@@ -527,4 +527,12 @@
 	 <rdfs:label>ReadWrite</rdfs:label>
 	 <rdf:type rdf:resource="#SignalDirection"/>
   </rdf:Description>
+  <rdf:Description rdf:about="#MeasurementType.Other">
+	 <rdfs:label>Other</rdfs:label>
+	 <rdf:type rdf:resource="#MeasurementType"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="#MeasurementType.SwitchState">
+	 <rdfs:label>SwitchState</rdfs:label>
+	 <rdf:type rdf:resource="#MeasurementType"/>
+  </rdf:Description>
 </rdf:RDF>

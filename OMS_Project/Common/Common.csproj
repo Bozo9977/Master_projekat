@@ -57,6 +57,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CalculationEngine\ICalculationEngineServiceContract.cs" />
+    <Compile Include="CalculationEngine\SerializedNode.cs" />
     <Compile Include="Database\IDatabase.cs" />
     <Compile Include="Database\IDatabaseTransaction.cs" />
     <Compile Include="Database\ITableContext.cs" />

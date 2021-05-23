@@ -115,7 +115,7 @@ namespace Common.GDA
 		DISCONNECTOR = 0x11116200000F0000,
 	}
 
-	public enum MeasurementType { }
+	public enum MeasurementType { Other, SwitchState }
 	public enum SignalDirection { Read, ReadWrite, Write }
 	public enum ConsumerClass { Administrative, Industrial, Residential }
 

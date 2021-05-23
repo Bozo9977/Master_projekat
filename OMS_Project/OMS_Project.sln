@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SCADA", "SCADA\SCADA.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SCADASim", "SCADASim\SCADASim.csproj", "{29944EAD-70E0-479C-B3A3-E2FC114C31C1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CalculationEngine", "CalculationEngine\CalculationEngine.csproj", "{C6298081-C718-47DF-A943-C344D43BAF7E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -135,6 +137,18 @@ Global
 		{29944EAD-70E0-479C-B3A3-E2FC114C31C1}.Release|x64.Build.0 = Release|Any CPU
 		{29944EAD-70E0-479C-B3A3-E2FC114C31C1}.Release|x86.ActiveCfg = Release|Any CPU
 		{29944EAD-70E0-479C-B3A3-E2FC114C31C1}.Release|x86.Build.0 = Release|Any CPU
+		{C6298081-C718-47DF-A943-C344D43BAF7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C6298081-C718-47DF-A943-C344D43BAF7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C6298081-C718-47DF-A943-C344D43BAF7E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C6298081-C718-47DF-A943-C344D43BAF7E}.Debug|x64.Build.0 = Debug|Any CPU
+		{C6298081-C718-47DF-A943-C344D43BAF7E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C6298081-C718-47DF-A943-C344D43BAF7E}.Debug|x86.Build.0 = Debug|Any CPU
+		{C6298081-C718-47DF-A943-C344D43BAF7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C6298081-C718-47DF-A943-C344D43BAF7E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C6298081-C718-47DF-A943-C344D43BAF7E}.Release|x64.ActiveCfg = Release|Any CPU
+		{C6298081-C718-47DF-A943-C344D43BAF7E}.Release|x64.Build.0 = Release|Any CPU
+		{C6298081-C718-47DF-A943-C344D43BAF7E}.Release|x86.ActiveCfg = Release|Any CPU
+		{C6298081-C718-47DF-A943-C344D43BAF7E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

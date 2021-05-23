@@ -3,8 +3,6 @@ using Common.GDA;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GUI
 {
@@ -42,7 +40,6 @@ namespace GUI
 		public NetworkModel(NetworkModelDownload download)
 		{
 			Dictionary<long, IdentifiedObject> terminalContainer = download.Containers[DMSType.Terminal];
-			Dictionary<long, IdentifiedObject> recloserContainer = download.Containers[DMSType.Recloser];
 			Dictionary<long, IdentifiedObject> conNodeContainer = download.Containers[DMSType.ConnectivityNode];
 
 			List<Node> trees = new List<Node>();

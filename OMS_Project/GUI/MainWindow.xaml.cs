@@ -17,18 +17,18 @@ namespace GUI
 	{
 		enum EKey : byte { Up, Down, Left, Right, In, Out, Count }
 		uint keys;
-		const byte repeatedKeysCount = 10;
+		const byte repeatedKeysCount = 6;
 		Action[] keyActions;
 		byte keyCount;
 		DispatcherTimer timer;
 		Rect canvasPos;
-		const double moveDelta = 0.01;
-		const double zoomDelta = 1.05;
+		const double moveDelta = 0.02;
+		const double zoomDelta = 1.08;
 		Vector canvasSize;
 		double aspectRatio;
 		double zoom;
 		bool loaded;
-		bool drawn;
+		bool shouldRedraw;
 
 		NetworkModelDrawing drawing;
 		PubSubClient client;
@@ -41,10 +41,11 @@ namespace GUI
 			Logger.Instance.Level = ELogLevel.INFO;
 
 			keyActions = new Action[(byte)EKey.Count] { Up, Down, Left, Right, In, Out };
-			timer = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(48) };
+			timer = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(40) };
 			timer.Tick += Timer_Tick;
 			
 			client = new PubSubClient();
+			drawing = new NetworkModelDrawing() { NetworkModel = client.Model, Topology = client.Topology, Measurements = client.Measurements };
 			client.Subscribe(this);
 			client.Reconnect();
 			client.Download();
@@ -80,7 +81,6 @@ namespace GUI
 
 		private void Timer_Tick(object sender, EventArgs e)
 		{
-			drawn = false;
 			byte i = 0;
 			uint k = keys;
 
@@ -91,6 +91,12 @@ namespace GUI
 
 				k >>= 1;
 				++i;
+			}
+
+			if(shouldRedraw)
+			{
+				Redraw();
+				shouldRedraw = false;
 			}
 		}
 
@@ -163,25 +169,25 @@ namespace GUI
 		void Up()
 		{
 			canvasPos = new Rect(canvasPos.Left, canvasPos.Top - moveDelta / zoom, canvasPos.Width, canvasPos.Height);
-			Redraw();
+			shouldRedraw = true;
 		}
 
 		void Down()
 		{
 			canvasPos = new Rect(canvasPos.Left, canvasPos.Top + moveDelta / zoom, canvasPos.Width, canvasPos.Height);
-			Redraw();
+			shouldRedraw = true;
 		}
 
 		void Left()
 		{
 			canvasPos = new Rect(canvasPos.Left - moveDelta / zoom, canvasPos.Top, canvasPos.Width, canvasPos.Height);
-			Redraw();
+			shouldRedraw = true;
 		}
 
 		void Right()
 		{
 			canvasPos = new Rect(canvasPos.Left + moveDelta / zoom, canvasPos.Top, canvasPos.Width, canvasPos.Height);
-			Redraw();
+			shouldRedraw = true;
 		}
 
 		void In()
@@ -190,7 +196,7 @@ namespace GUI
 			Vector center = GetCenter();
 			Vector newSize = new Vector(aspectRatio / zoom, 1.0 / zoom);
 			canvasPos = new Rect(center.X - newSize.X * 0.5, center.Y - newSize.Y * 0.5, newSize.X, newSize.Y);
-			Redraw();
+			shouldRedraw = true;
 		}
 
 		void Out()
@@ -199,7 +205,7 @@ namespace GUI
 			Vector center = GetCenter();
 			Vector newSize = new Vector(aspectRatio / zoom, 1.0 / zoom);
 			canvasPos = new Rect(center.X - newSize.X * 0.5, center.Y - newSize.Y * 0.5, newSize.X, newSize.Y);
-			Redraw();
+			shouldRedraw = true;
 		}
 
 		Vector GetCenter()
@@ -216,18 +222,16 @@ namespace GUI
 			canvasPos = new Rect(canvasPos.Left, canvasPos.Top, canvasPos.Width * (e.NewSize.Width / canvasSize.X), canvasPos.Height * (e.NewSize.Height / canvasSize.Y));
 			canvasSize = new Vector(e.NewSize.Width, e.NewSize.Height);
 			aspectRatio = canvasSize.X / canvasSize.Y;
-			Redraw(true);
+			Redraw();
 		}
 
-		private void Redraw(bool force = false)
+		private void Redraw()
 		{
-			if(!force && drawn)
-				return;
-
-			if(drawing == null)
-				return;
-
 			Tuple<List<GraphicsElement>, List<GraphicsLine>> result = drawing.Draw();
+
+			if(result == null)
+				return;
+
 			canvas.Children.Clear();
 
 			TranslateTransform tt = new TranslateTransform(-canvasPos.Left, -canvasPos.Top);
@@ -250,9 +254,7 @@ namespace GUI
 
 			foreach(GraphicsElement element in result.Item1)
 			{
-				Rect aabb = element.AABB;
-
-				if(!aabb.IntersectsWith(canvasPos))
+				if(!element.AABB.IntersectsWith(canvasPos))
 					continue;
 
 				Shape[] shapes = element.Draw();
@@ -267,7 +269,6 @@ namespace GUI
 			}
 
 			elements = result;
-			drawn = true;
 		}
 
 		private void canvas_Loaded(object sender, RoutedEventArgs e)
@@ -302,6 +303,10 @@ namespace GUI
 				case EObservableMessageType.NetworkModelChanged:
 					Dispatcher.BeginInvoke(new Action(UpdateModel));
 					break;
+
+				case EObservableMessageType.TopologyChanged:
+					Dispatcher.BeginInvoke(new Action(UpdateTopology));
+					break;
 			}
 		}
 
@@ -313,9 +318,16 @@ namespace GUI
 
 		void UpdateModel()
 		{
-			drawing = new NetworkModelDrawing(client.Model);
-			Redraw(true);
+			drawing.NetworkModel = client.Model;
+			Redraw();
 			Logger.Instance.Log(ELogLevel.INFO, "Model updated.");
+		}
+
+		void UpdateTopology()
+		{
+			drawing.Topology = client.Topology;
+			Redraw();
+			Logger.Instance.Log(ELogLevel.INFO, "Topology updated.");
 		}
 
 		const double DX = 1;

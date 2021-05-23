@@ -6,7 +6,9 @@ using System.Threading;
 
 namespace GUI
 {
-	public enum EObservableMessageType { NetworkModelChanged, MeasurementValuesChanged }
+	public enum EObservableMessageType { NetworkModelChanged, MeasurementValuesChanged,
+		TopologyChanged
+	}
 
 	public class ObservableMessage
 	{
@@ -21,6 +23,7 @@ namespace GUI
 	public class PubSubClient : IPubSubClient, IObservable<ObservableMessage>
 	{
 		NetworkModel model;
+		Topology topology;
 		Measurements measurements;
 
 		List<IObserver<ObservableMessage>> observers;
@@ -34,6 +37,7 @@ namespace GUI
 			observers = new List<IObserver<ObservableMessage>>();
 			observersLock = new ReaderWriterLockSlim();
 			clientLock = new ReaderWriterLockSlim();
+			topology = new Topology();
 			measurements = new Measurements();
 		}
 
@@ -42,6 +46,14 @@ namespace GUI
 			get
 			{
 				return model;
+			}
+		}
+
+		public Topology Topology
+		{
+			get
+			{
+				return topology;
 			}
 		}
 
@@ -98,6 +110,21 @@ namespace GUI
 			return true;
 		}
 
+		bool HandleTopologyChange(TopologyChanged m)
+		{
+			TopologyDownload download = new TopologyDownload();
+
+			if(!download.Download())
+			{
+				return false;
+			}
+
+			topology.Update(download);
+
+			Notify(new ObservableMessage(EObservableMessageType.TopologyChanged));
+			return true;
+		}
+
 		public void Receive(PubSubMessage m)
 		{
 			switch(m.Topic)
@@ -108,6 +135,10 @@ namespace GUI
 
 				case ETopic.MeasurementValuesChanged:
 					HandleMeasurementValuesChange((MeasurementValuesChanged)m);
+					break;
+
+				case ETopic.TopologyChanged:
+					HandleTopologyChange((TopologyChanged)m);
 					break;
 			}
 		}
