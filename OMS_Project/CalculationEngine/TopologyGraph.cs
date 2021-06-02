@@ -48,6 +48,7 @@ namespace CalculationEngine
 		{
 			trees = new List<Node>();
 			nodeChildren = new List<Node>();
+			reclosers = new Dictionary<long, RecloserNode>();
 			this.containers = containers;
 			dmsTypeToModelCodeMap = ModelResourcesDesc.GetTypeToModelCodeMap();
 
