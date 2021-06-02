@@ -1,4 +1,5 @@
-﻿using Common.GDA;
+﻿using Common.CalculationEngine;
+using Common.GDA;
 using Common.PubSub;
 using Common.SCADA;
 using Common.Transaction;
@@ -62,26 +63,47 @@ namespace NMS
 					return new UpdateResult(ResultType.Failure);
 				}
 
-				Client<ISCADAServiceContract> scadaClient = new Client<ISCADAServiceContract>("SCADAEndpoint"); // Call SCADA
-				scadaClient.Connect();
-
-				if(!scadaClient.Call<bool>(scada => scada.ApplyUpdate(new List<long>(result.Item1.Values), result.Item2, result.Item3), out ok) || !ok)
 				{
-					scadaClient.Disconnect();
+					Client<ISCADAServiceContract> scadaClient = new Client<ISCADAServiceContract>("SCADAEndpoint"); // Call SCADA
+					scadaClient.Connect();
 
-					lock(modelLock)
+					if(!scadaClient.Call<bool>(scada => scada.ApplyUpdate(new List<long>(result.Item1.Values), result.Item2, result.Item3), out ok) || !ok)
 					{
-						transactionModel = model;
+						scadaClient.Disconnect();
+
+						lock(modelLock)
+						{
+							transactionModel = model;
+						}
+
+						client.Call<bool>(tm => tm.EndEnlist(false), out ok);   //TM.EndEnlist(false)
+						client.Disconnect();
+						return new UpdateResult(ResultType.Failure);
 					}
 
-					client.Call<bool>(tm => tm.EndEnlist(false), out ok);   //TM.EndEnlist(false)
-					client.Disconnect();
-					return new UpdateResult(ResultType.Failure);
+					scadaClient.Disconnect();
 				}
 
-				scadaClient.Disconnect();
+				{
+					Client<ICalculationEngineServiceContract> ceClient = new Client<ICalculationEngineServiceContract>("CEEndpoint"); // Call CE
+					ceClient.Connect();
 
-				//if(!CE.ApplyUpdate(affectedGIDs)) { ... }
+					if(!ceClient.Call<bool>(ce => ce.ApplyUpdate(new List<long>(result.Item1.Values), result.Item2, result.Item3), out ok) || !ok)
+					{
+						ceClient.Disconnect();
+
+						lock(modelLock)
+						{
+							transactionModel = model;
+						}
+
+						client.Call<bool>(tm => tm.EndEnlist(false), out ok);   //TM.EndEnlist(false)
+						client.Disconnect();
+						return new UpdateResult(ResultType.Failure);
+					}
+
+					ceClient.Disconnect();
+				}
 
 				if(!client.Call<bool>(tm => tm.EndEnlist(true), out ok) || !ok)   //TM.EndEnlist(true)
 				{

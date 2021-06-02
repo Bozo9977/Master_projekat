@@ -4,6 +4,9 @@ using System.ServiceModel;
 
 namespace Common.CalculationEngine
 {
+	public enum EEnergization { Unknown, NotEnergized, Energized }
+	public enum ESwitchState { Unknown, Closed, Open }
+
 	[ServiceContract]
 	public interface ICalculationEngineServiceContract
 	{
@@ -12,5 +15,8 @@ namespace Common.CalculationEngine
 
 		[OperationContract]
 		List<Tuple<long, List<Tuple<long, long>>, List<Tuple<long, long>>>> GetLineEnergization();
+
+		[OperationContract(IsOneWay = true)]
+		void UpdateMeasurements(List<Tuple<long, float>> analogInputs, List<Tuple<long, int>> discreteInputs);
 	}
 }

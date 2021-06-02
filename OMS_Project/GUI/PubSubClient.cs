@@ -84,7 +84,7 @@ namespace GUI
 
 		public bool Download()
 		{
-			return HandleNetworkModelChange(null);
+			return HandleNetworkModelChange(null) && HandleTopologyChange(null);
 		}
 
 		bool HandleNetworkModelChange(NetworkModelChanged msg)
@@ -210,7 +210,7 @@ namespace GUI
 				DuplexClient<ISubscribing, IPubSubClient> client = new DuplexClient<ISubscribing, IPubSubClient>("callbackEndpoint", this);
 				client.Connect();
 
-				if(!client.Call<bool>(sub => { sub.Subscribe(ETopic.NetworkModelChanged); sub.Subscribe(ETopic.MeasurementValuesChanged); return true; }, out _))
+				if(!client.Call<bool>(sub => { sub.Subscribe(ETopic.NetworkModelChanged); sub.Subscribe(ETopic.MeasurementValuesChanged); sub.Subscribe(ETopic.TopologyChanged); return true; }, out _))
 				{
 					return false;
 				}

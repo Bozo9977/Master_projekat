@@ -1,7 +1,11 @@
-﻿using Common.DataModel;
+﻿using Common.CalculationEngine;
+using Common.DataModel;
 using Common.GDA;
+using Common.PubSub;
+using Common.WCF;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 namespace CalculationEngine
@@ -24,7 +28,7 @@ namespace CalculationEngine
 
 		Dictionary<DMSType, Dictionary<long, IdentifiedObject>> containers;
 		ReaderWriterLockSlim rwLock;
-
+		TopologyGraph graph;
 		List<Tuple<long, List<Tuple<long, long>>, List<Tuple<long, long>>>> lineEnergization;
 
 		public TopologyModel()
@@ -48,13 +52,13 @@ namespace CalculationEngine
 
 				foreach(KeyValuePair<DMSType, Dictionary<long, IdentifiedObject>> container in tm.containers)
 					containers.Add(container.Key, new Dictionary<long, IdentifiedObject>(container.Value));
-
-				rwLock = new ReaderWriterLockSlim();
 			}
 			finally
 			{
 				tm.rwLock.ExitReadLock();
 			}
+			
+			rwLock = new ReaderWriterLockSlim();
 		}
 
 		public bool ApplyUpdate(TopologyModelDownload download)
@@ -105,7 +109,9 @@ namespace CalculationEngine
 						return false;
 				}
 
-				return RebuildTopology();
+				graph = new TopologyGraph(containers);
+				lineEnergization = graph.CalculateLineEnergization();
+				return true;
 			}
 			finally
 			{
@@ -113,14 +119,92 @@ namespace CalculationEngine
 			}
 		}
 
-		public bool RebuildTopology()
+		public HashSet<long> GetMeasurementGIDsOfInterest()
 		{
-			return true;
+			rwLock.EnterReadLock();
+
+			try
+			{
+				HashSet<long> gids = new HashSet<long>();
+
+				foreach(IdentifiedObject d in containers[DMSType.Discrete].Values)
+				{
+					if(((Discrete)d).MeasurementType == MeasurementType.SwitchState)
+					{
+						gids.Add(d.GID);
+					}
+				}
+
+				return gids;
+			}
+			finally
+			{
+				rwLock.ExitReadLock();
+			}
 		}
 
 		public List<Tuple<long, List<Tuple<long, long>>, List<Tuple<long, long>>>> GetLineEnergization()
 		{
+			rwLock.EnterReadLock();
+			{
+				List<Tuple<long, List<Tuple<long, long>>, List<Tuple<long, long>>>> lineEnergization = this.lineEnergization;
+			}
+			rwLock.ExitReadLock();
+
 			return lineEnergization;
+		}
+
+		public void MeasurementsUpdated(List<Tuple<long, float>> analogInputs, List<Tuple<long, int>> discreteInputs)
+		{
+			rwLock.EnterUpgradeableReadLock();
+
+			try
+			{
+				if(graph == null)
+					return;
+
+				bool updateTopology = false;
+
+				for(int i = 0; i < discreteInputs.Count; ++i)
+				{
+					Tuple<long, int> m = discreteInputs[i];
+					IdentifiedObject meas;
+					if(containers[DMSType.Discrete].TryGetValue(m.Item1, out meas) && ((Discrete)meas).MeasurementType == MeasurementType.SwitchState)
+					{
+						updateTopology = true;
+						break;
+					}
+				}
+
+				if(!updateTopology)
+					return;
+
+				lock(graph)
+				{
+					List<Tuple<long, List<Tuple<long, long>>, List<Tuple<long, long>>>> lineEnergization = graph.CalculateLineEnergization();
+
+					rwLock.EnterWriteLock();
+					{
+						this.lineEnergization = lineEnergization;
+					}
+					rwLock.ExitWriteLock();
+				}
+			}
+			finally
+			{
+				rwLock.ExitUpgradeableReadLock();
+			}
+
+			Client<IPublishing> pubClient = new Client<IPublishing>("publishingEndpoint");
+			pubClient.Connect();
+
+			pubClient.Call<bool>(pub =>
+			{
+				pub.Publish(new TopologyChanged());
+				return true;
+			}, out _);
+
+			pubClient.Disconnect();
 		}
 	}
 }

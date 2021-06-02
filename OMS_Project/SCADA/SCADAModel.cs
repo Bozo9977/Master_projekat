@@ -44,14 +44,14 @@ namespace SCADA
 			db = model.db;
 		}
 
-		public List<long> GetDiscreteGIDs()
+		public IEnumerable<Discrete> GetAllDiscretes()
 		{
-			return new List<long>(discretes.Keys);
+			return discretes.Values;
 		}
 
-		public List<long> GetAnalogGIDs()
+		public IEnumerable<Analog> GetAllAnalogs()
 		{
-			return new List<long>(analogs.Keys);
+			return analogs.Values;
 		}
 
 		public SCADAModel(IDatabase<ESCADAModelDatabaseTables> db)

@@ -1,4 +1,5 @@
-﻿using Common.DataModel;
+﻿using Common.CalculationEngine;
+using Common.DataModel;
 using Common.GDA;
 using System;
 using System.Collections.Generic;
@@ -114,6 +115,8 @@ namespace GUI
 		bool networkModelChanged;
 		bool topologyChanged;
 
+		Dictionary<DMSType, ModelCode> dmsTypeToModelCodeMap;
+
 		NodeLayout root;
 		List<RecloserLayout> reclosers;
 
@@ -126,6 +129,7 @@ namespace GUI
 			topologyChanged = true;
 			elements = new List<GraphicsElement>(0);
 			lines = new List<GraphicsLine>(0);
+			dmsTypeToModelCodeMap = ModelResourcesDesc.GetTypeToModelCodeMap();
 		}
 
 		public NetworkModel NetworkModel
@@ -278,6 +282,8 @@ namespace GUI
 
 			this.root = root;
 			this.reclosers = reclosers;
+
+			topologyChanged = true;
 		}
 
 		void ReorderChildren(NodeLayout node, List<RecloserState> recloserStates)
@@ -546,9 +552,9 @@ namespace GUI
 
 		Brush GetNodeColor(IdentifiedObject io)
 		{
-			ModelCode mc = ModelCodeHelper.GetModelCodeByType(ModelCodeHelper.GetTypeFromGID(io.GID));
+			ModelCode mc;
 
-			if(mc == 0)
+			if(!dmsTypeToModelCodeMap.TryGetValue(ModelCodeHelper.GetTypeFromGID(io.GID), out mc))
 				return Brushes.Black;
 
 			if(!ModelCodeHelper.ModelCodeClassIsSubClassOf(mc, ModelCode.SWITCH))

@@ -112,16 +112,5 @@ namespace Common.GDA
 		{
 			return GetPropertyTypeFromModelCode(mc) != PropertyType.Empty;
 		}
-
-		public static ModelCode GetModelCodeByType(DMSType type)
-		{
-			foreach(ModelCode mc in Enum.GetValues(typeof(ModelCode)))
-			{
-				if(IsClass(mc) && GetTypeFromModelCode(mc) == type)
-					return mc;
-			}
-
-			return 0;
-		}
 	}
 }

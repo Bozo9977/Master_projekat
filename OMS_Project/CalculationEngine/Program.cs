@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Common.PubSub;
+using Common.WCF;
+using System;
 using System.ServiceModel;
 using System.ServiceModel.Description;
 using System.Threading;
@@ -25,6 +27,7 @@ namespace CalculationEngine
 
 			Console.WriteLine("Downloaded network model from NMS.");
 
+			Measurements.Instance = new Measurements();
 			TopologyModel model = new TopologyModel();
 
 			if(!model.ApplyUpdate(download))
@@ -37,6 +40,17 @@ namespace CalculationEngine
 
 			foreach(ServiceEndpoint endpoint in host.Description.Endpoints)
 				Console.WriteLine(endpoint.ListenUri);
+
+			Client<IPublishing> pubClient = new Client<IPublishing>("publishingEndpoint");
+			pubClient.Connect();
+
+			pubClient.Call<bool>(pub =>
+			{
+				pub.Publish(new TopologyChanged());
+				return true;
+			}, out _);
+
+			pubClient.Disconnect();
 
 			Console.WriteLine("[Press Enter to stop]");
 			Console.ReadLine();

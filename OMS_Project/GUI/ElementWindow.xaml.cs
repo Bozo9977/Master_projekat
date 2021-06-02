@@ -4,6 +4,7 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using GUI.View;
+using System.Collections.Generic;
 
 namespace GUI
 {
@@ -12,13 +13,16 @@ namespace GUI
 		public long GID { get; private set; }
 		PubSubClient pubSub;
 		ElementView viewModel;
+		Dictionary<DMSType, ModelCode> dmsTypeToModelCodeMap;
 
 		public ElementWindow(long gid, PubSubClient pubSub)
 		{
-			InitializeComponent();
 			GID = gid;
 			this.pubSub = pubSub;
 			pubSub.Subscribe(this);
+			dmsTypeToModelCodeMap = ModelResourcesDesc.GetTypeToModelCodeMap();
+
+			InitializeComponent();
 			RefreshInternal();
 		}
 
@@ -63,7 +67,7 @@ namespace GUI
 		void InitView()
 		{
 			DMSType type = ModelCodeHelper.GetTypeFromGID(GID);
-			ModelCode mc = ModelCodeHelper.GetModelCodeByType(type);
+			ModelCode mc = dmsTypeToModelCodeMap[type];
 			ElementView vm;
 
 			if(ModelCodeHelper.ModelCodeClassIsSubClassOf(mc, ModelCode.CONDUCTINGEQUIPMENT))

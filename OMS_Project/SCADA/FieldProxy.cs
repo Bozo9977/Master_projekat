@@ -1,4 +1,5 @@
-﻿using Common.DataModel;
+﻿using Common.CalculationEngine;
+using Common.DataModel;
 using Common.GDA;
 using Common.PubSub;
 using Common.SCADA;
@@ -25,7 +26,7 @@ namespace SCADA
 		ConcurrentDictionary<ushort, bool> coils;
 		ModbusTCPClient modbusClient;
 		List<IModbusFunction> acquisitionFunctions;
-		ConcurrentDictionary<int, List<long>> byAddress;
+		Dictionary<int, List<long>> byAddress;
 
 		public static FieldProxy Instance
 		{
@@ -50,7 +51,7 @@ namespace SCADA
 			holdingRegisters = new ConcurrentDictionary<ushort, ushort>();
 			discreteInputs = new ConcurrentDictionary<ushort, bool>();
 			coils = new ConcurrentDictionary<ushort, bool>();
-			byAddress = new ConcurrentDictionary<int, List<long>>();
+			byAddress = new Dictionary<int, List<long>>();
 		}
 
 		public List<Tuple<long, float>> ReadAnalog(List<long> gids)
@@ -141,6 +142,16 @@ namespace SCADA
 			}
 		}
 
+		bool IsValidAddress(int baseAddress)
+		{
+			return baseAddress > 0 && baseAddress <= ushort.MaxValue / 2;
+		}
+
+		ushort GetAddress(int baseAddress)
+		{
+			return (ushort)(baseAddress * 2);
+		}
+
 		public void UpdateModel()
 		{
 			SCADAModel model = SCADAModel.Instance;
@@ -148,20 +159,18 @@ namespace SCADA
 			if(model == null)
 				return;
 
-			ConcurrentDictionary<int, List<long>> byAddress = new ConcurrentDictionary<int, List<long>>();
+			Dictionary<int, List<long>> byAddress = new Dictionary<int, List<long>>();
 			List<ushort> inputAddresses = new List<ushort>();
 
-			foreach(long gid in model.GetAnalogGIDs())
+			foreach(Analog a in model.GetAllAnalogs())
 			{
-				Analog a = model.GetAnalog(gid);
-
-				if(a == null)
+				if(a == null || !IsValidAddress(a.BaseAddress))
 					continue;
 
 				List<long> gids;
 				if(byAddress.TryGetValue(a.BaseAddress, out gids))
 				{
-					gids.Add(gid);
+					gids.Add(a.GID);
 				}
 				else
 				{
@@ -171,25 +180,19 @@ namespace SCADA
 				if(a.Direction == SignalDirection.Write)
 					continue;
 
-				int address = a.BaseAddress * 2;
-
-				if(address > ushort.MaxValue)
-					continue;
-
-				inputAddresses.Add((ushort)address);
+				ushort address = GetAddress(a.BaseAddress);
+				inputAddresses.Add(address);
 			}
 
-			foreach(long gid in model.GetDiscreteGIDs())
+			foreach(Discrete d in model.GetAllDiscretes())
 			{
-				Discrete d = model.GetDiscrete(gid);
-
-				if(d == null)
+				if(d == null || !IsValidAddress(d.BaseAddress))
 					continue;
 
 				List<long> gids;
 				if(byAddress.TryGetValue(d.BaseAddress, out gids))
 				{
-					gids.Add(gid);
+					gids.Add(d.GID);
 				}
 				else
 				{
@@ -199,12 +202,8 @@ namespace SCADA
 				if(d.Direction == SignalDirection.Write)
 					continue;
 
-				int address = d.BaseAddress * 2;
-
-				if(address > ushort.MaxValue)
-					continue;
-
-				inputAddresses.Add((ushort)address);
+				ushort address = GetAddress(d.BaseAddress);
+				inputAddresses.Add(address);
 			}
 
 			List<IModbusFunction> acquisitionFunctions = new List<IModbusFunction>();
@@ -245,6 +244,96 @@ namespace SCADA
 				this.byAddress = byAddress;
 			}
 			modelLock.ExitWriteLock();
+
+			List<Tuple<long, float>> analogInputs = new List<Tuple<long, float>>();
+			List<Tuple<long, float>> analogOutputs = new List<Tuple<long, float>>();
+			List<Tuple<long, int>> discreteInputs = new List<Tuple<long, int>>();
+			List<Tuple<long, int>> discreteOutputs = new List<Tuple<long, int>>();
+
+			foreach(KeyValuePair<int, List<long>> addressEntry in byAddress)
+			{
+				ushort address = GetAddress(addressEntry.Key);
+				ushort high, low;
+				float analogIn;
+				int discreteIn;
+				float analogOut;
+				int discreteOut;
+
+				inputRegisters.TryGetValue(address, out high);
+				inputRegisters.TryGetValue((ushort)(address + 1), out low);
+				GetValues(high, low, out analogIn, out discreteIn);
+
+				holdingRegisters.TryGetValue(address, out high);
+				holdingRegisters.TryGetValue((ushort)(address + 1), out low);
+				GetValues(high, low, out analogOut, out discreteOut);
+
+				for(int i = 0; i < addressEntry.Value.Count; ++i)
+				{
+					long gid = addressEntry.Value[i];
+
+					switch(ModelCodeHelper.GetTypeFromGID(gid))
+					{
+						case DMSType.Analog:
+							Analog a = model.GetAnalog(gid);
+
+							if(a == null)
+								continue;
+
+							switch(a.Direction)
+							{
+								case SignalDirection.Read:
+									analogInputs.Add(new Tuple<long, float>(gid, analogIn));
+									break;
+
+								case SignalDirection.Write:
+									analogOutputs.Add(new Tuple<long, float>(gid, analogOut));
+									break;
+
+								case SignalDirection.ReadWrite:
+									analogInputs.Add(new Tuple<long, float>(gid, analogIn));
+									analogOutputs.Add(new Tuple<long, float>(gid, analogOut));
+									break;
+
+								default:
+									continue;
+							}
+
+							break;
+
+						case DMSType.Discrete:
+							Discrete d = model.GetDiscrete(gid);
+
+							if(d == null)
+								continue;
+
+							switch(d.Direction)
+							{
+								case SignalDirection.Read:
+									discreteInputs.Add(new Tuple<long, int>(gid, discreteIn));
+									break;
+
+								case SignalDirection.Write:
+									discreteOutputs.Add(new Tuple<long, int>(gid, discreteOut));
+									break;
+
+								case SignalDirection.ReadWrite:
+									discreteInputs.Add(new Tuple<long, int>(gid, discreteIn));
+									discreteOutputs.Add(new Tuple<long, int>(gid, discreteOut));
+									break;
+
+								default:
+									continue;
+							}
+
+							break;
+
+						default:
+							continue;
+					}
+				}
+			}
+
+			PublishMeasurementValues(analogInputs, analogOutputs, discreteInputs, discreteOutputs);
 		}
 
 		public bool Start()
@@ -371,6 +460,22 @@ namespace SCADA
 			{
 				discreteOutputs.Add(new Tuple<long, int>(d.Key, d.Value));
 			}
+
+			PublishMeasurementValues(analogInputs, analogOutputs, discreteInputs, discreteOutputs);
+		}
+
+		void PublishMeasurementValues(List<Tuple<long, float>> analogInputs, List<Tuple<long, float>> analogOutputs, List<Tuple<long, int>> discreteInputs, List<Tuple<long, int>> discreteOutputs)
+		{
+			Client<ICalculationEngineServiceContract> ceClient = new Client<ICalculationEngineServiceContract>("endpointCE");
+			ceClient.Connect();
+
+			ceClient.Call<bool>(ce =>
+			{
+				ce.UpdateMeasurements(analogInputs, discreteInputs);
+				return true;
+			}, out _);
+
+			ceClient.Disconnect();
 
 			Client<IPublishing> pubClient = new Client<IPublishing>("publishingEndpoint");
 			pubClient.Connect();

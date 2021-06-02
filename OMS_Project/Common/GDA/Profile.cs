@@ -157,5 +157,22 @@ namespace Common.GDA
 
 			return d;
 		}
+
+		public static Dictionary<DMSType, ModelCode> GetTypeToModelCodeMap()
+		{
+			Dictionary<DMSType, ModelCode> d = new Dictionary<DMSType, ModelCode>(TypeIdsInInsertOrder.Length);
+
+			foreach(ModelCode mc in Enum.GetValues(typeof(ModelCode)))
+			{
+				DMSType type = ModelCodeHelper.GetTypeFromModelCode(mc);
+
+				if(ModelCodeHelper.IsClass(mc) && type != 0)
+				{
+					d.Add(type, mc);
+				}
+			}
+
+			return d;
+		}
 	}
 }

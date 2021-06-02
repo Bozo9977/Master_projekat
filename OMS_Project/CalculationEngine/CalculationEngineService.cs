@@ -1,5 +1,5 @@
 ﻿using Common.CalculationEngine;
-using Common.GDA;
+using Common.PubSub;
 using Common.Transaction;
 using Common.WCF;
 using System;
@@ -77,8 +77,19 @@ namespace CalculationEngine
 					return;
 
 				TopologyModel.Instance = transactionModel;
-
+				Measurements.Instance.UpdateModel();
 				transactionModel = null;
+
+				Client<IPublishing> pubClient = new Client<IPublishing>("publishingEndpoint");
+				pubClient.Connect();
+
+				pubClient.Call<bool>(pub =>
+				{
+					pub.Publish(new TopologyChanged());
+					return true;
+				}, out _);
+
+				pubClient.Disconnect();
 			}
 		}
 
@@ -97,6 +108,14 @@ namespace CalculationEngine
 		public List<Tuple<long, List<Tuple<long, long>>, List<Tuple<long, long>>>> GetLineEnergization()
 		{
 			return TopologyModel.Instance.GetLineEnergization();
+		}
+
+		public void UpdateMeasurements(List<Tuple<long, float>> analogInputs, List<Tuple<long, int>> discreteInputs)
+		{
+			Measurements measurements = Measurements.Instance;
+			measurements.SetAnalogs(analogInputs);
+			measurements.SetDiscretes(discreteInputs);
+			TopologyModel.Instance.MeasurementsUpdated(analogInputs, discreteInputs);
 		}
 	}
 }

@@ -1,11 +1,10 @@
-﻿using System;
+﻿using Common.CalculationEngine;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 
 namespace GUI
 {
-	public enum EEnergization { Unknown, NotEnergized, Energized }
-
 	public class Topology
 	{
 		ReaderWriterLockSlim rwLock = new ReaderWriterLockSlim();
@@ -87,21 +86,7 @@ namespace GUI
 
 				for(int i2 = 0; i2 < source.Item2.Count; ++i2)
 				{
-					Tuple<long, long> unknownLine = source.Item2[i2];
-
-					if(!energizedLines.Contains(unknownLine))
-						unknownLines.Add(unknownLine);
-
-					if(!energizedNodes.Contains(unknownLine.Item1))
-						unknownNodes.Add(unknownLine.Item1);
-
-					if(!energizedNodes.Contains(unknownLine.Item2))
-						unknownNodes.Add(unknownLine.Item2);
-				}
-
-				for(int i3 = 0; i3 < source.Item3.Count; ++i3)
-				{
-					Tuple<long, long> energizedLine = source.Item3[i3];
+					Tuple<long, long> energizedLine = source.Item2[i2];
 
 					energizedLines.Add(energizedLine);
 					unknownLines.Remove(energizedLine);
@@ -112,21 +97,30 @@ namespace GUI
 					energizedNodes.Add(energizedLine.Item2);
 					unknownNodes.Remove(energizedLine.Item2);
 				}
+
+				for(int i3 = 0; i3 < source.Item3.Count; ++i3)
+				{
+					Tuple<long, long> unknownLine = source.Item3[i3];
+
+					if(!energizedLines.Contains(unknownLine))
+						unknownLines.Add(unknownLine);
+
+					if(!energizedNodes.Contains(unknownLine.Item1))
+						unknownNodes.Add(unknownLine.Item1);
+
+					if(!energizedNodes.Contains(unknownLine.Item2))
+						unknownNodes.Add(unknownLine.Item2);
+				}
 			}
 
 			rwLock.EnterWriteLock();
-
-			try
 			{
 				this.unknownLines = unknownLines;
 				this.energizedLines = energizedLines;
 				this.unknownNodes = unknownNodes;
 				this.energizedNodes = energizedNodes;
 			}
-			finally
-			{
-				rwLock.ExitWriteLock();
-			}
+			rwLock.ExitWriteLock();
 		}
 	}
 }
