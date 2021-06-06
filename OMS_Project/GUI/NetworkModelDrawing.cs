@@ -555,7 +555,7 @@ namespace GUI
 			ModelCode mc;
 
 			if(!dmsTypeToModelCodeMap.TryGetValue(ModelCodeHelper.GetTypeFromGID(io.GID), out mc))
-				return Brushes.Black;
+				return Brushes.SlateGray;
 
 			if(!ModelCodeHelper.ModelCodeClassIsSubClassOf(mc, ModelCode.SWITCH))
 				return GetColor(topology.GetNodeEnergization(io.GID));
@@ -587,7 +587,7 @@ namespace GUI
 				}
 			}
 
-			return Brushes.Black;
+			return Brushes.SlateGray;
 		}
 
 		Brush GetLineColor(IdentifiedObject io1, IdentifiedObject io2)
@@ -606,7 +606,7 @@ namespace GUI
 					return Brushes.Blue;
 			}
 
-			return Brushes.Black;
+			return Brushes.SlateGray;
 		}
 
 		public Tuple<List<GraphicsElement>, List<GraphicsLine>> Draw()

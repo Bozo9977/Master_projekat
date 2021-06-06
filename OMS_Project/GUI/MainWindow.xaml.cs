@@ -248,7 +248,7 @@ namespace GUI
 				Point p1 = tg.Transform(new Point(line.X1, line.Y1));
 				Point p2 = tg.Transform(new Point(line.X2, line.Y2));
 
-				Line l = new Line() { Stroke = Brushes.Black, StrokeThickness = line.Thickness, X1 = p1.X, Y1 = p1.Y, X2 = p2.X, Y2 = p2.Y };
+				Line l = new Line() { Stroke = line.Fill, StrokeThickness = line.Thickness, X1 = p1.X, Y1 = p1.Y, X2 = p2.X, Y2 = p2.Y };
 				canvas.Children.Add(l);
 			}
 
@@ -305,6 +305,10 @@ namespace GUI
 					break;
 
 				case EObservableMessageType.TopologyChanged:
+					Dispatcher.BeginInvoke(new Action(UpdateTopology));
+					break;
+
+				case EObservableMessageType.SwitchStatusChanged:
 					Dispatcher.BeginInvoke(new Action(UpdateTopology));
 					break;
 			}

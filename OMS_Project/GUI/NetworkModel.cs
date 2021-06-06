@@ -130,6 +130,16 @@ namespace GUI
 			this.containers = download.Containers;
 		}
 
+		public IEnumerable<long> GetGIDsByType(DMSType type)
+		{
+			Dictionary<long, IdentifiedObject> container;
+
+			if(!containers.TryGetValue(type, out container))
+				return null;
+
+			return container.Keys;
+		}
+
 		public Tuple<List<Node>, List<RecloserNode>> GetTreesAndReclosers()
 		{
 			return new Tuple<List<Node>, List<RecloserNode>>(trees, reclosers.Values.ToList());

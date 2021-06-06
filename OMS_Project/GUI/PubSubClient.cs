@@ -1,14 +1,16 @@
 ﻿using Common;
+using Common.DataModel;
+using Common.GDA;
 using Common.PubSub;
+using Common.SCADA;
 using Common.WCF;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 
 namespace GUI
 {
-	public enum EObservableMessageType { NetworkModelChanged, MeasurementValuesChanged,
-		TopologyChanged
-	}
+	public enum EObservableMessageType { NetworkModelChanged, MeasurementValuesChanged, TopologyChanged, SwitchStatusChanged }
 
 	public class ObservableMessage
 	{
@@ -20,13 +22,13 @@ namespace GUI
 		}
 	}
 
-	public class PubSubClient : IPubSubClient, IObservable<ObservableMessage>
+	public class PubSubClient : IPubSubClient, Common.IObservable<ObservableMessage>
 	{
 		NetworkModel model;
 		Topology topology;
 		Measurements measurements;
 
-		List<IObserver<ObservableMessage>> observers;
+		List<Common.IObserver<ObservableMessage>> observers;
 		ReaderWriterLockSlim observersLock;
 
 		DuplexClient<ISubscribing, IPubSubClient> client;
@@ -34,7 +36,7 @@ namespace GUI
 
 		public PubSubClient()
 		{
-			observers = new List<IObserver<ObservableMessage>>();
+			observers = new List<Common.IObserver<ObservableMessage>>();
 			observersLock = new ReaderWriterLockSlim();
 			clientLock = new ReaderWriterLockSlim();
 			topology = new Topology();
@@ -84,7 +86,31 @@ namespace GUI
 
 		public bool Download()
 		{
-			return HandleNetworkModelChange(null) && HandleTopologyChange(null);
+			return HandleNetworkModelChange(null) && HandleTopologyChange(null) && DownloadMeasurements();
+		}
+
+		bool DownloadMeasurements()
+		{
+			NetworkModel model = this.Model;
+			List<long> analogs = new List<long>(model.GetGIDsByType(DMSType.Analog));
+			List<long> discretes = new List<long>(model.GetGIDsByType(DMSType.Discrete));
+			List<Tuple<long, float>> analogValues = null;
+			List<Tuple<long, int>> discreteValues = null;
+
+			Client<ISCADAServiceContract> client = new Client<ISCADAServiceContract>("endpointSCADA");
+			client.Connect();
+
+			if(!client.Call<bool>(scada => { analogValues = scada.ReadAnalog(analogs); discreteValues = scada.ReadDiscrete(discretes); return true; }, out _))
+			{
+				client.Disconnect();
+				return false;
+			}
+
+			client.Disconnect();
+
+			measurements.Update(new MeasurementValuesChanged() { AnalogInputs = analogValues, AnalogOutputs = new List<Tuple<long, float>>(0), DiscreteInputs = discreteValues, DiscreteOutputs = new List<Tuple<long, int>>(0) });
+			Notify(new ObservableMessage(EObservableMessageType.MeasurementValuesChanged));
+			return true;
 		}
 
 		bool HandleNetworkModelChange(NetworkModelChanged msg)
@@ -106,6 +132,23 @@ namespace GUI
 		bool HandleMeasurementValuesChange(MeasurementValuesChanged msg)
 		{
 			measurements.Update(msg);
+			NetworkModel model = this.Model;
+
+			foreach(Tuple<long, int> dInput in msg.DiscreteInputs)
+			{
+				IdentifiedObject io = model.Get(dInput.Item1);
+				Discrete d = io as Discrete;
+
+				if(d == null)
+					continue;
+
+				if(d.MeasurementType == MeasurementType.SwitchState)
+				{
+					Notify(new ObservableMessage(EObservableMessageType.SwitchStatusChanged));
+					break;
+				}
+			}
+
 			Notify(new ObservableMessage(EObservableMessageType.MeasurementValuesChanged));
 			return true;
 		}
@@ -143,7 +186,7 @@ namespace GUI
 			}
 		}
 
-		public bool Subscribe(IObserver<ObservableMessage> observer)
+		public bool Subscribe(Common.IObserver<ObservableMessage> observer)
 		{
 			if(observer == null)
 				return false;
@@ -164,7 +207,7 @@ namespace GUI
 			}
 		}
 
-		public bool Unsubscribe(IObserver<ObservableMessage> observer)
+		public bool Unsubscribe(Common.IObserver<ObservableMessage> observer)
 		{
 			if(observer == null)
 				return false;
@@ -187,7 +230,7 @@ namespace GUI
 
 			try
 			{
-				foreach(IObserver<ObservableMessage> observer in observers)
+				foreach(Common.IObserver<ObservableMessage> observer in observers)
 				{
 					observer.Notify(message);
 				}
