@@ -286,6 +286,9 @@ namespace SCADA
 				}
 				catch(SocketException e)
 				{
+					sendOffset = 0;
+					headOffset = int.MaxValue;
+					recvOffset = int.MaxValue;
 					Reconnect();
 					Thread.Sleep(100);
 				}

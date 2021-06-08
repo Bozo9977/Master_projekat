@@ -99,7 +99,7 @@ namespace GUI.View
 
 				measGrid.RowDefinitions.Add(new RowDefinition());
 				TextBlock mridTextBlock = new TextBlock() { Text = meas.MRID, Foreground = Brushes.Blue, TextDecorations = TextDecorations.Underline, Cursor = Cursors.Hand };
-				mridTextBlock.MouseLeftButtonDown += (x, y) => new ElementWindow(measGID, pubSub).Show();
+				mridTextBlock.MouseLeftButtonDown += (x, y) => new ElementWindow(measGID, pubSub).ShowDialog();
 				AddToGrid(measGrid, mridTextBlock, row, 0);
 				AddToGrid(measGrid, new TextBlock() { Text = meas.Direction.ToString() }, row, 2);
 

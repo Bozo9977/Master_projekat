@@ -24,7 +24,7 @@ namespace CIMXML_Editor
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-		enum EKey : byte { Up, Down, Left, Right, MoveUp, MoveDown, MoveLeft, MoveRight, In, Out, Rotate, RotateGroup, DeselectAll, Add, Deselect, Edit, Delete, ShowRefs, Copy, Paste, Save, Load, Export, Count }
+		enum EKey : byte { Up, Down, Left, Right, MoveUp, MoveDown, MoveLeft, MoveRight, In, Out, Rotate, RotateGroup, DeselectAll, Add, Deselect, Edit, Delete, ShowRefs, Copy, Paste, Save, Load, Export, Functions, Count }
 		uint keys;
 		const byte repeatedKeysCount = 12;
 		Action[] keyActions;
@@ -45,13 +45,15 @@ namespace CIMXML_Editor
 		Dictionary<Class, int> typeCounts;
 		Dictionary<Class, bool> showRefs;
 		List<Node> copiedNodes;
+		List<Tuple<string, Action>> functions;
 
 		public MainWindow()
 		{
 			InitializeComponent();
 
-			keyActions = new Action[(byte)EKey.Count] { Up, Down, Left, Right, MoveUp, MoveDown, MoveLeft, MoveRight, In, Out, Rotate, RotateGroup, DeselectAll, Add, Deselect, Edit, Delete, ShowRefs, Copy, Paste, Save, Load, Export };
-			
+			keyActions = new Action[(byte)EKey.Count] { Up, Down, Left, Right, MoveUp, MoveDown, MoveLeft, MoveRight, In, Out, Rotate, RotateGroup, DeselectAll, Add, Deselect, Edit, Delete, ShowRefs, Copy, Paste, Save, Load, Export, Functions };
+			functions = new List<Tuple<string, Action>>(1) { new Tuple<string, Action>("Add Measurements", AddMeasurements) };
+
 			profile = new Profile();
 			classToModel = new Dictionary<string, NodeModel>(profile.ConcreteClasses.Count);
 			classToModel["ConnectivityNode"] = new NodeModels.ConnectivityNode();
@@ -73,6 +75,71 @@ namespace CIMXML_Editor
 
 			timer = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(32) };
 			timer.Tick += Timer_Tick;
+		}
+
+		private void AddMeasurements()
+		{
+			Class switchClass = profile.Classes["Switch"];
+			Class discreteClass = profile.Classes["Discrete"];
+			NodeModel discreteModel = classToModel["Discrete"];
+			int baseAddress = 1;
+			int disreteID = 1;
+
+			List<Node> newNodes = new List<Node>();
+
+			foreach(Node node in nodes.Values)
+			{
+				Instance instance = node.Instance;
+
+				if(!instance.Class.IsSubtypeOf(switchClass))
+					continue;
+
+				string mRID = "Discrete_" + disreteID;
+				Instance switchStateMeas = new Instance(discreteClass);
+				switchStateMeas.SetProperty("mRID", mRID);
+				switchStateMeas.SetProperty("name", mRID);
+				switchStateMeas.SetProperty("baseAddress", baseAddress.ToString());
+				switchStateMeas.SetProperty("direction", "ReadWrite");
+				switchStateMeas.SetProperty("measurementType", "SwitchState");
+				switchStateMeas.SetProperty("PowerSystemResource", instance.GetProperty("mRID"));
+				switchStateMeas.SetProperty("maxValue", "1");
+				switchStateMeas.SetProperty("minValue", "0");
+				switchStateMeas.SetProperty("normalValue", instance.GetProperty("normalOpen") == "true" ? "1" : "0");
+				Node newNode = new Node(node.X + 1.5, node.Y, 0, 1, discreteModel, switchStateMeas);
+				node.UpdateOutReferences();
+
+				newNodes.Add(newNode);
+				++baseAddress;
+				++disreteID;
+			}
+
+			foreach(Node node in newNodes)
+			{
+				string mrid = node.Instance.GetProperty("mRID");
+				nodes.Add(mrid, node);
+
+				foreach(string target in node.OutReferences)
+				{
+					Node targetNode;
+
+					if(!nodes.TryGetValue(target, out targetNode))
+						continue;
+
+					targetNode.AddInReference(mrid);
+				}
+			}
+		}
+
+		private void Functions()
+		{
+			PickWindow pw = new PickWindow(functions.Select(x => x.Item1));
+			pw.ShowDialog();
+
+			if(pw.Result < 0 || pw.Result >= functions.Count)
+				return;
+
+			functions[pw.Result].Item2();
+			Redraw();
 		}
 
 		private void RotateGroup()
@@ -747,6 +814,9 @@ namespace CIMXML_Editor
 
 				case Key.T:
 					return EKey.RotateGroup;
+
+				case Key.F:
+					return EKey.Functions;
 			}
 
 			return EKey.Count;

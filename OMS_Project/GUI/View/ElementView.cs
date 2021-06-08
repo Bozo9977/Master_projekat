@@ -149,7 +149,7 @@ namespace GUI.View
 				if(value.Item3 == PropertyType.Reference && (long)value.Item2 != 0)
 				{
 					tbValue = new TextBlock() { Text = value.Item2.ToString(), Foreground = Brushes.Blue, TextDecorations = TextDecorations.Underline, Cursor = Cursors.Hand, TextAlignment = TextAlignment.Right };
-					tbValue.MouseLeftButtonDown += (x, y) => new ElementWindow((long)value.Item2, pubSub).Show();
+					tbValue.MouseLeftButtonDown += (x, y) => new ElementWindow((long)value.Item2, pubSub).ShowDialog();
 				}
 				else
 				{

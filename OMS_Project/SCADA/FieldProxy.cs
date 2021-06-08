@@ -220,7 +220,7 @@ namespace SCADA
 			{
 				int address = inputAddresses[i];
 
-				if(address == runStart + runCount)
+				if(runCount < 124 && address == runStart + runCount)
 				{
 					runCount += 2;
 				}
