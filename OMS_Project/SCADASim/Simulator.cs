@@ -116,16 +116,16 @@ namespace SCADASim
 			
 			HashSet<int> readWriteMeasurementAddresses = new HashSet<int>();
 
-			foreach(KeyValuePair<long, Analog> a in download.Analogs)
+			foreach(Analog a in download.Analogs.Values)
 			{
-				if(a.Value.Direction == SignalDirection.ReadWrite)
-					readWriteMeasurementAddresses.Add(a.Value.BaseAddress);
+				if(a.Direction == SignalDirection.ReadWrite)
+					readWriteMeasurementAddresses.Add(a.BaseAddress);
 			}
 
-			foreach(KeyValuePair<long, Discrete> d in download.Discretes)
+			foreach(Discrete d in download.Discretes.Values)
 			{
-				if(d.Value.Direction == SignalDirection.ReadWrite)
-					readWriteMeasurementAddresses.Add(d.Value.BaseAddress);
+				if(d.Direction == SignalDirection.ReadWrite)
+					readWriteMeasurementAddresses.Add(d.BaseAddress);
 			}
 
 			modelLock.EnterWriteLock();
@@ -135,6 +135,18 @@ namespace SCADASim
 				this.readWriteMeasurementAddresses = readWriteMeasurementAddresses;
 			}
 			modelLock.ExitWriteLock();
+
+			foreach(Analog a in download.Analogs.Values)
+			{
+				if(a.Direction == SignalDirection.ReadWrite)
+					SetAnalogInput(a.BaseAddress, a.NormalValue);
+			}
+
+			foreach(Discrete d in download.Discretes.Values)
+			{
+				if(d.Direction == SignalDirection.ReadWrite)
+					SetDiscreteInput(d.BaseAddress, d.NormalValue);
+			}
 
 			return true;
 		}

@@ -1,6 +1,6 @@
 ﻿using Common.PubSub;
-using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 namespace GUI
 {
@@ -41,24 +41,24 @@ namespace GUI
 
 		public void Update(MeasurementValuesChanged message)
 		{
-			foreach(Tuple<long, float> a in message.AnalogInputs)
+			foreach(KeyValuePair<long, float> a in message.AnalogInputs)
 			{
-				analogInputs[a.Item1] = a.Item2;
+				analogInputs[a.Key] = a.Value;
 			}
 
-			foreach(Tuple<long, float> a in message.AnalogOutputs)
+			foreach(KeyValuePair<long, float> a in message.AnalogOutputs)
 			{
-				analogOutputs[a.Item1] = a.Item2;
+				analogOutputs[a.Key] = a.Value;
 			}
 
-			foreach(Tuple<long, int> d in message.DiscreteInputs)
+			foreach(KeyValuePair<long, int> d in message.DiscreteInputs)
 			{
-				discreteInputs[d.Item1] = d.Item2;
+				discreteInputs[d.Key] = d.Value;
 			}
 
-			foreach(Tuple<long, int> d in message.DiscreteOutputs)
+			foreach(KeyValuePair<long, int> d in message.DiscreteOutputs)
 			{
-				discreteOutputs[d.Item1] = d.Item2;
+				discreteOutputs[d.Key] = d.Value;
 			}
 		}
 	}

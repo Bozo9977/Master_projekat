@@ -26,12 +26,16 @@ namespace CalculationEngine
 		List<Node> adjacency;
 		Dictionary<DMSType, Dictionary<long, IdentifiedObject>> containers;
 		Dictionary<DMSType, ModelCode> dmsTypeToModelCodeMap;
+		IReadOnlyDictionary<long, float> analogs;
+		IReadOnlyDictionary<long, int> discretes;
 
-		public TopologyGraph(Dictionary<DMSType, Dictionary<long, IdentifiedObject>> containers)
+		public TopologyGraph(Dictionary<DMSType, Dictionary<long, IdentifiedObject>> containers, IReadOnlyDictionary<long, float> analogs, IReadOnlyDictionary<long, int> discretes)
 		{
 			subGraphs = new List<Node>();
 			adjacency = new List<Node>();
 			this.containers = containers;
+			this.analogs = analogs;
+			this.discretes = discretes;
 			dmsTypeToModelCodeMap = ModelResourcesDesc.GetTypeToModelCodeMap();
 
 			BuildGraph();
@@ -188,7 +192,7 @@ namespace CalculationEngine
 
 						int switchState;
 
-						if(d == null || !Measurements.Instance.TryGetDiscrete(d.GID, out switchState))
+						if(d == null || !discretes.TryGetValue(d.GID, out switchState))
 						{
 							energization = EEnergization.Unknown;
 						}

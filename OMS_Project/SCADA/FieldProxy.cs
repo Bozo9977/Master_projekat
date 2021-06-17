@@ -54,9 +54,9 @@ namespace SCADA
 			byAddress = new Dictionary<int, List<long>>();
 		}
 
-		public List<Tuple<long, float>> ReadAnalog(List<long> gids)
+		public List<KeyValuePair<long, float>> ReadAnalog(List<long> gids)
 		{
-			List<Tuple<long, float>> result = new List<Tuple<long, float>>(gids.Count);
+			List<KeyValuePair<long, float>> result = new List<KeyValuePair<long, float>>(gids.Count);
 
 			foreach(long gid in gids)
 			{
@@ -74,15 +74,15 @@ namespace SCADA
 				float value;
 				GetValues(high, low, out value, out _);
 
-				result.Add(new Tuple<long, float>(gid, value));
+				result.Add(new KeyValuePair<long, float>(gid, value));
 			}
 
 			return result;
 		}
 
-		public List<Tuple<long, int>> ReadDiscrete(List<long> gids)
+		public List<KeyValuePair<long, int>> ReadDiscrete(List<long> gids)
 		{
-			List<Tuple<long, int>> result = new List<Tuple<long, int>>(gids.Count);
+			List<KeyValuePair<long, int>> result = new List<KeyValuePair<long, int>>(gids.Count);
 
 			foreach(long gid in gids)
 			{
@@ -100,7 +100,7 @@ namespace SCADA
 				int value;
 				GetValues(high, low, out _, out value);
 
-				result.Add(new Tuple<long, int>(gid, value));
+				result.Add(new KeyValuePair<long, int>(gid, value));
 			}
 
 			return result;
@@ -245,10 +245,10 @@ namespace SCADA
 			}
 			modelLock.ExitWriteLock();
 
-			List<Tuple<long, float>> analogInputs = new List<Tuple<long, float>>();
-			List<Tuple<long, float>> analogOutputs = new List<Tuple<long, float>>();
-			List<Tuple<long, int>> discreteInputs = new List<Tuple<long, int>>();
-			List<Tuple<long, int>> discreteOutputs = new List<Tuple<long, int>>();
+			List<KeyValuePair<long, float>> analogInputs = new List<KeyValuePair<long, float>>();
+			List<KeyValuePair<long, float>> analogOutputs = new List<KeyValuePair<long, float>>();
+			List<KeyValuePair<long, int>> discreteInputs = new List<KeyValuePair<long, int>>();
+			List<KeyValuePair<long, int>> discreteOutputs = new List<KeyValuePair<long, int>>();
 
 			foreach(KeyValuePair<int, List<long>> addressEntry in byAddress)
 			{
@@ -282,16 +282,16 @@ namespace SCADA
 							switch(a.Direction)
 							{
 								case SignalDirection.Read:
-									analogInputs.Add(new Tuple<long, float>(gid, analogIn));
+									analogInputs.Add(new KeyValuePair<long, float>(gid, analogIn));
 									break;
 
 								case SignalDirection.Write:
-									analogOutputs.Add(new Tuple<long, float>(gid, analogOut));
+									analogOutputs.Add(new KeyValuePair<long, float>(gid, analogOut));
 									break;
 
 								case SignalDirection.ReadWrite:
-									analogInputs.Add(new Tuple<long, float>(gid, analogIn));
-									analogOutputs.Add(new Tuple<long, float>(gid, analogOut));
+									analogInputs.Add(new KeyValuePair<long, float>(gid, analogIn));
+									analogOutputs.Add(new KeyValuePair<long, float>(gid, analogOut));
 									break;
 
 								default:
@@ -309,16 +309,16 @@ namespace SCADA
 							switch(d.Direction)
 							{
 								case SignalDirection.Read:
-									discreteInputs.Add(new Tuple<long, int>(gid, discreteIn));
+									discreteInputs.Add(new KeyValuePair<long, int>(gid, discreteIn));
 									break;
 
 								case SignalDirection.Write:
-									discreteOutputs.Add(new Tuple<long, int>(gid, discreteOut));
+									discreteOutputs.Add(new KeyValuePair<long, int>(gid, discreteOut));
 									break;
 
 								case SignalDirection.ReadWrite:
-									discreteInputs.Add(new Tuple<long, int>(gid, discreteIn));
-									discreteOutputs.Add(new Tuple<long, int>(gid, discreteOut));
+									discreteInputs.Add(new KeyValuePair<long, int>(gid, discreteIn));
+									discreteOutputs.Add(new KeyValuePair<long, int>(gid, discreteOut));
 									break;
 
 								default:
@@ -372,9 +372,9 @@ namespace SCADA
 				}
 				modelLock.ExitReadLock();
 
-				foreach(IModbusFunction f in functions)
+				for(int i = 0; i < functions.Count; ++i)
 				{
-					modbusClient.EnqueueCommand(f);
+					modbusClient.EnqueueCommand(functions[i]);
 				}
 			}
 		}
@@ -436,42 +436,29 @@ namespace SCADA
 			if(updatedAnalogInputs.Count == 0 && updatedAnalogOutputs.Count == 0 && updatedDiscreteInputs.Count == 0 && updatedDiscreteOutputs.Count == 0)
 				return;
 
-			List<Tuple<long, float>> analogInputs = new List<Tuple<long, float>>();
-			List<Tuple<long, float>> analogOutputs = new List<Tuple<long, float>>();
-			List<Tuple<long, int>> discreteInputs = new List<Tuple<long, int>>();
-			List<Tuple<long, int>> discreteOutputs = new List<Tuple<long, int>>();
-
-			foreach(KeyValuePair<long, float> a in updatedAnalogInputs)
-			{
-				analogInputs.Add(new Tuple<long, float>(a.Key, a.Value));
-			}
-
-			foreach(KeyValuePair<long, float> a in updatedAnalogOutputs)
-			{
-				analogOutputs.Add(new Tuple<long, float>(a.Key, a.Value));
-			}
-
-			foreach(KeyValuePair<long, int> d in updatedDiscreteInputs)
-			{
-				discreteInputs.Add(new Tuple<long, int>(d.Key, d.Value));
-			}
-
-			foreach(KeyValuePair<long, int> d in updatedDiscreteOutputs)
-			{
-				discreteOutputs.Add(new Tuple<long, int>(d.Key, d.Value));
-			}
-
-			PublishMeasurementValues(analogInputs, analogOutputs, discreteInputs, discreteOutputs);
+			PublishMeasurementValues(updatedAnalogInputs, updatedAnalogOutputs, updatedDiscreteInputs, updatedDiscreteOutputs);
 		}
 
-		void PublishMeasurementValues(List<Tuple<long, float>> analogInputs, List<Tuple<long, float>> analogOutputs, List<Tuple<long, int>> discreteInputs, List<Tuple<long, int>> discreteOutputs)
+		void PublishMeasurementValues(IEnumerable<KeyValuePair<long, float>> analogInputs, IEnumerable<KeyValuePair<long, float>> analogOutputs, IEnumerable<KeyValuePair<long, int>> discreteInputs, IEnumerable<KeyValuePair<long, int>> discreteOutputs)
 		{
+			List<long> gids = new List<long>();
+
+			foreach(KeyValuePair<long, float> kvp in analogInputs)
+			{
+				gids.Add(kvp.Key);
+			}
+
+			foreach(KeyValuePair<long, int> kvp in discreteInputs)
+			{
+				gids.Add(kvp.Key);
+			}
+
 			Client<ICalculationEngineServiceContract> ceClient = new Client<ICalculationEngineServiceContract>("endpointCE");
 			ceClient.Connect();
 
 			ceClient.Call<bool>(ce =>
 			{
-				ce.UpdateMeasurements(analogInputs, discreteInputs);
+				ce.UpdateMeasurements(gids);
 				return true;
 			}, out _);
 
@@ -482,7 +469,7 @@ namespace SCADA
 
 			pubClient.Call<bool>(pub =>
 			{
-				pub.Publish(new MeasurementValuesChanged() { AnalogInputs = analogInputs, AnalogOutputs = analogOutputs, DiscreteInputs = discreteInputs, DiscreteOutputs = discreteOutputs });
+				pub.Publish(new MeasurementValuesChanged() { AnalogInputs = new List<KeyValuePair<long, float>>(analogInputs), AnalogOutputs = new List<KeyValuePair<long, float>>(analogOutputs), DiscreteInputs = new List<KeyValuePair<long, int>>(discreteInputs), DiscreteOutputs = new List<KeyValuePair<long, int>>(discreteOutputs) });
 				return true;
 			}, out _);
 

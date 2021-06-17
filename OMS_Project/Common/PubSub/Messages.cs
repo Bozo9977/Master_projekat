@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace Common.PubSub
@@ -22,16 +21,16 @@ namespace Common.PubSub
 		}
 
 		[DataMember]
-		public List<Tuple<long, float>> AnalogInputs { get; set; }
+		public List<KeyValuePair<long, float>> AnalogInputs { get; set; }
 
 		[DataMember]
-		public List<Tuple<long, float>> AnalogOutputs { get; set; }
+		public List<KeyValuePair<long, float>> AnalogOutputs { get; set; }
 
 		[DataMember]
-		public List<Tuple<long, int>> DiscreteInputs { get; set; }
+		public List<KeyValuePair<long, int>> DiscreteInputs { get; set; }
 
 		[DataMember]
-		public List<Tuple<long, int>> DiscreteOutputs { get; set; }
+		public List<KeyValuePair<long, int>> DiscreteOutputs { get; set; }
 	}
 
 	[DataContract]

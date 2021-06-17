@@ -16,7 +16,12 @@ namespace GUI
 			bool ok;
 
 			if(!client.Call<bool>((ce) => Get(ce), out ok) || !ok)
+			{
+				client.Disconnect();
 				return false;
+			}
+
+			client.Disconnect();
 
 			return true;
 		}

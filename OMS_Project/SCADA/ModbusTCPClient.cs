@@ -230,6 +230,9 @@ namespace SCADA
 
 				if(socket == null)
 				{
+					sendOffset = 0;
+					headOffset = int.MaxValue;
+					recvOffset = int.MaxValue;
 					Reconnect();
 					Thread.Sleep(100);
 					continue;
@@ -286,11 +289,14 @@ namespace SCADA
 				}
 				catch(SocketException e)
 				{
-					sendOffset = 0;
-					headOffset = int.MaxValue;
-					recvOffset = int.MaxValue;
-					Reconnect();
-					Thread.Sleep(100);
+					if(e.SocketErrorCode != SocketError.WouldBlock)
+					{
+						socket = null;
+					}
+				}
+				catch(Exception e)
+				{
+					socket = null;
 				}
 			}
 		}

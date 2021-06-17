@@ -77,19 +77,8 @@ namespace CalculationEngine
 					return;
 
 				TopologyModel.Instance = transactionModel;
-				Measurements.Instance.UpdateModel();
+				transactionModel.DownloadMeasurements(null);
 				transactionModel = null;
-
-				Client<IPublishing> pubClient = new Client<IPublishing>("publishingEndpoint");
-				pubClient.Connect();
-
-				pubClient.Call<bool>(pub =>
-				{
-					pub.Publish(new TopologyChanged());
-					return true;
-				}, out _);
-
-				pubClient.Disconnect();
 			}
 		}
 
@@ -110,12 +99,9 @@ namespace CalculationEngine
 			return TopologyModel.Instance.GetLineEnergization();
 		}
 
-		public void UpdateMeasurements(List<Tuple<long, float>> analogInputs, List<Tuple<long, int>> discreteInputs)
+		public void UpdateMeasurements(List<long> gids)
 		{
-			Measurements measurements = Measurements.Instance;
-			measurements.SetAnalogs(analogInputs);
-			measurements.SetDiscretes(discreteInputs);
-			TopologyModel.Instance.MeasurementsUpdated(analogInputs, discreteInputs);
+			TopologyModel.Instance.DownloadMeasurements(gids);
 		}
 	}
 }

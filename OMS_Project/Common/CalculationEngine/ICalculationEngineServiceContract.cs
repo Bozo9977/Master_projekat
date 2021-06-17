@@ -17,6 +17,6 @@ namespace Common.CalculationEngine
 		List<Tuple<long, List<Tuple<long, long>>, List<Tuple<long, long>>>> GetLineEnergization();
 
 		[OperationContract(IsOneWay = true)]
-		void UpdateMeasurements(List<Tuple<long, float>> analogInputs, List<Tuple<long, int>> discreteInputs);
+		void UpdateMeasurements(List<long> gids);
 	}
 }

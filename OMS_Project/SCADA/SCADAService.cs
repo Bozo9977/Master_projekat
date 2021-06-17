@@ -15,7 +15,7 @@ namespace SCADA
 		static SCADAModel transactionModel;
 		static List<long> inserted, updated, deleted;
 
-		public List<Tuple<long, float>> ReadAnalog(List<long> gids)
+		public List<KeyValuePair<long, float>> ReadAnalog(List<long> gids)
 		{
 			if(gids == null)
 				return null;
@@ -23,7 +23,7 @@ namespace SCADA
 			return FieldProxy.Instance.ReadAnalog(gids);
 		}
 
-		public List<Tuple<long, int>> ReadDiscrete(List<long> gids)
+		public List<KeyValuePair<long, int>> ReadDiscrete(List<long> gids)
 		{
 			if(gids == null)
 				return null;

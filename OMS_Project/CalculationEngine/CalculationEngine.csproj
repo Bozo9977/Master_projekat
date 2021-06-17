@@ -45,7 +45,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CalculationEngineService.cs" />
-    <Compile Include="Measurements.cs" />
     <Compile Include="TopologyGraph.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

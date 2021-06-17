@@ -27,7 +27,6 @@ namespace CalculationEngine
 
 			Console.WriteLine("Downloaded network model from NMS.");
 
-			Measurements.Instance = new Measurements();
 			TopologyModel model = new TopologyModel();
 
 			if(!model.ApplyUpdate(download))
@@ -41,16 +40,7 @@ namespace CalculationEngine
 			foreach(ServiceEndpoint endpoint in host.Description.Endpoints)
 				Console.WriteLine(endpoint.ListenUri);
 
-			Client<IPublishing> pubClient = new Client<IPublishing>("publishingEndpoint");
-			pubClient.Connect();
-
-			pubClient.Call<bool>(pub =>
-			{
-				pub.Publish(new TopologyChanged());
-				return true;
-			}, out _);
-
-			pubClient.Disconnect();
+			model.DownloadMeasurements(null);
 
 			Console.WriteLine("[Press Enter to stop]");
 			Console.ReadLine();

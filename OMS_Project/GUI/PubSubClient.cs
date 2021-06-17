@@ -86,7 +86,7 @@ namespace GUI
 
 		public bool Download()
 		{
-			return HandleNetworkModelChange(null) && HandleTopologyChange(null) && DownloadMeasurements();
+			return HandleNetworkModelChange(null) & HandleTopologyChange(null) & DownloadMeasurements();
 		}
 
 		bool DownloadMeasurements()
@@ -94,8 +94,8 @@ namespace GUI
 			NetworkModel model = this.Model;
 			List<long> analogs = new List<long>(model.GetGIDsByType(DMSType.Analog));
 			List<long> discretes = new List<long>(model.GetGIDsByType(DMSType.Discrete));
-			List<Tuple<long, float>> analogValues = null;
-			List<Tuple<long, int>> discreteValues = null;
+			List<KeyValuePair<long, float>> analogValues = null;
+			List<KeyValuePair<long, int>> discreteValues = null;
 
 			Client<ISCADAServiceContract> client = new Client<ISCADAServiceContract>("endpointSCADA");
 			client.Connect();
@@ -108,7 +108,7 @@ namespace GUI
 
 			client.Disconnect();
 
-			measurements.Update(new MeasurementValuesChanged() { AnalogInputs = analogValues, AnalogOutputs = new List<Tuple<long, float>>(0), DiscreteInputs = discreteValues, DiscreteOutputs = new List<Tuple<long, int>>(0) });
+			measurements.Update(new MeasurementValuesChanged() { AnalogInputs = analogValues, AnalogOutputs = new List<KeyValuePair<long, float>>(0), DiscreteInputs = discreteValues, DiscreteOutputs = new List<KeyValuePair<long, int>>(0) });
 			Notify(new ObservableMessage(EObservableMessageType.MeasurementValuesChanged));
 			return true;
 		}
@@ -134,9 +134,9 @@ namespace GUI
 			measurements.Update(msg);
 			NetworkModel model = this.Model;
 
-			foreach(Tuple<long, int> dInput in msg.DiscreteInputs)
+			foreach(KeyValuePair<long, int> dInput in msg.DiscreteInputs)
 			{
-				IdentifiedObject io = model.Get(dInput.Item1);
+				IdentifiedObject io = model.Get(dInput.Key);
 				Discrete d = io as Discrete;
 
 				if(d == null)
