@@ -1,25 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Common.DataModel;
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Shapes;
 
 namespace GUI
 {
-	interface IGraphicsLine
-	{
-		double X1 { get; }
-		double Y1 { get; }
-		double X2 { get; }
-		double Y2 { get; }
-		double Thickness { get; }
-		Rect AABB { get; }
-		Brush Fill { get; }
-	}
-
-	class GraphicsLine : IGraphicsLine
+	class GraphicsLine : IGraphicsElement
 	{
 		public double X1 { get; set; }
 		public double Y1 { get; set; }
@@ -27,6 +13,7 @@ namespace GUI
 		public double Y2 { get; set; }
 		public double Thickness { get; set; }
 		public Brush Fill { get; set; }
+		public IdentifiedObject IO { get { return null; } }
 
 		public GraphicsLine(IElementLayout element1, IElementLayout element2, Brush fill)
 		{
@@ -44,6 +31,14 @@ namespace GUI
 			{
 				return new Rect(new Point(X1, Y1), new Point(X2, Y2));
 			}
+		}
+
+		public UIElement[] Draw(ViewTransform vt)
+		{
+			Point p1 = vt.Transform.Transform(new Point(X1, Y1));
+			Point p2 = vt.Transform.Transform(new Point(X2, Y2));
+
+			return new UIElement[] { new Line() { Stroke = Fill, StrokeThickness = Thickness, X1 = p1.X, Y1 = p1.Y, X2 = p2.X, Y2 = p2.Y } };
 		}
 	}
 }

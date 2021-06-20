@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 
 namespace GUI
@@ -32,7 +30,7 @@ namespace GUI
 
 		NetworkModelDrawing drawing;
 		PubSubClient client;
-		Tuple<List<GraphicsElement>, List<GraphicsLine>> elements;
+		IReadOnlyList<IGraphicsElement> elements;
 
 		public MainWindow()
 		{
@@ -50,7 +48,6 @@ namespace GUI
 			client.Reconnect();
 			client.Download();
 
-			elements = new Tuple<List<GraphicsElement>, List<GraphicsLine>>(new List<GraphicsElement>(), new List<GraphicsLine>());
 			canvas.Focus();
 		}
 
@@ -227,48 +224,30 @@ namespace GUI
 
 		private void Redraw()
 		{
-			Tuple<List<GraphicsElement>, List<GraphicsLine>> result = drawing.Draw();
+			IReadOnlyList<IGraphicsElement> elements = drawing.Draw();
 
-			if(result == null)
+			if(elements == null)
 				return;
 
 			canvas.Children.Clear();
+			ViewTransform vt = new ViewTransform(canvasPos.Left, canvasPos.Top, canvasSize.Y * zoom);
 
-			TranslateTransform tt = new TranslateTransform(-canvasPos.Left, -canvasPos.Top);
-			ScaleTransform st = new ScaleTransform(canvasSize.Y * zoom, canvasSize.Y * zoom);
-			TransformGroup tg = new TransformGroup() { Children = new TransformCollection() { tt, st } };
-
-			foreach(GraphicsLine line in result.Item2)
+			for(int i = 0; i < elements.Count; ++i)
 			{
-				Rect aabb = line.AABB;
+				IGraphicsElement element = elements[i];
 
-				if(!aabb.IntersectsWith(canvasPos))
-					continue;
-
-				Point p1 = tg.Transform(new Point(line.X1, line.Y1));
-				Point p2 = tg.Transform(new Point(line.X2, line.Y2));
-
-				Line l = new Line() { Stroke = line.Fill, StrokeThickness = line.Thickness, X1 = p1.X, Y1 = p1.Y, X2 = p2.X, Y2 = p2.Y };
-				canvas.Children.Add(l);
-			}
-
-			foreach(GraphicsElement element in result.Item1)
-			{
 				if(!element.AABB.IntersectsWith(canvasPos))
 					continue;
 
-				Shape[] shapes = element.Draw();
+				UIElement[] shapes = element.Draw(vt);
 
-				foreach(Shape shape in shapes)
+				for(int j = 0; j < shapes.Length; ++j)
 				{
-					TransformCollection tc = ((TransformGroup)shape.RenderTransform).Children;
-					tc.Add(tt);
-					tc.Add(st);
-					canvas.Children.Add(shape);
+					canvas.Children.Add(shapes[j]);
 				}
 			}
 
-			elements = result;
+			this.elements = elements;
 		}
 
 		private void canvas_Loaded(object sender, RoutedEventArgs e)
@@ -342,28 +321,34 @@ namespace GUI
 			Point mousePos = e.GetPosition(canvas);
 			Point globalPoint = new Point((mousePos.X / canvasSize.X) * canvasPos.Width + canvasPos.Left, (mousePos.Y / canvasSize.Y) * canvasPos.Height + canvasPos.Top);
 
-			List<GraphicsElement> selected = new List<GraphicsElement>();
+			IGraphicsElement selected = null;
 
 			double x = globalPoint.X - DX / 2;
 			double y = globalPoint.Y - DY / 2;
 
-			foreach(GraphicsElement element in elements.Item1)
+			for(int i = 0; i < elements.Count; ++i)
 			{
-				double dx = element.X - x;
-				double dy = element.Y - y;
+				IGraphicsElement element = elements[i];
+
+				if(element.IO == null)
+					continue;
+
+				Rect aabb = element.AABB;
+				Point center = new Point(aabb.Left + aabb.Width / 2, aabb.Top + aabb.Height / 2);
+				double dx = center.X - x;
+				double dy = center.Y - y;
 
 				if(dx >= 0 && dx < DX && dy >= 0 && dy < DY)
 				{
-					selected.Add(element);
+					selected = element;
+					break;
 				}
 			}
 
-			if(selected.Count != 1)
-			{
+			if(selected == null)
 				return;
-			}
 
-			new ElementWindow(selected[0].Element.IO.GID, client).Show();
+			new ElementWindow(selected.IO.GID, client).Show();
 		}
 	}
 }

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Common.DataModel;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Shapes;
@@ -11,14 +7,10 @@ namespace GUI
 {
 	public interface IGraphicsElement
 	{
-		double X { get; }
-		double Y { get; }
-		double Angle { get; }
-		double Scale { get; }
-		GraphicsModel Model { get; }
 		Rect AABB { get; }
+		IdentifiedObject IO { get; }
 
-		Shape[] Draw();
+		UIElement[] Draw(ViewTransform vt);
 	}
 
 	public class GraphicsElement : IGraphicsElement
@@ -29,6 +21,7 @@ namespace GUI
 		public double Scale { get { return 0.5; } }
 		public GraphicsModel Model { get; private set; }
 		public IElementLayout Element { get; private set; }
+		public IdentifiedObject IO { get { return Element == null ? null : Element.IO; } }
 		public Brush Fill { get; private set; }
 
 		public GraphicsElement(IElementLayout element, Brush fill)
@@ -38,23 +31,19 @@ namespace GUI
 			Fill = fill;
 		}
 
-		public Shape[] Draw()
+		public UIElement[] Draw(ViewTransform vt)
 		{
-			Shape[] s = Model.Draw();
-			ScaleTransform st = new ScaleTransform(Scale, Scale);
-			RotateTransform rt = new RotateTransform(Angle);
-			TranslateTransform tt = new TranslateTransform(X, Y);
+			Shape[] shapes = Model.Draw();
+			TransformGroup tg = new TransformGroup() { Children = new TransformCollection() { new ScaleTransform(Scale, Scale), new RotateTransform(Angle), new TranslateTransform(X, Y), vt.Transform } };
 
-			for(int i = 0; i < s.Length; ++i)
+			for(int i = 0; i < shapes.Length; ++i)
 			{
-				TransformCollection tc = ((TransformGroup)s[i].RenderTransform).Children;
-				tc.Add(st);
-				tc.Add(rt);
-				tc.Add(tt);
-				s[i].Fill = Fill;
+				Shape shape = shapes[i];
+				((TransformGroup)shape.RenderTransform).Children.Add(tg);
+				shape.Fill = Fill;
 			}
 			
-			return s;
+			return shapes;
 		}
 
 		public Rect AABB

@@ -80,6 +80,9 @@ namespace GUI
 			HashSet<long> unknownNodes = new HashSet<long>();
 			HashSet<long> energizedNodes = new HashSet<long>();
 
+			if(topology == null)
+				return;
+
 			for(int i1 = 0; i1 < topology.Count; ++i1)
 			{
 				Tuple<long, List<Tuple<long, long>>, List<Tuple<long, long>>> source = topology[i1];

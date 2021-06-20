@@ -57,6 +57,7 @@
     </ApplicationDefinition>
     <Compile Include="Topology.cs" />
     <Compile Include="TopologyDownload.cs" />
+    <Compile Include="ViewTransform.cs" />
     <Compile Include="View\ConductingEquipmentView.cs" />
     <Compile Include="ElementWindow.xaml.cs">
       <DependentUpon>ElementWindow.xaml</DependentUpon>

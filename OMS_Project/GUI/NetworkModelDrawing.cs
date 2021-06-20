@@ -120,15 +120,13 @@ namespace GUI
 		NodeLayout root;
 		List<RecloserLayout> reclosers;
 
-		List<GraphicsElement> elements;
-		List<GraphicsLine> lines;
+		List<IGraphicsElement> elements;
 
 		public NetworkModelDrawing()
 		{
 			networkModelChanged = true;
 			topologyChanged = true;
-			elements = new List<GraphicsElement>(0);
-			lines = new List<GraphicsLine>(0);
+			elements = new List<IGraphicsElement>(0);
 			dmsTypeToModelCodeMap = ModelResourcesDesc.GetTypeToModelCodeMap();
 		}
 
@@ -518,8 +516,8 @@ namespace GUI
 
 			topologyChanged = false;
 
-			List<GraphicsElement> elements = new List<GraphicsElement>();
-			List<GraphicsLine> lines = new List<GraphicsLine>();
+			List<IGraphicsElement> elements = new List<IGraphicsElement>();
+			List<IGraphicsElement> lines = new List<IGraphicsElement>();
 
 			foreach(NodeLayout tree in root.Children)
 			{
@@ -546,8 +544,8 @@ namespace GUI
 				lines.Add(new GraphicsLine(r.Node2, r, GetLineColor(r.Node2.IO, r.IO)));
 			}
 
-			this.elements = elements;
-			this.lines = lines;
+			lines.AddRange(elements);
+			this.elements = lines;
 		}
 
 		Brush GetNodeColor(IdentifiedObject io)
@@ -582,7 +580,7 @@ namespace GUI
 					}
 					else
 					{
-						return Brushes.Blue;		//open
+						return Brushes.Blue;	//open
 					}
 				}
 			}
@@ -609,11 +607,11 @@ namespace GUI
 			return Brushes.SlateGray;
 		}
 
-		public Tuple<List<GraphicsElement>, List<GraphicsLine>> Draw()
+		public IReadOnlyList<IGraphicsElement> Draw()
 		{
 			Layout();
 			Redraw();
-			return new Tuple<List<GraphicsElement>, List<GraphicsLine>>(elements, lines);
+			return elements;
 		}
 	}
 }
