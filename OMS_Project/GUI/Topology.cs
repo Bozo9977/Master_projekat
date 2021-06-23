@@ -13,6 +13,7 @@ namespace GUI
 		HashSet<Tuple<long, long>> energizedLines;
 		HashSet<long> unknownNodes;
 		HashSet<long> energizedNodes;
+		Dictionary<long, LoadFlowResult> loadFlow;
 
 		public Topology()
 		{
@@ -20,6 +21,7 @@ namespace GUI
 			energizedLines = new HashSet<Tuple<long, long>>(0);
 			unknownNodes = new HashSet<long>(0);
 			energizedNodes = new HashSet<long>(0);
+			loadFlow = new Dictionary<long, LoadFlowResult>(0);
 		}
 
 		public EEnergization GetNodeEnergization(long gid)
@@ -122,6 +124,30 @@ namespace GUI
 				this.energizedLines = energizedLines;
 				this.unknownNodes = unknownNodes;
 				this.energizedNodes = energizedNodes;
+			}
+			rwLock.ExitWriteLock();
+		}
+
+		public LoadFlowResult GetLoadFlow(long gid)
+		{
+			LoadFlowResult result = null;
+			loadFlow.TryGetValue(gid, out result);
+			return result;
+		}
+
+		public void UpdateLoadFlow(LoadFlowDownload download)
+		{
+			Dictionary<long, LoadFlowResult> loadFlow = new Dictionary<long, LoadFlowResult>();
+
+			for(int i = 0; i < download.Data.Count; ++i)
+			{
+				KeyValuePair<long, LoadFlowResult> pair = download.Data[i];
+				loadFlow.Add(pair.Key, pair.Value);
+			}
+
+			rwLock.EnterWriteLock();
+			{
+				this.loadFlow = loadFlow;
 			}
 			rwLock.ExitWriteLock();
 		}

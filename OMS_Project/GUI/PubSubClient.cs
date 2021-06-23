@@ -10,7 +10,7 @@ using System.Threading;
 
 namespace GUI
 {
-	public enum EObservableMessageType { NetworkModelChanged, MeasurementValuesChanged, TopologyChanged, SwitchStatusChanged }
+	public enum EObservableMessageType { NetworkModelChanged, MeasurementValuesChanged, TopologyChanged, SwitchStatusChanged, LoadFlowChanged }
 
 	public class ObservableMessage
 	{
@@ -168,6 +168,21 @@ namespace GUI
 			return true;
 		}
 
+		bool HandleLoadFlowChange(LoadFlowChanged m)
+		{
+			LoadFlowDownload download = new LoadFlowDownload();
+
+			if(!download.Download())
+			{
+				return false;
+			}
+
+			topology.UpdateLoadFlow(download);
+			Notify(new ObservableMessage(EObservableMessageType.LoadFlowChanged));
+
+			return true;
+		}
+
 		public void Receive(PubSubMessage m)
 		{
 			switch(m.Topic)
@@ -182,6 +197,10 @@ namespace GUI
 
 				case ETopic.TopologyChanged:
 					HandleTopologyChange((TopologyChanged)m);
+					break;
+
+				case ETopic.LoadFlowChanged:
+					HandleLoadFlowChange((LoadFlowChanged)m);
 					break;
 			}
 		}

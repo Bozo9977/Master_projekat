@@ -16,6 +16,9 @@ namespace Common.CalculationEngine
 		[OperationContract]
 		List<Tuple<long, List<Tuple<long, long>>, List<Tuple<long, long>>>> GetLineEnergization();
 
+		[OperationContract]
+		List<KeyValuePair<long, LoadFlowResult>> GetLoadFlowResults();
+
 		[OperationContract(IsOneWay = true)]
 		void UpdateMeasurements(List<long> gids);
 	}

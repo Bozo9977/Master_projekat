@@ -1,8 +1,11 @@
-﻿using Common.CalculationEngine;
+﻿using Common;
+using Common.CalculationEngine;
 using Common.DataModel;
 using Common.GDA;
 using System;
 using System.Collections.Generic;
+using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 
 namespace GUI
@@ -114,19 +117,25 @@ namespace GUI
 
 		bool networkModelChanged;
 		bool topologyChanged;
+		bool loadFlowChanged;
 
 		Dictionary<DMSType, ModelCode> dmsTypeToModelCodeMap;
 
 		NodeLayout root;
 		List<RecloserLayout> reclosers;
 
-		List<IGraphicsElement> elements;
+		List<GraphicsElement> elements;
+		List<GraphicsLine> lines;
+		List<GraphicsText> loadFlows;
 
 		public NetworkModelDrawing()
 		{
 			networkModelChanged = true;
 			topologyChanged = true;
-			elements = new List<IGraphicsElement>(0);
+			loadFlowChanged = true;
+			elements = new List<GraphicsElement>(0);
+			lines = new List<GraphicsLine>(0);
+			loadFlows = new List<GraphicsText>();
 			dmsTypeToModelCodeMap = ModelResourcesDesc.GetTypeToModelCodeMap();
 		}
 
@@ -166,6 +175,11 @@ namespace GUI
 			{
 				measurements = value;
 			}
+		}
+
+		public void UpdateLoadFlow()
+		{
+			loadFlowChanged = true;
 		}
 
 		void Layout()
@@ -270,7 +284,7 @@ namespace GUI
 					}
 					else
 					{
-						node.X = x++;
+						node.X = x += ModelCodeHelper.GetTypeFromGID(node.IO.GID) == DMSType.EnergyConsumer ? 2 : 1;
 					}
 
 					node = node.Parent;
@@ -516,8 +530,8 @@ namespace GUI
 
 			topologyChanged = false;
 
-			List<IGraphicsElement> elements = new List<IGraphicsElement>();
-			List<IGraphicsElement> lines = new List<IGraphicsElement>();
+			List<GraphicsElement> elements = new List<GraphicsElement>();
+			List<GraphicsLine> lines = new List<GraphicsLine>();
 
 			foreach(NodeLayout tree in root.Children)
 			{
@@ -544,8 +558,107 @@ namespace GUI
 				lines.Add(new GraphicsLine(r.Node2, r, GetLineColor(r.Node2.IO, r.IO)));
 			}
 
-			lines.AddRange(elements);
-			this.elements = lines;
+			this.elements = elements;
+			this.lines = lines;
+		}
+
+		const double million = 1000000;
+		const double thousand = 1000;
+
+		string GetLoadFlowItemText(double r, double i, string unit)
+		{
+			if(Math.Abs(r) > million || Math.Abs(i) > million)
+			{
+				r /= million;
+				i /= million;
+				unit = " M" + unit;
+			}
+			else if(Math.Abs(r) > thousand || Math.Abs(i) > thousand)
+			{
+				r /= thousand;
+				i /= thousand;
+				unit = " k" + unit;
+			}
+			else
+			{
+				unit = " " + unit;
+			}
+
+			return r.ToString("0.0") + (i < 0 ? "" : "+") + i.ToString("0.0") + unit;
+		}
+
+		double ComplexLength(double x, double y)
+		{
+			return Math.Sqrt(x * x + y * y);
+		}
+
+		const double loadFlowXOffset = 0.3;
+		const double loadFlowYOffset = 0.5;
+		const double loadFlowFontSize = 0.22;
+
+		void RedrawLoadFlow()
+		{
+			if(!loadFlowChanged || topology == null)
+				return;
+
+			loadFlowChanged = false;
+			List<GraphicsText> loadFlows = new List<GraphicsText>();
+			
+			for(int i = 0; i < elements.Count; ++i)
+			{
+				GraphicsElement element = elements[i];
+
+				if(element.IO == null)
+					continue;
+
+				/*LoadFlowResult lfResult = topology.GetLoadFlow(element.IO.GID);
+
+				if(lfResult == null)
+					continue;*/
+
+				switch(ModelCodeHelper.GetTypeFromGID(element.IO.GID))
+				{
+					case DMSType.ConnectivityNode:
+					{
+						double ur = 200.12, ui = -100.52;
+
+						GraphicsText gtu = new GraphicsText(element.X + loadFlowXOffset, 0, GetLoadFlowItemText(ur, ui, "V"), Brushes.Black, Brushes.Transparent, element, loadFlowFontSize);
+						gtu.Y = element.Y - gtu.CalculateSize().Height / 2;
+						loadFlows.Add(gtu);
+					}
+					break;
+
+					case DMSType.ACLineSegment:
+					{
+						double ir = 200000.12, ii = 100000.52;
+						double sr = 200000.12, si = 100000.52;
+
+						bool abnormalCurrent = ComplexLength(ir, ii) > ((ACLineSegment)element.IO).RatedCurrent;
+						GraphicsText gti = new GraphicsText(element.X + loadFlowXOffset, 0, GetLoadFlowItemText(ir, ii, "A"), abnormalCurrent ? Brushes.White : Brushes.Black, abnormalCurrent ? Brushes.DarkRed : Brushes.Transparent, element, loadFlowFontSize);
+						GraphicsText gts = new GraphicsText(element.X + loadFlowXOffset, 0, GetLoadFlowItemText(sr, si, "VA"), Brushes.Black, Brushes.Transparent, element, loadFlowFontSize);
+						Size gtiSize = gti.CalculateSize();
+						Size gtsSize = gts.CalculateSize();
+
+						gti.Y = element.Y - (gtiSize.Height + gtsSize.Height) / 2;
+						gts.Y = gti.Y + gtiSize.Height;
+
+						loadFlows.Add(gti);
+						loadFlows.Add(gts);
+					}
+					break;
+
+					case DMSType.EnergyConsumer:
+					{
+						double sr = -200000000.12, si = -100000000.52;
+						GraphicsText gts = new GraphicsText(0, element.Y + loadFlowYOffset, GetLoadFlowItemText(sr, si, "VA"), Brushes.Black, Brushes.Transparent, element, loadFlowFontSize);
+						gts.X = element.X - gts.CalculateSize().Width / 2;
+						loadFlows.Add(gts);
+					}
+					break;
+				}
+			}
+
+			this.loadFlows = loadFlows;
 		}
 
 		Brush GetNodeColor(IdentifiedObject io)
@@ -607,11 +720,12 @@ namespace GUI
 			return Brushes.SlateGray;
 		}
 
-		public IReadOnlyList<IGraphicsElement> Draw()
+		public Sequence<IGraphicsElement> Draw()
 		{
 			Layout();
 			Redraw();
-			return elements;
+			RedrawLoadFlow();
+			return new Sequence<IGraphicsElement>(new List<IReadOnlyList<IGraphicsElement>>(3) { lines, elements, loadFlows });
 		}
 	}
 }

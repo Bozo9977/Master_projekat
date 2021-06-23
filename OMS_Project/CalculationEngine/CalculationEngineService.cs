@@ -103,5 +103,10 @@ namespace CalculationEngine
 		{
 			TopologyModel.Instance.DownloadMeasurements(gids);
 		}
+
+		public List<KeyValuePair<long, LoadFlowResult>> GetLoadFlowResults()
+		{
+			return new List<KeyValuePair<long, LoadFlowResult>>();
+		}
 	}
 }

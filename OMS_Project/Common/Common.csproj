@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CalculationEngine\ICalculationEngineServiceContract.cs" />
+    <Compile Include="CalculationEngine\LoadFlowResult.cs" />
     <Compile Include="Database\IDatabase.cs" />
     <Compile Include="Database\IDatabaseTransaction.cs" />
     <Compile Include="Database\ITableContext.cs" />
@@ -103,6 +104,7 @@
     <Compile Include="PubSub\Messages.cs" />
     <Compile Include="SCADA\Enums.cs" />
     <Compile Include="SCADA\ISCADAServiceContract.cs" />
+    <Compile Include="Sequence.cs" />
     <Compile Include="Transaction\ITransaction.cs" />
     <Compile Include="Transaction\ITransactionManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

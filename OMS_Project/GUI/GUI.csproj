@@ -55,6 +55,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="GraphicsText.cs" />
+    <Compile Include="LoadFlowDownload.cs" />
     <Compile Include="Topology.cs" />
     <Compile Include="TopologyDownload.cs" />
     <Compile Include="ViewTransform.cs" />

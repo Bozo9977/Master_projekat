@@ -41,4 +41,13 @@ namespace Common.PubSub
 			get { return ETopic.TopologyChanged; }
 		}
 	}
+
+	[DataContract]
+	public class LoadFlowChanged : PubSubMessage
+	{
+		public override ETopic Topic
+		{
+			get { return ETopic.LoadFlowChanged; }
+		}
+	}
 }

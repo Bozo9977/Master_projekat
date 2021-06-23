@@ -30,7 +30,7 @@ namespace GUI
 
 		NetworkModelDrawing drawing;
 		PubSubClient client;
-		IReadOnlyList<IGraphicsElement> elements;
+		Sequence<IGraphicsElement> elements;
 
 		public MainWindow()
 		{
@@ -224,18 +224,18 @@ namespace GUI
 
 		private void Redraw()
 		{
-			IReadOnlyList<IGraphicsElement> elements = drawing.Draw();
+			Sequence<IGraphicsElement> elements = drawing.Draw();
 
 			if(elements == null)
 				return;
 
 			canvas.Children.Clear();
 			ViewTransform vt = new ViewTransform(canvasPos.Left, canvasPos.Top, canvasSize.Y * zoom);
+			IGraphicsElement element;
 
-			for(int i = 0; i < elements.Count; ++i)
+			elements.Reset();
+			while(elements.Next(out element))
 			{
-				IGraphicsElement element = elements[i];
-
 				if(!element.AABB.IntersectsWith(canvasPos))
 					continue;
 
@@ -290,6 +290,10 @@ namespace GUI
 				case EObservableMessageType.SwitchStatusChanged:
 					Dispatcher.BeginInvoke(new Action(UpdateTopology));
 					break;
+
+				case EObservableMessageType.LoadFlowChanged:
+					Dispatcher.BeginInvoke(new Action(UpdateLoadFlow));
+					break;
 			}
 		}
 
@@ -313,6 +317,13 @@ namespace GUI
 			Logger.Instance.Log(ELogLevel.INFO, "Topology updated.");
 		}
 
+		void UpdateLoadFlow()
+		{
+			drawing.UpdateLoadFlow();
+			Redraw();
+			Logger.Instance.Log(ELogLevel.INFO, "Load flow updated.");
+		}
+
 		const double DX = 1;
 		const double DY = 1;
 
@@ -325,11 +336,11 @@ namespace GUI
 
 			double x = globalPoint.X - DX / 2;
 			double y = globalPoint.Y - DY / 2;
+			IGraphicsElement element;
+			elements.Reset();
 
-			for(int i = 0; i < elements.Count; ++i)
+			while(elements.Next(out element))
 			{
-				IGraphicsElement element = elements[i];
-
 				if(element.IO == null)
 					continue;
 
