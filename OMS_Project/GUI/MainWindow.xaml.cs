@@ -359,7 +359,7 @@ namespace GUI
 			if(selected == null)
 				return;
 
-			new ElementWindow(selected.IO.GID, client).Show();
+			new ElementWindow(selected.IO.GID, client) { Owner = this }.Show();
 		}
 	}
 }

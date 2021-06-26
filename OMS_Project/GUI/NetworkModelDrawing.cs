@@ -26,7 +26,7 @@ namespace GUI
 		public Node Node { get; private set; }
 		public NodeLayout Parent { get; private set; }
 		public List<NodeLayout> Children { get; private set; }
-		public IdentifiedObject IO { get { return Node.io; } }
+		public IdentifiedObject IO { get { return Node != null ? Node.io : null; } }
 		public EEnergization Energization { get; set; }
 
 		public NodeLayout(NodeLayout parent, Node node)
@@ -284,7 +284,7 @@ namespace GUI
 					}
 					else
 					{
-						node.X = x += ModelCodeHelper.GetTypeFromGID(node.IO.GID) == DMSType.EnergyConsumer ? 2 : 1;
+						node.X = x += (node.IO != null && ModelCodeHelper.GetTypeFromGID(node.IO.GID) == DMSType.EnergyConsumer) ? 2 : 1;
 					}
 
 					node = node.Parent;
@@ -560,6 +560,7 @@ namespace GUI
 
 			this.elements = elements;
 			this.lines = lines;
+			loadFlowChanged = true;
 		}
 
 		const double million = 1000000;

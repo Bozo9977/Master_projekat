@@ -1,4 +1,5 @@
-﻿using Common.DataModel;
+﻿using Common;
+using Common.DataModel;
 using Common.GDA;
 using Common.PubSub;
 using Common.WCF;
@@ -86,7 +87,10 @@ namespace SCADASim
 		{
 			Stop();
 			client.Connect();
-			client.Call<bool>(sub => { sub.Subscribe(ETopic.NetworkModelChanged); return true; }, out _);
+			if(!client.Call<bool>(sub => { sub.Subscribe(ETopic.NetworkModelChanged); return true; }, out _))
+			{
+				Logger.Instance.Log(ELogLevel.ERROR, "Cannot connect to PubSub.");
+			}
 			DownloadModel();
 			StartSimulation();
 			return modbusServer.Start();

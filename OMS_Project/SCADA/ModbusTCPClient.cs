@@ -213,12 +213,20 @@ namespace SCADA
 			int headOffset = int.MaxValue;
 			int recvOffset = int.MaxValue;
 
-			while(!stopSignal.WaitOne(100))
+			while(!stopSignal.WaitOne(0))
 			{
-				if(command == null && commandQueue.TryDequeue(out command))
+				if(command == null)
 				{
-					data = command.PackRequest();
-					sendOffset = 0;
+					if(commandQueue.TryDequeue(out command))
+					{
+						data = command.PackRequest();
+						sendOffset = 0;
+					}
+					else
+					{
+						Thread.Sleep(100);
+						continue;
+					}
 				}
 
 				Socket socket;
@@ -230,10 +238,11 @@ namespace SCADA
 
 				if(socket == null)
 				{
-					sendOffset = 0;
+					sendOffset = command == null ? int.MaxValue : 0;
 					headOffset = int.MaxValue;
 					recvOffset = int.MaxValue;
 					Reconnect();
+
 					Thread.Sleep(100);
 					continue;
 				}
@@ -291,12 +300,18 @@ namespace SCADA
 				{
 					if(e.SocketErrorCode != SocketError.WouldBlock)
 					{
-						socket = null;
+						sendOffset = command == null ? int.MaxValue : 0;
+						headOffset = int.MaxValue;
+						recvOffset = int.MaxValue;
+						Reconnect();
 					}
 				}
 				catch(Exception e)
 				{
-					socket = null;
+					sendOffset = command == null ? int.MaxValue : 0;
+					headOffset = int.MaxValue;
+					recvOffset = int.MaxValue;
+					Reconnect();
 				}
 			}
 		}
