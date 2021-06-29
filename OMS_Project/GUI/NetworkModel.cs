@@ -99,11 +99,52 @@ namespace GUI
 						}
 						break;
 
+						case DMSType.TransformerWinding:
+						{
+							TransformerWinding tw = io as TransformerWinding;
+
+							if(tw == null)
+								break;
+
+							PowerTransformer pt = GetInternal(download.Containers, tw.PowerTransformer) as PowerTransformer;
+
+							if(pt == null)
+								break;
+
+							foreach(long twGID in pt.TransformerWindings)
+							{
+								if(twGID == tw.GID || (node.parent != null && twGID == node.parent.io.GID))
+									continue;
+
+								TransformerWinding twChild = GetInternal(download.Containers, twGID) as TransformerWinding;
+
+								if(twChild == null)
+									continue;
+
+								Node childNode = new Node(node, twChild);
+								node.children.Add(childNode);
+								stack.Push(childNode);
+							}
+
+							foreach(long terminalGID in tw.Terminals)
+							{
+								long conNodeGID = ((Terminal)terminalContainer[terminalGID]).ConnectivityNode;
+
+								if(node.parent != null && conNodeGID == node.parent.io.GID)
+									continue;
+
+								Node childNode = new Node(node, conNodeContainer[conNodeGID]);
+								node.children.Add(childNode);
+								stack.Push(childNode);
+							}
+						}
+						break;
+
 						default:
 						{
 							ConductingEquipment condEq = io as ConductingEquipment;
 
-							if(io == null)
+							if(condEq == null)
 								break;
 
 							foreach(long terminalGID in condEq.Terminals)
@@ -145,17 +186,16 @@ namespace GUI
 			return new Tuple<List<Node>, List<RecloserNode>>(trees, reclosers.Values.ToList());
 		}
 
-		bool TryGet(long gid, out IdentifiedObject io, out Dictionary<long, IdentifiedObject> container)
-		{
-			io = null;
-			return containers.TryGetValue(ModelCodeHelper.GetTypeFromGID(gid), out container) && container.TryGetValue(gid, out io);
-		}
-
 		public IdentifiedObject Get(long gid)
 		{
+			return GetInternal(containers, gid);
+		}
+
+		IdentifiedObject GetInternal(Dictionary<DMSType, Dictionary<long, IdentifiedObject>> containers, long gid)
+		{
 			IdentifiedObject io;
-			TryGet(gid, out io, out _);
-			return io;
+			Dictionary<long, IdentifiedObject> container;
+			return containers.TryGetValue(ModelCodeHelper.GetTypeFromGID(gid), out container) && container.TryGetValue(gid, out io) ? io : null;
 		}
 	}
 }

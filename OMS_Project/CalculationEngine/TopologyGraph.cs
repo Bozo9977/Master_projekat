@@ -113,6 +113,68 @@ namespace CalculationEngine
 						++node.ChildrenCount;
 					}
 				}
+				else if(type == DMSType.TransformerWinding)
+				{
+					TransformerWinding tw = node.IO as TransformerWinding;
+					PowerTransformer pt = Get(tw.PowerTransformer) as PowerTransformer;
+
+					if(pt == null)
+						continue;
+
+					foreach(long twGID in pt.TransformerWindings)
+					{
+						if(twGID == tw.GID)
+							continue;
+
+						Node childNode;
+
+						if(!visited.TryGetValue(twGID, out childNode))
+						{
+							TransformerWinding twChild = Get(twGID) as TransformerWinding;
+
+							if(twChild == null)
+								continue;
+
+							childNode = new Node(twChild, 0, 0);
+							queue.Enqueue(new Tuple<Node, Node>(node, childNode));
+							visited.Add(twGID, childNode);
+						}
+
+						adjacency.Add(childNode);
+						++node.ChildrenCount;
+						break;
+					}
+
+					foreach(long tGID in tw.Terminals)
+					{
+						IdentifiedObject terminal;
+
+						if(!terminals.TryGetValue(tGID, out terminal))
+							continue;
+
+						long cNodeGID = ((Terminal)terminal).ConnectivityNode;
+
+						if(cNodeGID == 0)
+							continue;
+
+						Node childNode;
+
+						if(!visited.TryGetValue(cNodeGID, out childNode))
+						{
+							IdentifiedObject cNode;
+
+							if(!cNodes.TryGetValue(cNodeGID, out cNode))
+								continue;
+
+							childNode = new Node(cNode, 0, 0);
+							queue.Enqueue(new Tuple<Node, Node>(node, childNode));
+							visited.Add(cNodeGID, childNode);
+						}
+
+						adjacency.Add(childNode);
+						++node.ChildrenCount;
+					}
+				}
 				else
 				{
 					foreach(long tGID in ((ConductingEquipment)node.IO).Terminals)
@@ -244,6 +306,13 @@ namespace CalculationEngine
 			}
 
 			return sourcesEnergization;
+		}
+
+		IdentifiedObject Get(long gid)
+		{
+			IdentifiedObject io;
+			Dictionary<long, IdentifiedObject> container;
+			return containers.TryGetValue(ModelCodeHelper.GetTypeFromGID(gid), out container) && container.TryGetValue(gid, out io) ? io : null;
 		}
 	}
 }

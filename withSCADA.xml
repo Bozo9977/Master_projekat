@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cim="http://iec.ch/TC57/2010/CIM-schema-cim15#">
 	<cim:BaseVoltage rdf:ID="BaseVoltage_0">
+		<cim:BaseVoltage.nominalVoltage>20000</cim:BaseVoltage.nominalVoltage>
 		<cim:IdentifiedObject.mRID>BaseVoltage_0</cim:IdentifiedObject.mRID>
 		<cim:IdentifiedObject.name>BaseVoltage_0</cim:IdentifiedObject.name>
 	</cim:BaseVoltage>
 	<cim:BaseVoltage rdf:ID="BaseVoltage_1">
+		<cim:BaseVoltage.nominalVoltage>10000</cim:BaseVoltage.nominalVoltage>
 		<cim:IdentifiedObject.mRID>BaseVoltage_1</cim:IdentifiedObject.mRID>
 		<cim:IdentifiedObject.name>BaseVoltage_1</cim:IdentifiedObject.name>
 	</cim:BaseVoltage>
@@ -67,22 +69,39 @@
 		<cim:IdentifiedObject.mRID>TransformerWinding_1</cim:IdentifiedObject.mRID>
 		<cim:IdentifiedObject.name>TransformerWinding_1</cim:IdentifiedObject.name>
 	</cim:TransformerWinding>
-	<cim:ConnectivityNode rdf:ID="ConnectivityNode_2">
-		<cim:IdentifiedObject.mRID>ConnectivityNode_2</cim:IdentifiedObject.mRID>
-		<cim:IdentifiedObject.name>ConnectivityNode_2</cim:IdentifiedObject.name>
-	</cim:ConnectivityNode>
-	<cim:Terminal rdf:ID="Terminal_4">
-		<cim:Terminal.ConnectivityNode rdf:resource="#ConnectivityNode_2"/>
-		<cim:Terminal.ConductingEquipment rdf:resource="#TransformerWinding_0"/>
-		<cim:IdentifiedObject.mRID>Terminal_4</cim:IdentifiedObject.mRID>
-		<cim:IdentifiedObject.name>Terminal_4</cim:IdentifiedObject.name>
-	</cim:Terminal>
-	<cim:Terminal rdf:ID="Terminal_5">
-		<cim:Terminal.ConnectivityNode rdf:resource="#ConnectivityNode_2"/>
-		<cim:Terminal.ConductingEquipment rdf:resource="#TransformerWinding_1"/>
-		<cim:IdentifiedObject.mRID>Terminal_5</cim:IdentifiedObject.mRID>
-		<cim:IdentifiedObject.name>Terminal_5</cim:IdentifiedObject.name>
-	</cim:Terminal>
+	<cim:Discrete rdf:ID="Discrete_3">
+		<cim:Discrete.maxValue>1</cim:Discrete.maxValue>
+		<cim:Discrete.minValue>0</cim:Discrete.minValue>
+		<cim:Discrete.normalValue>0</cim:Discrete.normalValue>
+		<cim:Measurement.baseAddress>3</cim:Measurement.baseAddress>
+		<cim:Measurement.direction>ReadWrite</cim:Measurement.direction>
+		<cim:Measurement.measurementType>SwitchState</cim:Measurement.measurementType>
+		<cim:Measurement.PowerSystemResource rdf:resource="#Disconnector_0"/>
+		<cim:IdentifiedObject.mRID>Discrete_3</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>Discrete_3</cim:IdentifiedObject.name>
+	</cim:Discrete>
+	<cim:Discrete rdf:ID="Discrete_2">
+		<cim:Discrete.maxValue>1</cim:Discrete.maxValue>
+		<cim:Discrete.minValue>0</cim:Discrete.minValue>
+		<cim:Discrete.normalValue>0</cim:Discrete.normalValue>
+		<cim:Measurement.baseAddress>2</cim:Measurement.baseAddress>
+		<cim:Measurement.direction>ReadWrite</cim:Measurement.direction>
+		<cim:Measurement.measurementType>SwitchState</cim:Measurement.measurementType>
+		<cim:Measurement.PowerSystemResource rdf:resource="#Disconnector_4"/>
+		<cim:IdentifiedObject.mRID>Discrete_2</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>Discrete_2</cim:IdentifiedObject.name>
+	</cim:Discrete>
+	<cim:Discrete rdf:ID="Discrete_1">
+		<cim:Discrete.maxValue>1</cim:Discrete.maxValue>
+		<cim:Discrete.minValue>0</cim:Discrete.minValue>
+		<cim:Discrete.normalValue>0</cim:Discrete.normalValue>
+		<cim:Measurement.baseAddress>1</cim:Measurement.baseAddress>
+		<cim:Measurement.direction>ReadWrite</cim:Measurement.direction>
+		<cim:Measurement.measurementType>SwitchState</cim:Measurement.measurementType>
+		<cim:Measurement.PowerSystemResource rdf:resource="#Breaker_0"/>
+		<cim:IdentifiedObject.mRID>Discrete_1</cim:IdentifiedObject.mRID>
+		<cim:IdentifiedObject.name>Discrete_1</cim:IdentifiedObject.name>
+	</cim:Discrete>
 	<cim:Terminal rdf:ID="Terminal_6">
 		<cim:Terminal.ConnectivityNode rdf:resource="#ConnectivityNode_11"/>
 		<cim:Terminal.ConductingEquipment rdf:resource="#TransformerWinding_1"/>
@@ -9333,39 +9352,6 @@
 		<cim:IdentifiedObject.mRID>ConnectivityNode_412</cim:IdentifiedObject.mRID>
 		<cim:IdentifiedObject.name>ConnectivityNode_412</cim:IdentifiedObject.name>
 	</cim:ConnectivityNode>
-	<cim:Discrete rdf:ID="Discrete_1">
-		<cim:Discrete.maxValue>1</cim:Discrete.maxValue>
-		<cim:Discrete.minValue>0</cim:Discrete.minValue>
-		<cim:Discrete.normalValue>0</cim:Discrete.normalValue>
-		<cim:Measurement.baseAddress>1</cim:Measurement.baseAddress>
-		<cim:Measurement.direction>ReadWrite</cim:Measurement.direction>
-		<cim:Measurement.measurementType>SwitchState</cim:Measurement.measurementType>
-		<cim:Measurement.PowerSystemResource rdf:resource="#Breaker_0"/>
-		<cim:IdentifiedObject.mRID>Discrete_1</cim:IdentifiedObject.mRID>
-		<cim:IdentifiedObject.name>Discrete_1</cim:IdentifiedObject.name>
-	</cim:Discrete>
-	<cim:Discrete rdf:ID="Discrete_2">
-		<cim:Discrete.maxValue>1</cim:Discrete.maxValue>
-		<cim:Discrete.minValue>0</cim:Discrete.minValue>
-		<cim:Discrete.normalValue>0</cim:Discrete.normalValue>
-		<cim:Measurement.baseAddress>2</cim:Measurement.baseAddress>
-		<cim:Measurement.direction>ReadWrite</cim:Measurement.direction>
-		<cim:Measurement.measurementType>SwitchState</cim:Measurement.measurementType>
-		<cim:Measurement.PowerSystemResource rdf:resource="#Disconnector_4"/>
-		<cim:IdentifiedObject.mRID>Discrete_2</cim:IdentifiedObject.mRID>
-		<cim:IdentifiedObject.name>Discrete_2</cim:IdentifiedObject.name>
-	</cim:Discrete>
-	<cim:Discrete rdf:ID="Discrete_3">
-		<cim:Discrete.maxValue>1</cim:Discrete.maxValue>
-		<cim:Discrete.minValue>0</cim:Discrete.minValue>
-		<cim:Discrete.normalValue>0</cim:Discrete.normalValue>
-		<cim:Measurement.baseAddress>3</cim:Measurement.baseAddress>
-		<cim:Measurement.direction>ReadWrite</cim:Measurement.direction>
-		<cim:Measurement.measurementType>SwitchState</cim:Measurement.measurementType>
-		<cim:Measurement.PowerSystemResource rdf:resource="#Disconnector_0"/>
-		<cim:IdentifiedObject.mRID>Discrete_3</cim:IdentifiedObject.mRID>
-		<cim:IdentifiedObject.name>Discrete_3</cim:IdentifiedObject.name>
-	</cim:Discrete>
 	<cim:Discrete rdf:ID="Discrete_4">
 		<cim:Discrete.maxValue>1</cim:Discrete.maxValue>
 		<cim:Discrete.minValue>0</cim:Discrete.minValue>

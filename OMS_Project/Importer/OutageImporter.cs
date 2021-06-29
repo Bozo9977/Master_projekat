@@ -304,6 +304,9 @@ namespace Importer
 		void PopulateConductorProperties(Conductor x, ResourceDescription rd)
 		{
 			PopulateConductingEquipmentProperties(x, rd);
+
+			if(x.LengthHasValue)
+				rd.AddProperty(new FloatProperty(ModelCode.CONDUCTOR_LENGTH, x.Length));
 		}
 
 		void PopulateACLineSegmentProperties(ACLineSegment x, ResourceDescription rd)
@@ -312,6 +315,12 @@ namespace Importer
 
 			if(x.RatedCurrentHasValue)
 				rd.AddProperty(new FloatProperty(ModelCode.ACLINESEGMENT_RATEDCURRENT, x.RatedCurrent));
+
+			if(x.PerLengthPhaseResistanceHasValue)
+				rd.AddProperty(new FloatProperty(ModelCode.ACLINESEGMENT_PERLENGTHPHASERESISTANCE, x.PerLengthPhaseResistance));
+
+			if(x.PerLengthPhaseReactanceHasValue)
+				rd.AddProperty(new FloatProperty(ModelCode.ACLINESEGMENT_PERLENGTHPHASEREACTANCE, x.PerLengthPhaseReactance));
 		}
 
 		void PopulateSwitchProperties(Switch x, ResourceDescription rd)

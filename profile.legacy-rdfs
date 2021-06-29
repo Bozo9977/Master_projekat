@@ -78,6 +78,14 @@
     <rdfs:label>CurrentFlow</rdfs:label>
     <rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
   </rdf:Description>
+  <rdf:Description rdf:about="#ResistancePerLength">
+    <rdfs:label>ResistancePerLength</rdfs:label>
+    <rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+  </rdf:Description>
+   <rdf:Description rdf:about="#ReactancePerLength">
+    <rdfs:label>ReactancePerLength</rdfs:label>
+    <rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+  </rdf:Description>
   <rdf:Description rdf:about="#IdentifiedObject.name">
     <cims:stereotype rdf:resource="http://langdale.com.au/2005/UML#oms"/>
     <cims:stereotype rdf:resource="http://langdale.com.au/2005/UML#attribute"/>
@@ -157,6 +165,24 @@
     <cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1"/>
     <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
   </rdf:Description>
+  <rdf:Description rdf:about="#ACLineSegment.perLengthPhaseResistance">
+    <cims:stereotype rdf:resource="http://langdale.com.au/2005/UML#attribute"/>
+    <cims:stereotype rdf:resource="http://langdale.com.au/2005/UML#oms"/>
+    <rdfs:label>perLengthPhaseResistance</rdfs:label>
+    <cims:dataType rdf:resource="#ResistancePerLength"/>
+    <rdfs:domain rdf:resource="#ACLineSegment"/>
+    <cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="#ACLineSegment.perLengthPhaseReactance">
+    <cims:stereotype rdf:resource="http://langdale.com.au/2005/UML#attribute"/>
+    <cims:stereotype rdf:resource="http://langdale.com.au/2005/UML#oms"/>
+    <rdfs:label>perLengthPhaseReactance</rdfs:label>
+    <cims:dataType rdf:resource="#ReactancePerLength"/>
+    <rdfs:domain rdf:resource="#ACLineSegment"/>
+    <cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+  </rdf:Description>
   <rdf:Description rdf:about="#Discrete.minValue">
     <cims:stereotype rdf:resource="http://langdale.com.au/2005/UML#attribute"/>
     <rdfs:label>minValue</rdfs:label>
@@ -218,6 +244,14 @@
     <cims:belongsToCategory rdf:resource="#Package_Wires"/>
     <rdfs:label>Conductor</rdfs:label>
     <rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="#Conductor.length">
+    <cims:stereotype rdf:resource="http://langdale.com.au/2005/UML#attribute"/>
+    <rdfs:label>length</rdfs:label>
+    <cims:dataType rdf:resource="#Length"/>
+    <rdfs:domain rdf:resource="#Conductor"/>
+    <cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
   </rdf:Description>
   <rdf:Description rdf:about="#Package_Topology">
     <cims:belongsToCategory rdf:resource="#Package_IEC61970"/>
@@ -308,6 +342,10 @@
   </rdf:Description>
   <rdf:Description rdf:about="#ActivePower">
     <rdfs:label>ActivePower</rdfs:label>
+    <rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="#Length">
+    <rdfs:label>Length</rdfs:label>
     <rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
   </rdf:Description>
   <rdf:Description rdf:about="#Switch">
@@ -533,6 +571,26 @@
   </rdf:Description>
   <rdf:Description rdf:about="#MeasurementType.SwitchState">
 	 <rdfs:label>SwitchState</rdfs:label>
+	 <rdf:type rdf:resource="#MeasurementType"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="#MeasurementType.TapChangerPosition">
+	 <rdfs:label>TapChangerPosition</rdfs:label>
+	 <rdf:type rdf:resource="#MeasurementType"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="#MeasurementType.VoltageR">
+	 <rdfs:label>VoltageR</rdfs:label>
+	 <rdf:type rdf:resource="#MeasurementType"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="#MeasurementType.VoltageI">
+	 <rdfs:label>VoltageI</rdfs:label>
+	 <rdf:type rdf:resource="#MeasurementType"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="#MeasurementType.ActivePower">
+	 <rdfs:label>ActivePower</rdfs:label>
+	 <rdf:type rdf:resource="#MeasurementType"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="#MeasurementType.ReactivePower">
+	 <rdfs:label>ReactivePower</rdfs:label>
 	 <rdf:type rdf:resource="#MeasurementType"/>
   </rdf:Description>
 </rdf:RDF>

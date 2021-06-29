@@ -210,7 +210,6 @@ namespace GUI
 				do
 				{
 					node.Y = y;
-					//node.SubtreeDepth = y;
 
 					if(recloserConNodes.ContainsKey(node.Node))
 						recloserConNodes[node.Node] = node;
@@ -222,20 +221,11 @@ namespace GUI
 						continue;
 					}
 
-					/*foreach(NodeLayout child in node.Children)
-					{
-						if(child.SubtreeDepth > node.SubtreeDepth)
-							node.SubtreeDepth = child.SubtreeDepth;
-					}*/
-
 					node.Parent.Children.Add(node);
 					node = node.Parent;
 					--y;
 				}
 				while(node != root);
-
-				/*if(treeRoot.SubtreeDepth > root.SubtreeDepth)
-					root.SubtreeDepth = treeRoot.SubtreeDepth;*/
 			}
 
 			List<RecloserLayout> reclosers = new List<RecloserLayout>(model.Item2.Count);

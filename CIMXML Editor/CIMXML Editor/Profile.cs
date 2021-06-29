@@ -97,6 +97,16 @@ namespace CIMXML_Editor
 			attrs.Add(a.Name, a);
 			a = new Attribute("SwitchState", AttributeType.String, null);
 			attrs.Add(a.Name, a);
+			a = new Attribute("TapChangerPosition", AttributeType.String, null);
+			attrs.Add(a.Name, a);
+			a = new Attribute("VoltageR", AttributeType.String, null);
+			attrs.Add(a.Name, a);
+			a = new Attribute("VoltageI", AttributeType.String, null);
+			attrs.Add(a.Name, a);
+			a = new Attribute("ActivePower", AttributeType.String, null);
+			attrs.Add(a.Name, a);
+			a = new Attribute("ReactivePower", AttributeType.String, null);
+			attrs.Add(a.Name, a);
 			Classes.Add(c.Name, c);
 
 			attrs = new Dictionary<string, Attribute>();
@@ -156,11 +166,17 @@ namespace CIMXML_Editor
 
 			attrs = new Dictionary<string, Attribute>();
 			c = new Class("Conductor", attrs, Classes["ConductingEquipment"]);
+			a = new Attribute("length", AttributeType.Float, null);
+			attrs.Add(a.Name, a);
 			Classes.Add(c.Name, c);
 
 			attrs = new Dictionary<string, Attribute>();
 			c = new Class("ACLineSegment", attrs, Classes["Conductor"]);
 			a = new Attribute("ratedCurrent", AttributeType.Float, null);
+			attrs.Add(a.Name, a);
+			a = new Attribute("perLengthPhaseResistance", AttributeType.Float, null);
+			attrs.Add(a.Name, a);
+			a = new Attribute("perLengthPhaseReactance", AttributeType.Float, null);
 			attrs.Add(a.Name, a);
 			Classes.Add(c.Name, c);
 			ConcreteClasses.Add(c);

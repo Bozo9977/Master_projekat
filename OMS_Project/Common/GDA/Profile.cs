@@ -99,9 +99,12 @@ namespace Common.GDA
 		ENERGYCONSUMER_CONSUMERCLASS = 0x11114000000B030A,
 
 		CONDUCTOR = 0x1111500000000000,
+		CONDUCTOR_LENGTH = 0x1111500000000105,
 
 		ACLINESEGMENT = 0x11115100000C0000,
 		ACLINESEGMENT_RATEDCURRENT = 0x11115100000C0105,
+		ACLINESEGMENT_PERLENGTHPHASERESISTANCE = 0x11115100000C0205,
+		ACLINESEGMENT_PERLENGTHPHASEREACTANCE = 0x11115100000C0305,
 
 		SWITCH = 0x1111600000000000,
 		SWITCH_NORMALOPEN = 0x1111600000000101,
@@ -115,7 +118,7 @@ namespace Common.GDA
 		DISCONNECTOR = 0x11116200000F0000,
 	}
 
-	public enum MeasurementType { Other, SwitchState }
+	public enum MeasurementType { Other, ActivePower, ReactivePower, SwitchState, TapChangerPosition, VoltageI, VoltageR }
 	public enum SignalDirection { Read, ReadWrite, Write }
 	public enum ConsumerClass { Administrative, Industrial, Residential }
 

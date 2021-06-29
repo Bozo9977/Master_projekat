@@ -16,18 +16,25 @@ namespace Common.DataModel
 		public string MRID { get; set; }
 		public string Name { get; set; }
 		public long BaseVoltage { get; set; }
+		public float Length { get; set; }
 		public float RatedCurrent { get; set; }
+		public float PerLengthPhaseResistance { get; set; }
+		public float PerLengthPhaseReactance { get; set; }
 	}
 
 	public class ACLineSegment : Conductor
 	{
 		public float RatedCurrent { get; protected set; }
+		public float PerLengthPhaseResistance { get; protected set; }
+		public float PerLengthPhaseReactance { get; protected set; }
 
 		public ACLineSegment() { }
 
 		public ACLineSegment(ACLineSegment a) : base(a)
 		{
 			RatedCurrent = a.RatedCurrent;
+			PerLengthPhaseResistance = a.PerLengthPhaseResistance;
+			PerLengthPhaseReactance = a.PerLengthPhaseReactance;
 		}
 
 		public ACLineSegment(ACLineSegmentDBModel entity)
@@ -36,7 +43,10 @@ namespace Common.DataModel
 			MRID = entity.MRID;
 			Name = entity.Name;
 			BaseVoltage = entity.BaseVoltage;
+			Length = entity.Length;
 			RatedCurrent = entity.RatedCurrent;
+			PerLengthPhaseResistance = entity.PerLengthPhaseResistance;
+			PerLengthPhaseReactance = entity.PerLengthPhaseReactance;
 		}
 
 		public override bool HasProperty(ModelCode p)
@@ -44,6 +54,8 @@ namespace Common.DataModel
 			switch(p)
 			{
 				case ModelCode.ACLINESEGMENT_RATEDCURRENT:
+				case ModelCode.ACLINESEGMENT_PERLENGTHPHASERESISTANCE:
+				case ModelCode.ACLINESEGMENT_PERLENGTHPHASEREACTANCE:
 					return true;
 			}
 
@@ -56,6 +68,12 @@ namespace Common.DataModel
 			{
 				case ModelCode.ACLINESEGMENT_RATEDCURRENT:
 					return new FloatProperty(ModelCode.ACLINESEGMENT_RATEDCURRENT, RatedCurrent);
+
+				case ModelCode.ACLINESEGMENT_PERLENGTHPHASERESISTANCE:
+					return new FloatProperty(ModelCode.ACLINESEGMENT_PERLENGTHPHASERESISTANCE, PerLengthPhaseResistance);
+
+				case ModelCode.ACLINESEGMENT_PERLENGTHPHASEREACTANCE:
+					return new FloatProperty(ModelCode.ACLINESEGMENT_PERLENGTHPHASEREACTANCE, PerLengthPhaseReactance);
 			}
 
 			return base.GetProperty(p);
@@ -71,6 +89,14 @@ namespace Common.DataModel
 				case ModelCode.ACLINESEGMENT_RATEDCURRENT:
 					RatedCurrent = ((FloatProperty)p).Value;
 					return true;
+
+				case ModelCode.ACLINESEGMENT_PERLENGTHPHASERESISTANCE:
+					PerLengthPhaseResistance = ((FloatProperty)p).Value;
+					return true;
+
+				case ModelCode.ACLINESEGMENT_PERLENGTHPHASEREACTANCE:
+					PerLengthPhaseReactance = ((FloatProperty)p).Value;
+					return true;
 			}
 
 			return base.SetProperty(p, force);
@@ -83,7 +109,7 @@ namespace Common.DataModel
 
 		public override object ToDBEntity()
 		{
-			return new ACLineSegmentDBModel() { GID = GID, MRID = MRID, Name = Name, BaseVoltage = BaseVoltage, RatedCurrent = RatedCurrent };
+			return new ACLineSegmentDBModel() { GID = GID, MRID = MRID, Name = Name, BaseVoltage = BaseVoltage, Length = Length, RatedCurrent = RatedCurrent, PerLengthPhaseResistance = PerLengthPhaseResistance, PerLengthPhaseReactance = PerLengthPhaseReactance };
 		}
 
 		public override bool Validate(Func<long, IdentifiedObject> entityGetter)

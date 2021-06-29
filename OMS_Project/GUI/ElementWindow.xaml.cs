@@ -59,12 +59,15 @@ namespace GUI
 			Title = ModelCodeHelper.GetTypeFromGID(GID) + " " + GID;
 
 			if(viewModel == null)
-				InitView();
+				viewModel = InitView(io);
 
-			viewModel.Refresh(io);
+			viewModel.Refresh();
+
+			panel.Children.Clear();
+			panel.Children.Add(viewModel.Panel);
 		}
 
-		void InitView()
+		ElementView InitView(IdentifiedObject io)
 		{
 			DMSType type = ModelCodeHelper.GetTypeFromGID(GID);
 			ModelCode mc = dmsTypeToModelCodeMap[type];
@@ -72,22 +75,22 @@ namespace GUI
 
 			if(ModelCodeHelper.ModelCodeClassIsSubClassOf(mc, ModelCode.CONDUCTINGEQUIPMENT))
 			{
-				vm = new ConductingEquipmentView(panel, pubSub);
+				vm = new ConductingEquipmentView((ConductingEquipment)io, pubSub);
 			}
 			else if(type == DMSType.ConnectivityNode)
 			{
-				vm = new ConnectivityNodeView(panel, pubSub);
+				vm = new ConnectivityNodeView((ConnectivityNode)io, pubSub);
 			}
 			else if(type == DMSType.Discrete || type == DMSType.Analog)
 			{
-				vm = new MeasurementView(panel, pubSub);
+				vm = new MeasurementView((Measurement)io, pubSub);
 			}
 			else
 			{
-				vm = new ElementView(panel, pubSub);
+				vm = new OtherView(io, pubSub);
 			}
 
-			viewModel = vm;
+			return vm;
 		}
 	}
 }

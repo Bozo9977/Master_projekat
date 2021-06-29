@@ -60,6 +60,7 @@
     <Compile Include="Topology.cs" />
     <Compile Include="TopologyDownload.cs" />
     <Compile Include="ViewTransform.cs" />
+    <Compile Include="View\CommandView.cs" />
     <Compile Include="View\ConductingEquipmentView.cs" />
     <Compile Include="ElementWindow.xaml.cs">
       <DependentUpon>ElementWindow.xaml</DependentUpon>
@@ -69,7 +70,10 @@
     <Compile Include="GraphicsModelMapping.cs" />
     <Compile Include="View\ConnectivityNodeView.cs" />
     <Compile Include="View\ElementView.cs" />
+    <Compile Include="View\MeasurementsView.cs" />
     <Compile Include="View\MeasurementView.cs" />
+    <Compile Include="View\PropertiesView.cs" />
+    <Compile Include="View\View.cs" />
     <Page Include="ElementWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
