@@ -214,9 +214,9 @@
     <cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:0..1"/>
     <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
   </rdf:Description>
-  <rdf:Description rdf:about="#EnergyConsumer.qfixed">
+  <rdf:Description rdf:about="#EnergyConsumer.qFixed">
     <cims:stereotype rdf:resource="http://langdale.com.au/2005/UML#attribute"/>
-    <rdfs:label>qfixed</rdfs:label>
+    <rdfs:label>qFixed</rdfs:label>
     <cims:dataType rdf:resource="#ReactivePower"/>
     <rdfs:domain rdf:resource="#EnergyConsumer"/>
     <cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1"/>
@@ -231,9 +231,9 @@
     <cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1"/>
     <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
   </rdf:Description>
-  <rdf:Description rdf:about="#EnergyConsumer.pfixed">
+  <rdf:Description rdf:about="#EnergyConsumer.pFixed">
     <cims:stereotype rdf:resource="http://langdale.com.au/2005/UML#attribute"/>
-    <rdfs:label>pfixed</rdfs:label>
+    <rdfs:label>pFixed</rdfs:label>
     <cims:dataType rdf:resource="#ActivePower"/>
     <rdfs:domain rdf:resource="#EnergyConsumer"/>
     <cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1"/>

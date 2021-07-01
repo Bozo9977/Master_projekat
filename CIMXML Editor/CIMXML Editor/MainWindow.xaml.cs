@@ -52,7 +52,7 @@ namespace CIMXML_Editor
 			InitializeComponent();
 
 			keyActions = new Action[(byte)EKey.Count] { Up, Down, Left, Right, MoveUp, MoveDown, MoveLeft, MoveRight, In, Out, Rotate, RotateGroup, DeselectAll, Add, Deselect, Edit, Delete, ShowRefs, Copy, Paste, Save, Load, Export, Functions };
-			functions = new List<Tuple<string, Action>>(1) { new Tuple<string, Action>("Add Measurements", AddMeasurements) };
+			functions = new List<Tuple<string, Action>>(1) { new Tuple<string, Action>("Add Measurements", AddMeasurements), new Tuple<string, Action>("Set Electrical Parameters", SetElectricParameters) };
 
 			profile = new Profile();
 			classToModel = new Dictionary<string, NodeModel>(profile.ConcreteClasses.Count);
@@ -77,13 +77,70 @@ namespace CIMXML_Editor
 			timer.Tick += Timer_Tick;
 		}
 
+		void SetElectricParameters()
+		{
+			Class consumerClass = profile.Classes["EnergyConsumer"];
+			Class generatorClass = profile.Classes["DistributionGenerator"];
+			Class ratioTapChangerClass = profile.Classes["RatioTapChanger"];
+			Class aclsClass = profile.Classes["ACLineSegment"];
+
+			foreach(Node node in nodes.Values)
+			{
+				Instance instance = node.Instance;
+
+				if(instance.Class == consumerClass)
+				{
+					switch(instance.GetProperty("consumerClass"))
+					{
+						case "Administrative":
+							instance.SetProperty("pFixed", "100000");
+							instance.SetProperty("qFixed", "10000");
+							break;
+
+						case "Industrial":
+							instance.SetProperty("pFixed", "200000");
+							instance.SetProperty("qFixed", "60000");
+							break;
+
+						case "Residential":
+							instance.SetProperty("pFixed", "50000");
+							instance.SetProperty("qFixed", "5000");
+							break;
+					}
+				}
+				else if(instance.Class == generatorClass)
+				{
+					instance.SetProperty("ratedCosPhi", "0.8");
+					instance.SetProperty("ratedPower", "1000000");
+					instance.SetProperty("ratedVoltage", nodes[instance.GetProperty("BaseVoltage")].Instance.GetProperty("nominalVoltage"));
+				}
+				else if(instance.Class == ratioTapChangerClass)
+				{
+					instance.SetProperty("stepCount", "7");
+					instance.SetProperty("nominalStep", "3");
+					instance.SetProperty("voltageStep", "1000");
+				}
+				else if(instance.Class == aclsClass)
+				{
+					instance.SetProperty("length", "1000");
+					instance.SetProperty("ratedCurrent", "400");
+					instance.SetProperty("perLengthPhaseResistance", "0.0002");
+					instance.SetProperty("perLengthPhaseReactance", "0.00015");
+				}
+			}
+		}
+
 		private void AddMeasurements()
 		{
 			Class switchClass = profile.Classes["Switch"];
-			Class discreteClass = profile.Classes["Discrete"];
-			NodeModel discreteModel = classToModel["Discrete"];
+			Class sourceClass = profile.Classes["EnergySource"];
+			Class consumerClass = profile.Classes["EnergyConsumer"];
+			Class generatorClass = profile.Classes["DistributionGenerator"];
+			Class ratioTapChangerClass = profile.Classes["RatioTapChanger"];
+
 			int baseAddress = 1;
-			int disreteID = 1;
+			int discreteID = 1;
+			int analogID = 1;
 
 			List<Node> newNodes = new List<Node>();
 
@@ -91,26 +148,42 @@ namespace CIMXML_Editor
 			{
 				Instance instance = node.Instance;
 
-				if(!instance.Class.IsSubtypeOf(switchClass))
-					continue;
+				if(instance.Class == sourceClass)
+				{
+					float nominalVoltage = float.Parse(nodes[instance.GetProperty("BaseVoltage")].Instance.GetProperty("nominalVoltage"));
 
-				string mRID = "Discrete_" + disreteID;
-				Instance switchStateMeas = new Instance(discreteClass);
-				switchStateMeas.SetProperty("mRID", mRID);
-				switchStateMeas.SetProperty("name", mRID);
-				switchStateMeas.SetProperty("baseAddress", baseAddress.ToString());
-				switchStateMeas.SetProperty("direction", "ReadWrite");
-				switchStateMeas.SetProperty("measurementType", "SwitchState");
-				switchStateMeas.SetProperty("PowerSystemResource", instance.GetProperty("mRID"));
-				switchStateMeas.SetProperty("maxValue", "1");
-				switchStateMeas.SetProperty("minValue", "0");
-				switchStateMeas.SetProperty("normalValue", instance.GetProperty("normalOpen") == "true" ? "1" : "0");
-				Node newNode = new Node(node.X + 1.5, node.Y, 0, 1, discreteModel, switchStateMeas);
-				node.UpdateOutReferences();
+					newNodes.Add(PopulateAnalog(node, analogID++, baseAddress++, nominalVoltage, 0, 2 * nominalVoltage, "ReadWrite", "VoltageR"));
+					newNodes.Add(PopulateAnalog(node, analogID++, baseAddress++, 0, 0, 0, "ReadWrite", "VoltageI"));
+				}
+				else if(instance.Class == consumerClass)
+				{
+					float pFixed = float.Parse(instance.GetProperty("pFixed"));
+					float qFixed = float.Parse(instance.GetProperty("qFixed"));
 
-				newNodes.Add(newNode);
-				++baseAddress;
-				++disreteID;
+					newNodes.Add(PopulateAnalog(node, analogID++, baseAddress++, pFixed, 0, 2 * pFixed, "Read", "ActivePower"));
+					newNodes.Add(PopulateAnalog(node, analogID++, baseAddress++, qFixed, 0, 2 * qFixed, "Read", "ReactivePower"));
+				}
+				else if(instance.Class == generatorClass)
+				{
+					float ratedCosPhi = float.Parse(instance.GetProperty("ratedCosPhi"));
+					float ratedS = float.Parse(instance.GetProperty("ratedPower"));
+					float ratedP = ratedS * ratedCosPhi;
+					float ratedQ = (float)(ratedS * Math.Sqrt(1 - ratedCosPhi * ratedCosPhi));
+
+					newNodes.Add(PopulateAnalog(node, analogID++, baseAddress++, ratedP, 0, 2 * ratedP, "Read", "ActivePower"));
+					newNodes.Add(PopulateAnalog(node, analogID++, baseAddress++, ratedQ, 0, 2 * ratedQ, "Read", "ReactivePower"));
+				}
+				else if(instance.Class == ratioTapChangerClass)
+				{
+					int nominalStep = int.Parse(instance.GetProperty("nominalStep"));
+					int stepCount = int.Parse(instance.GetProperty("stepCount"));
+
+					newNodes.Add(PopulateDiscrete(node, discreteID++, baseAddress++, nominalStep, 0, stepCount, "ReadWrite", "TapChangerPosition"));
+				}
+				else if(instance.Class.IsSubtypeOf(switchClass))
+				{
+					newNodes.Add(PopulateDiscrete(node, discreteID++, baseAddress++, instance.GetProperty("normalOpen") == "true" ? 1 : 0, 0, 1, "ReadWrite", "SwitchState"));
+				}
 			}
 
 			foreach(Node node in newNodes)
@@ -128,6 +201,48 @@ namespace CIMXML_Editor
 					targetNode.AddInReference(mrid);
 				}
 			}
+		}
+
+		Node PopulateAnalog(Node psr, long id, int baseAddress, float normal, float min, float max, string direction, string type)
+		{
+			string mRID = "Analog_" + id;
+			Instance analog = new Instance(profile.Classes["Analog"]);
+
+			analog.SetProperty("mRID", mRID);
+			analog.SetProperty("name", mRID);
+			analog.SetProperty("baseAddress", baseAddress.ToString());
+			analog.SetProperty("direction", direction);
+			analog.SetProperty("measurementType", type);
+			analog.SetProperty("PowerSystemResource", psr.Instance.GetProperty("mRID"));
+			analog.SetProperty("maxValue", max.ToString());
+			analog.SetProperty("minValue", min.ToString());
+			analog.SetProperty("normalValue", normal.ToString());
+
+			Node newNode = new Node(psr.X + 1.5, psr.Y, 0, 1, classToModel["Analog"], analog);
+			psr.UpdateOutReferences();
+
+			return newNode;
+		}
+
+		Node PopulateDiscrete(Node psr, long id, int baseAddress, int normal, int min, int max, string direction, string type)
+		{
+			string mRID = "Discrete_" + id;
+			Instance discrete = new Instance(profile.Classes["Discrete"]);
+
+			discrete.SetProperty("mRID", mRID);
+			discrete.SetProperty("name", mRID);
+			discrete.SetProperty("baseAddress", baseAddress.ToString());
+			discrete.SetProperty("direction", direction);
+			discrete.SetProperty("measurementType", type);
+			discrete.SetProperty("PowerSystemResource", psr.Instance.GetProperty("mRID"));
+			discrete.SetProperty("maxValue", max.ToString());
+			discrete.SetProperty("minValue", min.ToString());
+			discrete.SetProperty("normalValue", normal.ToString());
+
+			Node newNode = new Node(psr.X + 1.5, psr.Y, 0, 1, classToModel["Discrete"], discrete);
+			psr.UpdateOutReferences();
+
+			return newNode;
 		}
 
 		private void Functions()

@@ -291,11 +291,11 @@ namespace Importer
 		{
 			PopulateConductingEquipmentProperties(x, rd);
 
-			if(x.PfixedHasValue)
-				rd.AddProperty(new FloatProperty(ModelCode.ENERGYCONSUMER_PFIXED, x.Pfixed));
+			if(x.PFixedHasValue)
+				rd.AddProperty(new FloatProperty(ModelCode.ENERGYCONSUMER_PFIXED, x.PFixed));
 
-			if(x.QfixedHasValue)
-				rd.AddProperty(new FloatProperty(ModelCode.ENERGYCONSUMER_QFIXED, x.Qfixed));
+			if(x.QFixedHasValue)
+				rd.AddProperty(new FloatProperty(ModelCode.ENERGYCONSUMER_QFIXED, x.QFixed));
 
 			if(x.ConsumerClassHasValue)
 				rd.AddProperty(new EnumProperty(ModelCode.ENERGYCONSUMER_CONSUMERCLASS, (short)x.ConsumerClass));
