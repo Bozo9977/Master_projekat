@@ -2,6 +2,7 @@
 using Common.GDA;
 using Common.SCADA;
 using Common.WCF;
+using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
@@ -9,10 +10,30 @@ using System.Windows.Media;
 
 namespace GUI.View
 {
-	public class CommandView : ElementView
+	public class CommandView : View
 	{
-		public CommandView(Measurement io, PubSubClient pubSub) : base(io, pubSub)
+		PubSubClient pubSub;
+		Func<Measurement> measurementGetter;
+		bool initialized;
+		StackPanel panel;
+
+		public override UIElement Element
 		{
+			get
+			{
+				if(!initialized)
+					Update();
+
+				return panel;
+			}
+		}
+
+		public CommandView(Func<Measurement> measurementGetter, PubSubClient pubSub) : base()
+		{
+			this.measurementGetter = measurementGetter;
+			this.pubSub = pubSub;
+			panel = new StackPanel();
+
 			StackPanel measPanel = new StackPanel();
 			Border border = new Border() { BorderThickness = new Thickness(1), BorderBrush = Brushes.LightGray, Margin = new Thickness(1), Padding = new Thickness(1) };
 			Grid measGrid = new Grid();
@@ -25,8 +46,8 @@ namespace GUI.View
 
 			border.Child = measGrid;
 			measPanel.Children.Add(border);
-			Panel.Children.Add(new TextBlock() { Margin = new Thickness(2), Text = "Values", FontWeight = FontWeights.Bold, FontSize = 14 });
-			Panel.Children.Add(measPanel);
+			panel.Children.Add(new TextBlock() { Margin = new Thickness(2), Text = "Values", FontWeight = FontWeights.Bold, FontSize = 14 });
+			panel.Children.Add(measPanel);
 
 			StackPanel cmdPanel = new StackPanel();
 			border = new Border() { BorderThickness = new Thickness(1), BorderBrush = Brushes.LightGray, Margin = new Thickness(1), Padding = new Thickness(1) };
@@ -38,17 +59,22 @@ namespace GUI.View
 			TextBox tbCommand = new TextBox();
 			AddToGrid(cmdGrid, tbCommand, 0, 0);
 			Button btCommand = new Button() { Content = "Execute" };
-			btCommand.Click += (x, y) => ExecuteCommand(io, tbCommand.Text);
+			btCommand.Click += (x, y) => ExecuteCommand(tbCommand.Text);
 			AddToGrid(cmdGrid, btCommand, 0, 1);
 
 			border.Child = cmdGrid;
 			cmdPanel.Children.Add(border);
-			Panel.Children.Add(new TextBlock() { Margin = new Thickness(2), Text = "Command", FontWeight = FontWeights.Bold, FontSize = 14 });
-			Panel.Children.Add(cmdPanel);
+			panel.Children.Add(new TextBlock() { Margin = new Thickness(2), Text = "Command", FontWeight = FontWeights.Bold, FontSize = 14 });
+			panel.Children.Add(cmdPanel);
 		}
 
-		void ExecuteCommand(Measurement m, string text)
+		void ExecuteCommand(string text)
 		{
+			Measurement m = measurementGetter();
+
+			if(m == null)
+				return;
+
 			DMSType type = ModelCodeHelper.GetTypeFromGID(m.GID);
 
 			if(type == DMSType.Analog)
@@ -77,9 +103,22 @@ namespace GUI.View
 			}
 		}
 
-		public override void Refresh()
+		public override void Update(EObservableMessageType msg)
 		{
-			Grid grid = (Grid)((Border)((StackPanel)Panel.Children[1]).Children[0]).Child;
+			if(initialized && msg != EObservableMessageType.MeasurementValuesChanged)
+				return;
+
+			Update();
+		}
+
+		public override void Update()
+		{
+			Measurement io = measurementGetter();
+
+			if(io == null)
+				return;
+
+			Grid grid = (Grid)((Border)((StackPanel)panel.Children[1]).Children[0]).Child;
 
 			if(grid.Children.Count > 1)
 				grid.Children.RemoveRange(1, grid.Children.Count - 1);
@@ -89,14 +128,14 @@ namespace GUI.View
 			string inputValue, outputValue;
 			bool inputNormal, outputNormal;
 
-			DMSType type = ModelCodeHelper.GetTypeFromGID(IO.GID);
+			DMSType type = ModelCodeHelper.GetTypeFromGID(io.GID);
 
 			if(type == DMSType.Analog)
 			{
-				Analog a = (Analog)IO;
+				Analog a = (Analog)io;
 				float value;
 
-				if(PubSub.Measurements.GetAnalogInput(IO.GID, out value))
+				if(pubSub.Measurements.GetAnalogInput(io.GID, out value))
 				{
 					inputNormal = value <= a.MaxValue && value >= a.MinValue;
 					inputValue = value.ToString();
@@ -107,7 +146,7 @@ namespace GUI.View
 					inputValue = "N/A";
 				}
 
-				if(PubSub.Measurements.GetAnalogOutput(IO.GID, out value))
+				if(pubSub.Measurements.GetAnalogOutput(io.GID, out value))
 				{
 					outputNormal = value <= a.MaxValue && value >= a.MinValue;
 					outputValue = value.ToString();
@@ -120,10 +159,10 @@ namespace GUI.View
 			}
 			else if(type == DMSType.Discrete)
 			{
-				Discrete d = (Discrete)IO;
+				Discrete d = (Discrete)io;
 				int value;
 
-				if(PubSub.Measurements.GetDiscreteInput(IO.GID, out value))
+				if(pubSub.Measurements.GetDiscreteInput(io.GID, out value))
 				{
 					inputNormal = value <= d.MaxValue && value >= d.MinValue;
 					inputValue = value.ToString();
@@ -134,7 +173,7 @@ namespace GUI.View
 					inputValue = "N/A";
 				}
 
-				if(PubSub.Measurements.GetDiscreteOutput(IO.GID, out value))
+				if(pubSub.Measurements.GetDiscreteOutput(io.GID, out value))
 				{
 					outputNormal = value <= d.MaxValue && value >= d.MinValue;
 					outputValue = value.ToString();
@@ -160,6 +199,8 @@ namespace GUI.View
 			AddToGrid(grid, new TextBlock() { Text = outputValue, Foreground = outputNormal ? Brushes.Black : Brushes.Red, FontWeight = outputNormal ? FontWeights.Regular : FontWeights.Bold, TextAlignment = TextAlignment.Right }, row++, 2);
 
 			Grid.SetRowSpan(grid.Children[0], int.MaxValue);
+
+			initialized = true;
 		}
 	}
 }

@@ -14,6 +14,7 @@ namespace GUI
 		HashSet<long> unknownNodes;
 		HashSet<long> energizedNodes;
 		Dictionary<long, LoadFlowResult> loadFlow;
+		Dictionary<long, bool> markedSwitches;
 
 		public Topology()
 		{
@@ -22,6 +23,7 @@ namespace GUI
 			unknownNodes = new HashSet<long>(0);
 			energizedNodes = new HashSet<long>(0);
 			loadFlow = new Dictionary<long, LoadFlowResult>(0);
+			markedSwitches = new Dictionary<long, bool>(0);
 		}
 
 		public EEnergization GetNodeEnergization(long gid)
@@ -148,6 +150,31 @@ namespace GUI
 			rwLock.EnterWriteLock();
 			{
 				this.loadFlow = loadFlow;
+			}
+			rwLock.ExitWriteLock();
+		}
+
+		public bool TryGetMarkedSwitch(long gid, out bool state)
+		{
+			return markedSwitches.TryGetValue(gid, out state);
+		}
+
+		public void UpdateMarkedSwitches(MarkedSwitchesDownload download)
+		{
+			if(download == null || download.Data == null)
+				return;
+
+			Dictionary<long, bool> markedSwitches = new Dictionary<long, bool>(download.Data.Count);
+
+			for(int i = 0; i < download.Data.Count; ++i)
+			{
+				KeyValuePair<long, bool> pair = download.Data[i];
+				markedSwitches.Add(pair.Key, pair.Value);
+			}
+
+			rwLock.EnterWriteLock();
+			{
+				this.markedSwitches = markedSwitches;
 			}
 			rwLock.ExitWriteLock();
 		}

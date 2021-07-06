@@ -21,5 +21,14 @@ namespace Common.CalculationEngine
 
 		[OperationContract(IsOneWay = true)]
 		void UpdateMeasurements(List<long> gids);
+
+		[OperationContract]
+		bool MarkSwitchState(long gid, bool open);
+
+		[OperationContract]
+		bool UnmarkSwitchState(long gid);
+
+		[OperationContract]
+		List<KeyValuePair<long, bool>> GetMarkedSwitches();
 	}
 }

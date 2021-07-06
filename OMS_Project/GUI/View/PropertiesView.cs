@@ -9,10 +9,32 @@ using System.Windows.Media;
 
 namespace GUI.View
 {
-	public class PropertiesView : ElementView
+	public class PropertiesView : View
 	{
-		public PropertiesView(IdentifiedObject io, PubSubClient pubSub) : base(io, pubSub)
+		Func<IdentifiedObject> ioGetter;
+		PubSubClient pubSub;
+		Dictionary<DMSType, List<ModelCode>> typeToProps;
+		bool initialized;
+		StackPanel panel;
+
+		public override UIElement Element
 		{
+			get
+			{
+				if(!initialized)
+					Update();
+
+				return panel;
+			}
+		}
+
+		public PropertiesView(Func<IdentifiedObject> ioGetter, PubSubClient pubSub) : base()
+		{
+			this.ioGetter = ioGetter;
+			this.pubSub = pubSub;
+			typeToProps = ModelResourcesDesc.GetTypeToPropertiesMap();
+			panel = new StackPanel();
+
 			StackPanel propPanel = new StackPanel();
 			Border border = new Border() { BorderThickness = new Thickness(1), BorderBrush = Brushes.LightGray, Margin = new Thickness(1), Padding = new Thickness(1) };
 			Grid propsGrid = new Grid();
@@ -28,13 +50,21 @@ namespace GUI.View
 
 			border.Child = propsGrid;
 			propPanel.Children.Add(border);
-			Panel.Children.Add(new TextBlock() { Margin = new Thickness(2), Text = "Properties", FontWeight = FontWeights.Bold, FontSize = 14 });
-			Panel.Children.Add(propPanel);
+			panel.Children.Add(new TextBlock() { Margin = new Thickness(2), Text = "Properties", FontWeight = FontWeights.Bold, FontSize = 14 });
+			panel.Children.Add(propPanel);
 		}
 
-		public override void Refresh()
+		public override void Update(EObservableMessageType msg)
 		{
-			Grid grid = (Grid)((Border)((StackPanel)Panel.Children[1]).Children[0]).Child;
+			if(initialized && msg != EObservableMessageType.NetworkModelChanged)
+				return;
+
+			Update();
+		}
+
+		public override void Update()
+		{
+			Grid grid = (Grid)((Border)((StackPanel)panel.Children[1]).Children[0]).Child;
 
 			if(grid.Children.Count > 3)
 				grid.Children.RemoveRange(3, grid.Children.Count - 3);
@@ -42,97 +72,116 @@ namespace GUI.View
 			if(grid.RowDefinitions.Count > 1)
 				grid.RowDefinitions.RemoveRange(1, grid.RowDefinitions.Count - 1);
 
-			DMSType type = ModelCodeHelper.GetTypeFromGID(IO.GID);
-			Dictionary<DMSType, List<ModelCode>> typeToProps = ModelResourcesDesc.GetTypeToPropertiesMap();
+			IdentifiedObject io = ioGetter();
+			
 			List<ModelCode> props;
-
-			if(!typeToProps.TryGetValue(type, out props))
+			if(io == null || !typeToProps.TryGetValue(ModelCodeHelper.GetTypeFromGID(io.GID), out props))
 			{
 				Grid.SetColumnSpan(AddToGrid(grid, new TextBlock() { Text = "No properties." }, 1, 0), int.MaxValue);
 				Grid.SetRowSpan(grid.Children[2], 1);
 				return;
 			}
 
-			List<Tuple<string, object, PropertyType>> values = new List<Tuple<string, object, PropertyType>>();
+			List<KeyValuePair<string, UIElement>> rows = new List<KeyValuePair<string, UIElement>>();
 
 			foreach(ModelCode prop in props)
 			{
-				Property p = IO.GetProperty(prop);
+				Property p = io.GetProperty(prop);
 
 				if(p == null)
 					continue;
 
-				object value;
+				UIElement element;
 
 				switch(p.Type)
 				{
 					case PropertyType.Bool:
-						value = ((BoolProperty)p).Value;
+						element = new TextBlock() { Text = ((BoolProperty)p).Value.ToString(), TextAlignment = TextAlignment.Right };
 						break;
 
 					case PropertyType.Enum:
-						value = ((EnumProperty)p).Value;
+						element = new TextBlock() { Text = ((EnumProperty)p).Value.ToString(), TextAlignment = TextAlignment.Right };
 						break;
 
 					case PropertyType.Float:
-						value = ((FloatProperty)p).Value;
+						element = new TextBlock() { Text = ((FloatProperty)p).Value.ToString(), TextAlignment = TextAlignment.Right };
 						break;
 
 					case PropertyType.Int32:
-						value = ((Int32Property)p).Value;
+						element = new TextBlock() { Text = ((Int32Property)p).Value.ToString(), TextAlignment = TextAlignment.Right };
 						break;
 
 					case PropertyType.Int64:
-						value = ((Int64Property)p).Value;
+						element = new TextBlock() { Text = ((Int64Property)p).Value.ToString(), TextAlignment = TextAlignment.Right };
 						break;
 
 					case PropertyType.Reference:
-						value = ((ReferenceProperty)p).Value;
-						break;
+					{
+						long value = ((ReferenceProperty)p).Value;
+
+						if(value != 0)
+						{
+							TextBlock tb = CreateHyperlink(value.ToString(), () => new ElementWindow(value, pubSub) { Owner = Application.Current.MainWindow }.Show());
+							tb.TextAlignment = TextAlignment.Right;
+							element = tb;
+						}
+						else
+						{
+							element = new TextBlock() { Text = value.ToString(), TextAlignment = TextAlignment.Right };
+						}
+					}
+					break;
 
 					case PropertyType.String:
-						value = ((StringProperty)p).Value;
+						element = new TextBlock(){ Text = ((StringProperty)p).Value.ToString(), TextAlignment = TextAlignment.Right };
 						break;
+
+					case PropertyType.ReferenceVector:
+					{
+						List<long> values = ((ReferencesProperty)p).Value;
+						StackPanel sp = new StackPanel();
+						
+						for(int j = 0; j < values.Count; ++j)
+						{
+							long value = values[j];
+							TextBlock tb = CreateHyperlink(value.ToString(), () => new ElementWindow(value, pubSub) { Owner = Application.Current.MainWindow }.Show());
+							tb.TextAlignment = TextAlignment.Right;
+							sp.Children.Add(tb);
+						}
+
+						element = new ScrollViewer() { MaxHeight = 100, Content = sp, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
+					}
+					break;
 
 					default:
 						continue;
 				}
 
-				values.Add(new Tuple<string, object, PropertyType>(prop.ToString(), value, p.Type));
+				rows.Add(new KeyValuePair<string, UIElement>(prop.ToString(), element));
 			}
 
-			values.Sort((x, y) => { return x.Item1.CompareTo(y.Item1); });
-			int row = 1;
+			rows.Sort((x, y) => { return x.Key.CompareTo(y.Key); });
 
-			foreach(Tuple<string, object, PropertyType> value in values)
+			int i;
+			for(i = 0; i < rows.Count; ++i)
 			{
+				var row = rows[i];
 				grid.RowDefinitions.Add(new RowDefinition());
-				AddToGrid(grid, new TextBlock() { Text = value.Item1 }, row, 0);
-
-				TextBlock tbValue;
-
-				if(value.Item3 == PropertyType.Reference && (long)value.Item2 != 0)
-				{
-					tbValue = new TextBlock() { Text = value.Item2.ToString(), Foreground = Brushes.Blue, TextDecorations = TextDecorations.Underline, Cursor = Cursors.Hand, TextAlignment = TextAlignment.Right };
-					tbValue.MouseLeftButtonDown += (x, y) => new ElementWindow((long)value.Item2, PubSub) { Owner = Application.Current.MainWindow }.Show();
-				}
-				else
-				{
-					tbValue = new TextBlock() { Text = value.Item2.ToString(), TextAlignment = TextAlignment.Right };
-				}
-
-				AddToGrid(grid, tbValue, row, 2);
-				++row;
+				AddToGrid(grid, new TextBlock() { Text = row.Key }, i + 1, 0);
+				AddToGrid(grid, row.Value, i + 1, 2);
 			}
 
-			if(row == 1)
+			if(i == 0)
 			{
 				Grid.SetColumnSpan(AddToGrid(grid, new TextBlock() { Text = "No properties." }, 1, 0), int.MaxValue);
 				Grid.SetRowSpan(grid.Children[2], 1);
-				return;
+			}
+			else
+			{
+				Grid.SetRowSpan(grid.Children[2], int.MaxValue);
 			}
 
-			Grid.SetRowSpan(grid.Children[2], int.MaxValue);
+			initialized = true;
 		}
 	}
 }

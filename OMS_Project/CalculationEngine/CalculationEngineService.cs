@@ -108,5 +108,20 @@ namespace CalculationEngine
 		{
 			return new List<KeyValuePair<long, LoadFlowResult>>();
 		}
+
+		public bool MarkSwitchState(long gid, bool open)
+		{
+			return TopologyModel.Instance.MarkSwitchState(gid, open);
+		}
+
+		public bool UnmarkSwitchState(long gid)
+		{
+			return TopologyModel.Instance.UnmarkSwitchState(gid);
+		}
+
+		public List<KeyValuePair<long, bool>> GetMarkedSwitches()
+		{
+			return TopologyModel.Instance.GetMarkedSwitches();
+		}
 	}
 }

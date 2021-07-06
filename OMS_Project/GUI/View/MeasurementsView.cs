@@ -10,13 +10,30 @@ using System.Windows.Media;
 
 namespace GUI.View
 {
-	public class MeasurementsView : ElementView
+	public class MeasurementsView : View
 	{
-		Func<IdentifiedObject, IEnumerable<long>> measurementsGetter;
+		Func<IEnumerable<long>> measurementsGetter;
+		PubSubClient pubSub;
+		StackPanel panel;
+		bool initialized;
 
-		public MeasurementsView(IdentifiedObject io, Func<IdentifiedObject, IEnumerable<long>> measurementsGetter, PubSubClient pubSub) : base(io, pubSub)
+		public override UIElement Element
+		{
+			get
+			{
+				if(!initialized)
+					Update();
+
+				return panel;
+			}
+		}
+
+		public MeasurementsView(Func<IEnumerable<long>> measurementsGetter, PubSubClient pubSub) : base()
 		{
 			this.measurementsGetter = measurementsGetter;
+			this.pubSub = pubSub;
+			panel = new StackPanel();
+
 			StackPanel measPanel = new StackPanel();
 			Border border = new Border() { BorderThickness = new Thickness(1), BorderBrush = Brushes.LightGray, Margin = new Thickness(1), Padding = new Thickness(1) };
 			Grid grid = new Grid();
@@ -28,7 +45,7 @@ namespace GUI.View
 			grid.RowDefinitions.Add(new RowDefinition());
 
 			AddToGrid(grid, new TextBlock() { Text = "MRID", FontWeight = FontWeights.Bold, HorizontalAlignment = HorizontalAlignment.Center }, 0, 0);
-			AddToGrid(grid, new TextBlock() { Text = "Direction", FontWeight = FontWeights.Bold, HorizontalAlignment = HorizontalAlignment.Center }, 0, 2);
+			AddToGrid(grid, new TextBlock() { Text = "Type", FontWeight = FontWeights.Bold, HorizontalAlignment = HorizontalAlignment.Center }, 0, 2);
 			AddToGrid(grid, new TextBlock() { Text = "Value", FontWeight = FontWeights.Bold, HorizontalAlignment = HorizontalAlignment.Center }, 0, 4);
 
 			AddToGrid(grid, new GridSplitter() { ResizeDirection = GridResizeDirection.Columns, HorizontalAlignment = HorizontalAlignment.Stretch, Background = Brushes.Black, Margin = new Thickness(0), Padding = new Thickness(0), ResizeBehavior = GridResizeBehavior.PreviousAndNext, BorderThickness = new Thickness(2, 0, 2, 0), BorderBrush = Brushes.Transparent }, 0, 1);
@@ -36,13 +53,21 @@ namespace GUI.View
 
 			border.Child = grid;
 			measPanel.Children.Add(border);
-			Panel.Children.Add(new TextBlock() { Margin = new Thickness(2), Text = "Measurements", FontWeight = FontWeights.Bold, FontSize = 14 });
-			Panel.Children.Add(measPanel);
+			panel.Children.Add(new TextBlock() { Margin = new Thickness(2), Text = "Measurements", FontWeight = FontWeights.Bold, FontSize = 14 });
+			panel.Children.Add(measPanel);
 		}
 
-		public override void Refresh()
+		public override void Update(EObservableMessageType msg)
 		{
-			Grid measGrid = (Grid)((Border)((StackPanel)Panel.Children[1]).Children[0]).Child;
+			if(initialized && msg != EObservableMessageType.MeasurementValuesChanged && msg != EObservableMessageType.NetworkModelChanged)
+				return;
+
+			Update();
+		}
+
+		public override void Update()
+		{
+			Grid measGrid = (Grid)((Border)((StackPanel)panel.Children[1]).Children[0]).Child;
 
 			if(measGrid.Children.Count > 5)
 				measGrid.Children.RemoveRange(5, measGrid.Children.Count - 5);
@@ -51,9 +76,13 @@ namespace GUI.View
 				measGrid.RowDefinitions.RemoveRange(1, measGrid.RowDefinitions.Count - 1);
 
 			int row = 0;
-			NetworkModel nm = PubSub.Model;
+			NetworkModel nm = pubSub.Model;
+			IEnumerable<long> measGIDs = measurementsGetter();
 
-			foreach(long measGID in measurementsGetter(IO))
+			if(measGIDs == null)
+				measGIDs = new long[0];
+
+			foreach(long measGID in measurementsGetter())
 			{
 				++row;
 				Measurement meas = (Measurement)nm.Get(measGID);
@@ -62,10 +91,9 @@ namespace GUI.View
 					continue;
 
 				measGrid.RowDefinitions.Add(new RowDefinition());
-				TextBlock mridTextBlock = new TextBlock() { Text = meas.MRID, Foreground = Brushes.Blue, TextDecorations = TextDecorations.Underline, Cursor = Cursors.Hand };
-				mridTextBlock.MouseLeftButtonDown += (x, y) => new ElementWindow(measGID, PubSub) { Owner = Application.Current.MainWindow }.Show();
+				TextBlock mridTextBlock = CreateHyperlink(meas.MRID, () => new ElementWindow(measGID, pubSub) { Owner = Application.Current.MainWindow }.Show());
 				AddToGrid(measGrid, mridTextBlock, row, 0);
-				AddToGrid(measGrid, new TextBlock() { Text = meas.Direction.ToString() }, row, 2);
+				AddToGrid(measGrid, new TextBlock() { Text = meas.MeasurementType.ToString() }, row, 2);
 
 				string valueText;
 				bool isNormal;
@@ -73,7 +101,7 @@ namespace GUI.View
 				if(ModelCodeHelper.GetTypeFromGID(measGID) == DMSType.Analog)
 				{
 					float value;
-					bool available = PubSub.Measurements.GetAnalogInput(measGID, out value);
+					bool available = pubSub.Measurements.GetAnalogInput(measGID, out value);
 					Analog a = (Analog)meas;
 
 					isNormal = !available || (value <= a.MaxValue && value >= a.MinValue);
@@ -82,7 +110,7 @@ namespace GUI.View
 				else
 				{
 					int value;
-					bool available = PubSub.Measurements.GetDiscreteInput(measGID, out value);
+					bool available = pubSub.Measurements.GetDiscreteInput(measGID, out value);
 					Discrete d = (Discrete)meas;
 
 					isNormal = !available || (value <= d.MaxValue && value >= d.MinValue);
@@ -105,6 +133,8 @@ namespace GUI.View
 			Grid.SetRowSpan(measGrid.Children[4], splitterRowSpan);
 
 			measGrid.RowDefinitions.Last().Height = new GridLength(1, GridUnitType.Star);
+
+			initialized = true;
 		}
 	}
 }

@@ -13,27 +13,14 @@ namespace NMS
 	{
 		Dictionary<long, IdentifiedObject> entities;
 
-		public int NextEntityId { get; private set; }
-
 		public Container()
 		{
 			entities = new Dictionary<long, IdentifiedObject>();
-			NextEntityId = 1;
 		}
 
 		public Container(Container c)
 		{
 			entities = new Dictionary<long, IdentifiedObject>(c.entities);
-
-			foreach(KeyValuePair<long, IdentifiedObject> io in entities)
-			{
-				int entityId = ModelCodeHelper.GetEntityIdFromGID(io.Value.GID);
-
-				if(entityId > NextEntityId)
-					NextEntityId = entityId;
-			}
-
-			++NextEntityId;
 		}
 
 		public Container(IEnumerable<IdentifiedObject> l)
@@ -67,25 +54,11 @@ namespace NMS
 		public void Set(IdentifiedObject io)
 		{
 			entities[io.GID] = io;
-
-			int entityId = ModelCodeHelper.GetEntityIdFromGID(io.GID);
-
-			if(entityId >= NextEntityId)
-			{
-				NextEntityId = entityId + 1;
-			}
 		}
 
 		public void Add(IdentifiedObject io)
 		{
 			entities.Add(io.GID, io);
-
-			int entityId = ModelCodeHelper.GetEntityIdFromGID(io.GID);
-
-			if(entityId >= NextEntityId)
-			{
-				NextEntityId = entityId + 1;
-			}
 		}
 
 		public bool Remove(long gid)

@@ -1,4 +1,6 @@
 ﻿using Common.DataModel;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace GUI.View
 {
@@ -6,21 +8,57 @@ namespace GUI.View
 	{
 		PropertiesView properties;
 		CommandView command;
+		Measurement io;
+		StackPanel panel;
+		bool initialized;
 
-		public MeasurementView(Measurement io, PubSubClient pubSub) : base(io, pubSub)
+		public override UIElement Element
 		{
-			properties = new PropertiesView(io, pubSub);
-			command = new CommandView(io, pubSub);
+			get
+			{
+				if(!initialized)
+					Update();
+
+				return panel;
+			}
 		}
 
-		public override void Refresh()
+		public MeasurementView(long gid, PubSubClient pubSub) : base(gid, pubSub)
 		{
-			properties.Refresh();
-			command.Refresh();
+			properties = new PropertiesView(() => io, pubSub);
+			command = new CommandView(() => io, pubSub);
+			panel = new StackPanel();
+		}
 
-			Panel.Children.Clear();
-			Panel.Children.Add(properties.Panel);
-			Panel.Children.Add(command.Panel);
+		public override void Update(EObservableMessageType msg)
+		{
+			if(!initialized || msg == EObservableMessageType.NetworkModelChanged)
+				io = PubSub.Model.Get(GID) as Measurement;
+
+			properties.Update(msg);
+			command.Update(msg);
+
+			if(!initialized)
+			{
+				panel.Children.Add(properties.Element);
+				panel.Children.Add(command.Element);
+				initialized = true;
+			}
+		}
+
+		public override void Update()
+		{
+			io = PubSub.Model.Get(GID) as Measurement;
+
+			properties.Update();
+			command.Update();
+
+			if(!initialized)
+			{
+				panel.Children.Add(properties.Element);
+				panel.Children.Add(command.Element);
+				initialized = true;
+			}
 		}
 	}
 }

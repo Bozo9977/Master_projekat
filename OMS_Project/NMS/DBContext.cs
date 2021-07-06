@@ -1,9 +1,5 @@
-﻿using System;
-using System.Data.Entity;
+﻿using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Common.DataModel;
 
 namespace NMS
@@ -25,6 +21,7 @@ namespace NMS
 		public DbSet<RecloserDBModel> Reclosers { get; set; }
 		public DbSet<TerminalDBModel> Terminals { get; set; }
 		public DbSet<TransformerWindingDBModel> TransformerWindings { get; set; }
+		public DbSet<ModelCounterDBModel> ModelCounters { get; set; }
 
 		public DBContext()
 		{

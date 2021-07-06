@@ -58,6 +58,7 @@
     <Compile Include="DBContext.cs" />
     <Compile Include="GenericDataAccess.cs" />
     <Compile Include="INMSDatabase.cs" />
+    <Compile Include="ModelCounterDBModel.cs" />
     <Compile Include="NetworkModel.cs" />
     <Compile Include="NMSEFDatabase.cs" />
     <Compile Include="Program.cs" />

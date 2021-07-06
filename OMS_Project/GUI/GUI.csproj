@@ -57,11 +57,12 @@
     </ApplicationDefinition>
     <Compile Include="GraphicsText.cs" />
     <Compile Include="LoadFlowDownload.cs" />
+    <Compile Include="MarkedSwitchesDownload.cs" />
     <Compile Include="Topology.cs" />
     <Compile Include="TopologyDownload.cs" />
     <Compile Include="ViewTransform.cs" />
     <Compile Include="View\CommandView.cs" />
-    <Compile Include="View\ConductingEquipmentView.cs" />
+    <Compile Include="View\PowerSystemResourceView.cs" />
     <Compile Include="ElementWindow.xaml.cs">
       <DependentUpon>ElementWindow.xaml</DependentUpon>
     </Compile>
@@ -73,6 +74,8 @@
     <Compile Include="View\MeasurementsView.cs" />
     <Compile Include="View\MeasurementView.cs" />
     <Compile Include="View\PropertiesView.cs" />
+    <Compile Include="View\SwitchStateView.cs" />
+    <Compile Include="View\SwitchView.cs" />
     <Compile Include="View\View.cs" />
     <Page Include="ElementWindow.xaml">
       <SubType>Designer</SubType>

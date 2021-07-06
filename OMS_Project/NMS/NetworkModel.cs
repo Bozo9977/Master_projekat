@@ -17,15 +17,22 @@ namespace NMS
 		List<IdentifiedObject> updatedOld;
 		List<IdentifiedObject> updatedNew;
 		List<IdentifiedObject> deleted;
+		Dictionary<DMSType, int> counters;
+		Dictionary<DMSType, int> oldCounters;
 
 		public NetworkModel()
 		{
 			DMSType[] types = ModelResourcesDesc.TypeIdsInInsertOrder;
 			containers = new Dictionary<DMSType, Container>(types.Length);
+			counters = new Dictionary<DMSType, int>(types.Length);
 
-			foreach(DMSType t in types)
+			for(int i = 0; i < types.Length; ++i)
+			{
+				DMSType t = types[i];
 				containers.Add(t, new Container());
-
+				counters.Add(t, 0);
+			}
+			
 			rwLock = new ReaderWriterLockSlim();
 		}
 
@@ -40,6 +47,8 @@ namespace NMS
 				foreach(KeyValuePair<DMSType, Container> container in nm.containers)
 					containers.Add(container.Key, new Container(container.Value));
 
+				counters = new Dictionary<DMSType, int>(nm.counters);
+
 				db = nm.db;
 				rwLock = new ReaderWriterLockSlim();
 			}
@@ -53,9 +62,14 @@ namespace NMS
 		{
 			DMSType[] types = ModelResourcesDesc.TypeIdsInInsertOrder;
 			containers = new Dictionary<DMSType, Container>(types.Length);
+			counters = new Dictionary<DMSType, int>(types.Length);
 
-			foreach(DMSType t in types)
+			for(int i = 0; i < types.Length; ++i)
+			{
+				DMSType t = types[i];
 				containers.Add(t, new Container(db.GetList(t)));
+				counters.Add(t, 0);
+			}
 
 			Dictionary<ModelCode, long> refs = new Dictionary<ModelCode, long>();
 
@@ -78,6 +92,11 @@ namespace NMS
 				}
 			}
 
+			foreach(KeyValuePair<DMSType, int> pair in db.GetCounters())
+			{
+				counters[pair.Key] = pair.Value;
+			}
+
 			this.db = db;
 			rwLock = new ReaderWriterLockSlim();
 		}
@@ -88,12 +107,8 @@ namespace NMS
 
 			try
 			{
-				Dictionary<DMSType, int> counters = new Dictionary<DMSType, int>();
-
-				foreach(KeyValuePair<DMSType, Container> c in containers)
-					counters.Add(c.Key, c.Value.NextEntityId);
-
-				Dictionary<long, long> ids = delta.ResolveIds(x => counters.ContainsKey(x) ? counters[x]++ : -1);
+				Dictionary<DMSType, int> counters = new Dictionary<DMSType, int>(this.counters);
+				Dictionary<long, long> ids = delta.ResolveIds(x => counters.ContainsKey(x) ? (counters[x] = counters[x] + 1) : -1);
 
 				if(ids == null)
 					return null;
@@ -162,7 +177,10 @@ namespace NMS
 					this.updatedOld = updatedOld;
 					this.updatedNew = updatedNew;
 					this.deleted = deleted;
+					this.oldCounters = this.counters;
 				}
+
+				this.counters = counters;
 
 				return new Tuple<Dictionary<long, long>, List<long>, List<long>>(ids, updatedOld.Select(x => x.GID).ToList(), deleted.Select(x => x.GID).ToList());
 			}
@@ -178,7 +196,7 @@ namespace NMS
 
 			try
 			{
-				return db != null && inserted != null && db.PersistDelta(inserted, updatedNew, deleted);
+				return db != null && inserted != null && db.PersistDelta(inserted, updatedNew, deleted, counters);
 			}
 			finally
 			{
@@ -192,6 +210,8 @@ namespace NMS
 			updatedNew = null;
 			updatedOld = null;
 			deleted = null;
+			oldCounters = null;
+
 			return true;
 		}
 
@@ -201,12 +221,13 @@ namespace NMS
 
 			try
 			{
-				bool ok = db != null && inserted != null && db.RollbackDelta(inserted, updatedOld, deleted);
+				bool ok = db != null && inserted != null && db.RollbackDelta(inserted, updatedOld, deleted, oldCounters);
 
 				inserted = null;
 				updatedNew = null;
 				updatedOld = null;
 				deleted = null;
+				oldCounters = null;
 
 				return ok;
 			}

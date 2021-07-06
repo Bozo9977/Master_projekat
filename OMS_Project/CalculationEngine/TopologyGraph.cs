@@ -28,14 +28,16 @@ namespace CalculationEngine
 		Dictionary<DMSType, ModelCode> dmsTypeToModelCodeMap;
 		IReadOnlyDictionary<long, float> analogs;
 		IReadOnlyDictionary<long, int> discretes;
+		IReadOnlyDictionary<long, bool> markedSwitchStates;
 
-		public TopologyGraph(Dictionary<DMSType, Dictionary<long, IdentifiedObject>> containers, IReadOnlyDictionary<long, float> analogs, IReadOnlyDictionary<long, int> discretes)
+		public TopologyGraph(Dictionary<DMSType, Dictionary<long, IdentifiedObject>> containers, IReadOnlyDictionary<long, float> analogs, IReadOnlyDictionary<long, int> discretes, IReadOnlyDictionary<long, bool> markedSwitchStates)
 		{
 			subGraphs = new List<Node>();
 			adjacency = new List<Node>();
 			this.containers = containers;
 			this.analogs = analogs;
 			this.discretes = discretes;
+			this.markedSwitchStates = markedSwitchStates;
 			dmsTypeToModelCodeMap = ModelResourcesDesc.GetTypeToModelCodeMap();
 
 			BuildGraph();
@@ -229,7 +231,7 @@ namespace CalculationEngine
 					EEnergization energization = node.Item2;
 					long gid = node.Item1.IO.GID;
 
-					if(energization != EEnergization.NotEnergized && ModelCodeHelper.ModelCodeClassIsSubClassOf(dmsTypeToModelCodeMap[ModelCodeHelper.GetTypeFromGID(gid)], ModelCode.SWITCH))
+					if(energization == EEnergization.Energized && ModelCodeHelper.ModelCodeClassIsSubClassOf(dmsTypeToModelCodeMap[ModelCodeHelper.GetTypeFromGID(gid)], ModelCode.SWITCH))
 					{
 						Switch sw = (Switch)node.Item1.IO;
 						Discrete d = null;
@@ -256,7 +258,16 @@ namespace CalculationEngine
 
 						if(d == null || !discretes.TryGetValue(d.GID, out switchState))
 						{
-							energization = EEnergization.Unknown;
+							bool open;
+
+							if(markedSwitchStates.TryGetValue(gid, out open))
+							{
+								energization = open ? EEnergization.NotEnergized : EEnergization.Energized;
+							}
+							else
+							{
+								energization = sw.NormalOpen ? EEnergization.NotEnergized : EEnergization.Energized;
+							}
 						}
 						else if(switchState != 0)
 						{

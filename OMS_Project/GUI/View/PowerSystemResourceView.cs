@@ -5,11 +5,11 @@ using System.Windows.Controls;
 
 namespace GUI.View
 {
-	public class ConnectivityNodeView : ElementView
+	public class PowerSystemResourceView : ElementView
 	{
 		PropertiesView properties;
 		MeasurementsView measurements;
-		ConnectivityNode io;
+		PowerSystemResource io;
 		StackPanel panel;
 		bool initialized;
 
@@ -24,17 +24,17 @@ namespace GUI.View
 			}
 		}
 
-		public ConnectivityNodeView(long gid, PubSubClient pubSub) : base(gid, pubSub)
+		public PowerSystemResourceView(long gid, PubSubClient pubSub) : base(gid, pubSub)
 		{
 			properties = new PropertiesView(() => io, pubSub);
-			measurements = new MeasurementsView(GetMeasurements, pubSub);
+			measurements = new MeasurementsView(() => io == null ? (IEnumerable<long>)new long[0] : io.Measurements, pubSub);
 			panel = new StackPanel();
 		}
 
 		public override void Update(EObservableMessageType msg)
 		{
 			if(!initialized || msg == EObservableMessageType.NetworkModelChanged)
-				io = PubSub.Model.Get(GID) as ConnectivityNode;
+				io = PubSub.Model.Get(GID) as PowerSystemResource;
 
 			properties.Update(msg);
 			measurements.Update(msg);
@@ -49,7 +49,7 @@ namespace GUI.View
 
 		public override void Update()
 		{
-			io = PubSub.Model.Get(GID) as ConnectivityNode;
+			io = PubSub.Model.Get(GID) as PowerSystemResource;
 
 			properties.Update();
 			measurements.Update();
@@ -60,27 +60,6 @@ namespace GUI.View
 				panel.Children.Add(measurements.Element);
 				initialized = true;
 			}
-		}
-
-		IEnumerable<long> GetMeasurements()
-		{
-			List<long> measurements = new List<long>();
-			NetworkModel nm = PubSub.Model;
-
-			foreach(long terminalGID in io.Terminals)
-			{
-				Terminal terminal = (Terminal)nm.Get(terminalGID);
-
-				if(terminal == null)
-					continue;
-
-				foreach(long measGID in terminal.Measurements)
-				{
-					measurements.Add(measGID);
-				}
-			}
-
-			return measurements;
 		}
 	}
 }

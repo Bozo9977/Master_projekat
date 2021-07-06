@@ -35,6 +35,8 @@ namespace CalculationEngine
 		ConcurrentDictionary<long, float> analogInputs;
 		ConcurrentDictionary<long, int> discreteInputs;
 		HashSet<long> measurementsOfInterest;
+		ConcurrentDictionary<long, bool> markedSwitchStates;
+		Dictionary<DMSType, ModelCode> typeToModelCode;
 
 		public TopologyModel()
 		{
@@ -48,6 +50,8 @@ namespace CalculationEngine
 			analogInputs = new ConcurrentDictionary<long, float>();
 			discreteInputs = new ConcurrentDictionary<long, int>();
 			measurementsOfInterest = new HashSet<long>();
+			markedSwitchStates = new ConcurrentDictionary<long, bool>();
+			typeToModelCode = ModelResourcesDesc.GetTypeToModelCodeMap();
 		}
 
 		public TopologyModel(TopologyModel tm)
@@ -64,6 +68,8 @@ namespace CalculationEngine
 				analogInputs = new ConcurrentDictionary<long, float>();
 				discreteInputs = new ConcurrentDictionary<long, int>();
 				measurementsOfInterest = new HashSet<long>(tm.measurementsOfInterest);
+				markedSwitchStates = new ConcurrentDictionary<long, bool>(tm.markedSwitchStates);
+				typeToModelCode = ModelResourcesDesc.GetTypeToModelCodeMap();
 			}
 			finally
 			{
@@ -133,6 +139,13 @@ namespace CalculationEngine
 						return false;
 
 					measurementsOfInterest.Remove(gid);
+					markedSwitchStates.TryRemove(gid, out _);
+				}
+
+				foreach(long switchGID in markedSwitchStates.Keys)
+				{
+					if(!IsSwitchWithoutSCADA(switchGID))
+						markedSwitchStates.TryRemove(switchGID, out _);
 				}
 
 				return true;
@@ -140,6 +153,102 @@ namespace CalculationEngine
 			finally
 			{
 				rwLock.ExitWriteLock();
+			}
+		}
+
+		bool IsSwitchWithoutSCADA(long switchGID)
+		{
+			if(!ModelCodeHelper.ModelCodeClassIsSubClassOf(typeToModelCode[ModelCodeHelper.GetTypeFromGID(switchGID)], ModelCode.SWITCH))
+				return false;
+
+			Switch s = Get(switchGID) as Switch;
+
+			if(s == null)
+				return false;
+
+			for(int i = 0; i < s.Measurements.Count; ++i)
+			{
+				Measurement m = Get(s.Measurements[i]) as Measurement;
+
+				if(m == null)
+					continue;
+
+				if(m.MeasurementType == MeasurementType.SwitchState)
+					return false;
+			}
+
+			return true;
+		}
+
+		IdentifiedObject Get(long gid)
+		{
+			IdentifiedObject io;
+			Dictionary<long, IdentifiedObject> container;
+			return containers.TryGetValue(ModelCodeHelper.GetTypeFromGID(gid), out container) && container.TryGetValue(gid, out io) ? io : null;
+		}
+
+		public bool MarkSwitchState(long gid, bool open)
+		{
+			rwLock.EnterWriteLock();
+
+			try
+			{
+				if(!IsSwitchWithoutSCADA(gid))
+				{
+					return false;
+				}
+
+				markedSwitchStates[gid] = open;
+
+				graph = new TopologyGraph(containers, analogInputs, discreteInputs, markedSwitchStates);
+				lineEnergization = graph.CalculateLineEnergization();
+			}
+			finally
+			{
+				rwLock.ExitWriteLock();
+			}
+
+			Publish(new MarkedSwitchesChanged());
+			Publish(new TopologyChanged());
+
+			return true;
+		}
+
+		public bool UnmarkSwitchState(long gid)
+		{
+			bool result;
+			rwLock.EnterWriteLock();
+
+			try
+			{
+				if(!IsSwitchWithoutSCADA(gid) || !markedSwitchStates.TryRemove(gid, out _))
+					return false;
+
+				graph = new TopologyGraph(containers, analogInputs, discreteInputs, markedSwitchStates);
+				lineEnergization = graph.CalculateLineEnergization();
+			}
+			finally
+			{
+				rwLock.ExitWriteLock();
+			}
+
+			Publish(new MarkedSwitchesChanged());
+			Publish(new TopologyChanged());
+
+			return true;
+		}
+
+		public List<KeyValuePair<long, bool>> GetMarkedSwitches()
+		{
+			rwLock.EnterReadLock();
+
+			try
+			{
+				return new List<KeyValuePair<long, bool>>(markedSwitchStates);
+			}
+			finally
+			{
+				rwLock.ExitReadLock();
 			}
 		}
 
@@ -213,9 +322,9 @@ namespace CalculationEngine
 
 				try
 				{
-					graph = new TopologyGraph(containers, analogInputs, discreteInputs);
+					graph = new TopologyGraph(containers, analogInputs, discreteInputs, markedSwitchStates);
 					lineEnergization = graph.CalculateLineEnergization();
-					Publish();
+					Publish(new TopologyChanged());
 				}
 				finally
 				{
@@ -264,14 +373,14 @@ namespace CalculationEngine
 			return lineEnergization;
 		}
 
-		void Publish()
+		void Publish(PubSubMessage msg)
 		{
 			Client<IPublishing> pubClient = new Client<IPublishing>("publishingEndpoint");
 			pubClient.Connect();
 
 			pubClient.Call<bool>(pub =>
 			{
-				pub.Publish(new TopologyChanged());
+				pub.Publish(msg);
 				return true;
 			}, out _);
 

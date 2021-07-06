@@ -5,11 +5,12 @@ using System.Windows.Controls;
 
 namespace GUI.View
 {
-	public class ConnectivityNodeView : ElementView
+	public class SwitchView : ElementView
 	{
 		PropertiesView properties;
 		MeasurementsView measurements;
-		ConnectivityNode io;
+		SwitchStateView switchState;
+		Switch io;
 		StackPanel panel;
 		bool initialized;
 
@@ -24,20 +25,22 @@ namespace GUI.View
 			}
 		}
 
-		public ConnectivityNodeView(long gid, PubSubClient pubSub) : base(gid, pubSub)
+		public SwitchView(long gid, PubSubClient pubSub) : base(gid, pubSub)
 		{
 			properties = new PropertiesView(() => io, pubSub);
-			measurements = new MeasurementsView(GetMeasurements, pubSub);
+			measurements = new MeasurementsView(() => io == null ? (IEnumerable<long>)new long[0] : io.Measurements, pubSub);
+			switchState = new SwitchStateView(() => io, pubSub);
 			panel = new StackPanel();
 		}
 
 		public override void Update(EObservableMessageType msg)
 		{
 			if(!initialized || msg == EObservableMessageType.NetworkModelChanged)
-				io = PubSub.Model.Get(GID) as ConnectivityNode;
+				io = PubSub.Model.Get(GID) as Switch;
 
 			properties.Update(msg);
 			measurements.Update(msg);
+			switchState.Update(msg);
 
 			if(!initialized)
 			{
@@ -49,38 +52,19 @@ namespace GUI.View
 
 		public override void Update()
 		{
-			io = PubSub.Model.Get(GID) as ConnectivityNode;
+			io = PubSub.Model.Get(GID) as Switch;
 
 			properties.Update();
 			measurements.Update();
+			switchState.Update();
 
 			if(!initialized)
 			{
 				panel.Children.Add(properties.Element);
 				panel.Children.Add(measurements.Element);
+				panel.Children.Add(switchState.Element);
 				initialized = true;
 			}
-		}
-
-		IEnumerable<long> GetMeasurements()
-		{
-			List<long> measurements = new List<long>();
-			NetworkModel nm = PubSub.Model;
-
-			foreach(long terminalGID in io.Terminals)
-			{
-				Terminal terminal = (Terminal)nm.Get(terminalGID);
-
-				if(terminal == null)
-					continue;
-
-				foreach(long measGID in terminal.Measurements)
-				{
-					measurements.Add(measGID);
-				}
-			}
-
-			return measurements;
 		}
 	}
 }

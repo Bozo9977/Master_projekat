@@ -123,7 +123,7 @@ namespace Common.DataModel
 
 		public override object ToDBEntity()
 		{
-			return new RatioTapChangerDBModel() { GID = GID, MRID = MRID, Name = Name, StepCount = StepCount, NominalStep = NominalStep, VoltageStep = VoltageStep = TransformerWinding = TransformerWinding };
+			return new RatioTapChangerDBModel() { GID = GID, MRID = MRID, Name = Name, StepCount = StepCount, NominalStep = NominalStep, VoltageStep = VoltageStep, TransformerWinding = TransformerWinding };
 		}
 
 		public override bool Validate(Func<long, IdentifiedObject> entityGetter)

@@ -50,4 +50,13 @@ namespace Common.PubSub
 			get { return ETopic.LoadFlowChanged; }
 		}
 	}
+
+	[DataContract]
+	public class MarkedSwitchesChanged : PubSubMessage
+	{
+		public override ETopic Topic
+		{
+			get { return ETopic.MarkedSwitchesChanged; }
+		}
+	}
 }

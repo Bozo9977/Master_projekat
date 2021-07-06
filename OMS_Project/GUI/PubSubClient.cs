@@ -1,16 +1,14 @@
-﻿using Common;
-using Common.DataModel;
+﻿using Common.DataModel;
 using Common.GDA;
 using Common.PubSub;
 using Common.SCADA;
 using Common.WCF;
-using System;
 using System.Collections.Generic;
 using System.Threading;
 
 namespace GUI
 {
-	public enum EObservableMessageType { NetworkModelChanged, MeasurementValuesChanged, TopologyChanged, SwitchStatusChanged, LoadFlowChanged }
+	public enum EObservableMessageType { NetworkModelChanged, MeasurementValuesChanged, TopologyChanged, SwitchStatusChanged, LoadFlowChanged, MarkedSwitchesChanged }
 
 	public class ObservableMessage
 	{
@@ -86,7 +84,7 @@ namespace GUI
 
 		public bool Download()
 		{
-			return HandleNetworkModelChange(null) & HandleTopologyChange(null) & DownloadMeasurements();
+			return HandleNetworkModelChange(null) & HandleTopologyChange(null) & HandleLoadFlowChange(null) & HandleMarkedSwitchesChange(null) & DownloadMeasurements();
 		}
 
 		bool DownloadMeasurements()
@@ -183,6 +181,21 @@ namespace GUI
 			return true;
 		}
 
+		bool HandleMarkedSwitchesChange(MarkedSwitchesChanged m)
+		{
+			MarkedSwitchesDownload download = new MarkedSwitchesDownload();
+
+			if(!download.Download())
+			{
+				return false;
+			}
+
+			topology.UpdateMarkedSwitches(download);
+			Notify(new ObservableMessage(EObservableMessageType.MarkedSwitchesChanged));
+
+			return true;
+		}
+
 		public void Receive(PubSubMessage m)
 		{
 			switch(m.Topic)
@@ -201,6 +214,10 @@ namespace GUI
 
 				case ETopic.LoadFlowChanged:
 					HandleLoadFlowChange((LoadFlowChanged)m);
+					break;
+
+				case ETopic.MarkedSwitchesChanged:
+					HandleMarkedSwitchesChange((MarkedSwitchesChanged)m);
 					break;
 			}
 		}
@@ -272,7 +289,7 @@ namespace GUI
 				DuplexClient<ISubscribing, IPubSubClient> client = new DuplexClient<ISubscribing, IPubSubClient>("callbackEndpoint", this);
 				client.Connect();
 
-				if(!client.Call<bool>(sub => { sub.Subscribe(ETopic.NetworkModelChanged); sub.Subscribe(ETopic.MeasurementValuesChanged); sub.Subscribe(ETopic.TopologyChanged); return true; }, out _))
+				if(!client.Call<bool>(sub => { sub.Subscribe(ETopic.NetworkModelChanged); sub.Subscribe(ETopic.MeasurementValuesChanged); sub.Subscribe(ETopic.TopologyChanged); sub.Subscribe(ETopic.LoadFlowChanged); sub.Subscribe(ETopic.MarkedSwitchesChanged); return true; }, out _))
 				{
 					return false;
 				}
