@@ -59,6 +59,7 @@
   <ItemGroup>
     <Compile Include="CalculationEngine\ICalculationEngineServiceContract.cs" />
     <Compile Include="CalculationEngine\LoadFlowResult.cs" />
+    <Compile Include="Complex.cs" />
     <Compile Include="Database\IDatabase.cs" />
     <Compile Include="Database\IDatabaseTransaction.cs" />
     <Compile Include="Database\ITableContext.cs" />
@@ -100,6 +101,7 @@
     <Compile Include="IObservable.cs" />
     <Compile Include="IObserver.cs" />
     <Compile Include="Logger.cs" />
+    <Compile Include="Pair.cs" />
     <Compile Include="PubSub\IPubSubClient.cs" />
     <Compile Include="PubSub\Messages.cs" />
     <Compile Include="SCADA\Enums.cs" />

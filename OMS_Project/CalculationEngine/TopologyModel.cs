@@ -32,6 +32,7 @@ namespace CalculationEngine
 		ReaderWriterLockSlim rwLock;
 		TopologyGraph graph;
 		List<Tuple<long, List<Tuple<long, long>>, List<Tuple<long, long>>>> lineEnergization;
+		List<KeyValuePair<long, LoadFlowResult>> loadFlowResults;
 		ConcurrentDictionary<long, float> analogInputs;
 		ConcurrentDictionary<long, int> discreteInputs;
 		HashSet<long> measurementsOfInterest;
@@ -202,6 +203,7 @@ namespace CalculationEngine
 
 				graph = new TopologyGraph(containers, analogInputs, discreteInputs, markedSwitchStates);
 				lineEnergization = graph.CalculateLineEnergization();
+				loadFlowResults = graph.CalculateLoadFlow();
 			}
 			finally
 			{
@@ -210,13 +212,13 @@ namespace CalculationEngine
 
 			Publish(new MarkedSwitchesChanged());
 			Publish(new TopologyChanged());
+			Publish(new LoadFlowChanged());
 
 			return true;
 		}
 
 		public bool UnmarkSwitchState(long gid)
 		{
-			bool result;
 			rwLock.EnterWriteLock();
 
 			try
@@ -226,6 +228,7 @@ namespace CalculationEngine
 
 				graph = new TopologyGraph(containers, analogInputs, discreteInputs, markedSwitchStates);
 				lineEnergization = graph.CalculateLineEnergization();
+				loadFlowResults = graph.CalculateLoadFlow();
 			}
 			finally
 			{
@@ -234,6 +237,7 @@ namespace CalculationEngine
 
 			Publish(new MarkedSwitchesChanged());
 			Publish(new TopologyChanged());
+			Publish(new LoadFlowChanged());
 
 			return true;
 		}
@@ -254,6 +258,7 @@ namespace CalculationEngine
 
 		public void DownloadMeasurements(List<long> gids)
 		{
+			bool publish = false;
 			rwLock.EnterUpgradeableReadLock();
 
 			try
@@ -324,7 +329,12 @@ namespace CalculationEngine
 				{
 					graph = new TopologyGraph(containers, analogInputs, discreteInputs, markedSwitchStates);
 					lineEnergization = graph.CalculateLineEnergization();
-					Publish(new TopologyChanged());
+					loadFlowResults = graph.CalculateLoadFlow();
+					publish = true;
+				}
+				catch(Exception e)
+				{
+
 				}
 				finally
 				{
@@ -334,6 +344,12 @@ namespace CalculationEngine
 			finally
 			{
 				rwLock.ExitUpgradeableReadLock();
+			}
+
+			if(publish)
+			{
+				Publish(new TopologyChanged());
+				Publish(new LoadFlowChanged());
 			}
 		}
 
@@ -364,13 +380,12 @@ namespace CalculationEngine
 
 		public List<Tuple<long, List<Tuple<long, long>>, List<Tuple<long, long>>>> GetLineEnergization()
 		{
-			rwLock.EnterReadLock();
-			{
-				List<Tuple<long, List<Tuple<long, long>>, List<Tuple<long, long>>>> lineEnergization = this.lineEnergization;
-			}
-			rwLock.ExitReadLock();
-
 			return lineEnergization;
+		}
+
+		public List<KeyValuePair<long, LoadFlowResult>> GetLoadFlow()
+		{
+			return loadFlowResults;
 		}
 
 		void Publish(PubSubMessage msg)

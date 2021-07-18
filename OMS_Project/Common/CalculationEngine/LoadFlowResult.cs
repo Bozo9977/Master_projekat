@@ -58,17 +58,17 @@ namespace Common.CalculationEngine
 			return false;
 		}
 
-		public LoadFlowResultItem Get(LoadFlowResultType type)
+		public double Get(LoadFlowResultType type)
 		{
 			for(int i = 0; i < items.Count; ++i)
 			{
 				LoadFlowResultItem item = items[i];
 
 				if(item.Type == type)
-					return item;
+					return item.Value;
 			}
 
-			return new LoadFlowResultItem(0, LoadFlowResultType.None);
+			return double.NaN;
 		}
 	}
 }

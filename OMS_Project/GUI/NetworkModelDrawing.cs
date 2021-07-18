@@ -602,16 +602,20 @@ namespace GUI
 				if(element.IO == null)
 					continue;
 
-				/*LoadFlowResult lfResult = topology.GetLoadFlow(element.IO.GID);
+				LoadFlowResult lfResult = topology.GetLoadFlow(element.IO.GID);
 
 				if(lfResult == null)
-					continue;*/
+					continue;
 
 				switch(ModelCodeHelper.GetTypeFromGID(element.IO.GID))
 				{
 					case DMSType.ConnectivityNode:
 					{
-						double ur = 200.12, ui = -100.52;
+						double ur = lfResult.Get(LoadFlowResultType.UR);
+						double ui = lfResult.Get(LoadFlowResultType.UI);
+						
+						if(double.IsNaN(ur) || double.IsNaN(ui))
+							break;
 
 						GraphicsText gtu = new GraphicsText(element.X + loadFlowXOffset, 0, GetLoadFlowItemText(ur, ui, "V"), Brushes.Black, Brushes.Transparent, element, loadFlowFontSize);
 						gtu.Y = element.Y - gtu.CalculateSize().Height / 2;
@@ -621,8 +625,13 @@ namespace GUI
 
 					case DMSType.ACLineSegment:
 					{
-						double ir = 200000.12, ii = 100000.52;
-						double sr = 200000.12, si = 100000.52;
+						double ir = lfResult.Get(LoadFlowResultType.IR);
+						double ii = lfResult.Get(LoadFlowResultType.II);
+						double sr = lfResult.Get(LoadFlowResultType.SR);
+						double si = lfResult.Get(LoadFlowResultType.SI);
+						
+						if(double.IsNaN(ir) || double.IsNaN(ii) || double.IsNaN(sr) || double.IsNaN(si))
+							break;
 
 						bool abnormalCurrent = ComplexLength(ir, ii) > ((ACLineSegment)element.IO).RatedCurrent;
 						GraphicsText gti = new GraphicsText(element.X + loadFlowXOffset, 0, GetLoadFlowItemText(ir, ii, "A"), abnormalCurrent ? Brushes.White : Brushes.Black, abnormalCurrent ? Brushes.DarkRed : Brushes.Transparent, element, loadFlowFontSize);
@@ -640,7 +649,12 @@ namespace GUI
 
 					case DMSType.EnergyConsumer:
 					{
-						double sr = -200000000.12, si = -100000000.52;
+						double sr = lfResult.Get(LoadFlowResultType.SR);
+						double si = lfResult.Get(LoadFlowResultType.SI);
+						
+						if(double.IsNaN(sr) || double.IsNaN(si))
+							break;
+
 						GraphicsText gts = new GraphicsText(0, element.Y + loadFlowYOffset, GetLoadFlowItemText(sr, si, "VA"), Brushes.Black, Brushes.Transparent, element, loadFlowFontSize);
 						gts.X = element.X - gts.CalculateSize().Width / 2;
 						loadFlows.Add(gts);

@@ -106,7 +106,7 @@ namespace CalculationEngine
 
 		public List<KeyValuePair<long, LoadFlowResult>> GetLoadFlowResults()
 		{
-			return new List<KeyValuePair<long, LoadFlowResult>>();
+			return TopologyModel.Instance.GetLoadFlow();
 		}
 
 		public bool MarkSwitchState(long gid, bool open)

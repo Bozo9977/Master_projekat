@@ -139,6 +139,9 @@ namespace GUI
 
 		public void UpdateLoadFlow(LoadFlowDownload download)
 		{
+			if(download?.Data == null)
+				return;
+
 			Dictionary<long, LoadFlowResult> loadFlow = new Dictionary<long, LoadFlowResult>();
 
 			for(int i = 0; i < download.Data.Count; ++i)
