@@ -12,6 +12,7 @@ namespace SCADASim
 		public Dictionary<long, Discrete> Discretes { get; private set; }
 		public Dictionary<long, Recloser> Reclosers { get; private set; }
 		public Dictionary<long, Terminal> Terminals { get; private set; }
+		public Dictionary<long, EnergyConsumer> EnergyConsumers { get; private set; }
 
 		public bool Download()
 		{
@@ -39,6 +40,7 @@ namespace SCADASim
 			Dictionary<long, Discrete> discretes = new Dictionary<long, Discrete>();
 			Dictionary<long, Recloser> reclosers = new Dictionary<long, Recloser>();
 			Dictionary<long, Terminal> terminals = new Dictionary<long, Terminal>();
+			Dictionary<long, EnergyConsumer> energyConsumers = new Dictionary<long, EnergyConsumer>();
 
 			Dictionary<DMSType, List<ModelCode>> typeToPropertiesMap = ModelResourcesDesc.GetTypeToPropertiesMap();
 
@@ -72,6 +74,23 @@ namespace SCADASim
 				foreach(ResourceDescription rd in result)
 				{
 					discretes.Add(rd.Id, (Discrete)IdentifiedObject.Create(rd, true));
+				}
+			}
+			while(result.Count >= iteratorCount);
+
+			nms.IteratorClose(iterator);
+			iterator = nms.GetExtentValues(DMSType.EnergyConsumer, typeToPropertiesMap[DMSType.EnergyConsumer], false);
+
+			do
+			{
+				result = nms.IteratorNext(iteratorCount, iterator, false);
+
+				if(result == null)
+					return false;
+
+				foreach(ResourceDescription rd in result)
+				{
+					energyConsumers.Add(rd.Id, (EnergyConsumer)IdentifiedObject.Create(rd, true));
 				}
 			}
 			while(result.Count >= iteratorCount);
@@ -124,10 +143,13 @@ namespace SCADASim
 			}
 			while(result.Count >= iteratorCount);
 
+			nms.IteratorClose(iterator);
+
 			Analogs = analogs;
 			Discretes = discretes;
 			Reclosers = reclosers;
 			Terminals = terminals;
+			EnergyConsumers = energyConsumers;
 
 			return true;
 		}

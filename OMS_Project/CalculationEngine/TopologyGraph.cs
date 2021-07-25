@@ -30,8 +30,10 @@ namespace CalculationEngine
 		IReadOnlyDictionary<long, float> analogs;
 		IReadOnlyDictionary<long, int> discretes;
 		IReadOnlyDictionary<long, bool> markedSwitchStates;
+		List<DailyLoadProfile> loadProfiles;
+		DateTime t;
 
-		public TopologyGraph(Dictionary<DMSType, Dictionary<long, IdentifiedObject>> containers, IReadOnlyDictionary<long, float> analogs, IReadOnlyDictionary<long, int> discretes, IReadOnlyDictionary<long, bool> markedSwitchStates)
+		public TopologyGraph(Dictionary<DMSType, Dictionary<long, IdentifiedObject>> containers, IReadOnlyDictionary<long, float> analogs, IReadOnlyDictionary<long, int> discretes, IReadOnlyDictionary<long, bool> markedSwitchStates, List<DailyLoadProfile> loadProfiles)
 		{
 			subGraphs = new List<Node>();
 			adjacency = new List<Node>();
@@ -39,6 +41,7 @@ namespace CalculationEngine
 			this.analogs = analogs;
 			this.discretes = discretes;
 			this.markedSwitchStates = markedSwitchStates;
+			this.loadProfiles = loadProfiles;
 			dmsTypeToModelCodeMap = ModelResourcesDesc.GetTypeToModelCodeMap();
 
 			BuildGraph();
@@ -294,6 +297,7 @@ namespace CalculationEngine
 
 		public List<KeyValuePair<long, LoadFlowResult>> CalculateLoadFlow()
 		{
+			t = DateTime.Now;
 			List<KeyValuePair<long, LoadFlowResult>> result = new List<KeyValuePair<long, LoadFlowResult>>();
 
 			for(int i = 0; i < subGraphs.Count; ++i)
@@ -741,11 +745,35 @@ namespace CalculationEngine
 
 			if(float.IsNaN(re) || float.IsNaN(im))
 			{
-				re = ec.PFixed;
-				im = ec.QFixed;
+				if(!ReadEnergyConsumerPowerFromLoadProfile(ec, out re, out im))
+				{
+					re = ec.PFixed;
+					im = ec.QFixed;
+				}
 			}
 
 			return new Complex(re, im);
+		}
+
+		bool ReadEnergyConsumerPowerFromLoadProfile(EnergyConsumer ec, out float re, out float im)
+		{
+			re = float.NaN;
+			im = float.NaN;
+
+			DailyLoadProfile loadProfile = loadProfiles.Find(x => x.ConsumerClass == ec.ConsumerClass);
+
+			if(loadProfile == null)
+				return false;
+
+			float pu = loadProfile.Get(t.Hour, t.Minute);
+
+			if(float.IsNaN(pu))
+				return false;
+
+			re = pu * ec.PFixed;
+			im = pu * ec.QFixed;
+
+			return true;
 		}
 
 		Complex CalculateCurrentForSwitch(Node node, IEnumerable<Complex> childCurrents, Dictionary<long, LoadFlowResult> lf)

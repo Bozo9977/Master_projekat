@@ -1,4 +1,5 @@
-﻿using Common.CalculationEngine;
+﻿using Common;
+using Common.CalculationEngine;
 using Common.DataModel;
 using Common.GDA;
 using Common.PubSub;
@@ -38,8 +39,9 @@ namespace CalculationEngine
 		HashSet<long> measurementsOfInterest;
 		ConcurrentDictionary<long, bool> markedSwitchStates;
 		Dictionary<DMSType, ModelCode> typeToModelCode;
+		List<DailyLoadProfile> loadProfiles;
 
-		public TopologyModel()
+		public TopologyModel(List<DailyLoadProfile> loadProfiles)
 		{
 			DMSType[] types = ModelResourcesDesc.TypeIdsInInsertOrder;
 			containers = new Dictionary<DMSType, Dictionary<long, IdentifiedObject>>(types.Length);
@@ -53,6 +55,8 @@ namespace CalculationEngine
 			measurementsOfInterest = new HashSet<long>();
 			markedSwitchStates = new ConcurrentDictionary<long, bool>();
 			typeToModelCode = ModelResourcesDesc.GetTypeToModelCodeMap();
+			this.loadProfiles = loadProfiles;
+			graph = new TopologyGraph(containers, analogInputs, discreteInputs, markedSwitchStates, loadProfiles);
 		}
 
 		public TopologyModel(TopologyModel tm)
@@ -71,6 +75,8 @@ namespace CalculationEngine
 				measurementsOfInterest = new HashSet<long>(tm.measurementsOfInterest);
 				markedSwitchStates = new ConcurrentDictionary<long, bool>(tm.markedSwitchStates);
 				typeToModelCode = ModelResourcesDesc.GetTypeToModelCodeMap();
+				loadProfiles = new List<DailyLoadProfile>(tm.loadProfiles);
+				graph = tm.graph;
 			}
 			finally
 			{
@@ -100,8 +106,7 @@ namespace CalculationEngine
 					if(container.Count != oldCount + 1)
 						return false;
 
-					if(IsMeasurementOfInterest(io))
-						measurementsOfInterest.Add(io.GID);
+					measurementsOfInterest.Add(io.GID);
 				}
 
 				foreach(IdentifiedObject io in download.Updated)
@@ -118,14 +123,7 @@ namespace CalculationEngine
 					if(container.Count != oldCount)
 						return false;
 
-					if(IsMeasurementOfInterest(io))
-					{
-						measurementsOfInterest.Add(io.GID);
-					}
-					else
-					{
-						measurementsOfInterest.Remove(io.GID);
-					}
+					measurementsOfInterest.Add(io.GID);
 				}
 
 				foreach(long gid in download.Deleted)
@@ -148,6 +146,8 @@ namespace CalculationEngine
 					if(!IsSwitchWithoutSCADA(switchGID))
 						markedSwitchStates.TryRemove(switchGID, out _);
 				}
+
+				graph = new TopologyGraph(containers, analogInputs, discreteInputs, markedSwitchStates, loadProfiles);
 
 				return true;
 			}
@@ -201,7 +201,6 @@ namespace CalculationEngine
 
 				markedSwitchStates[gid] = open;
 
-				graph = new TopologyGraph(containers, analogInputs, discreteInputs, markedSwitchStates);
 				lineEnergization = graph.CalculateLineEnergization();
 				loadFlowResults = graph.CalculateLoadFlow();
 			}
@@ -226,7 +225,6 @@ namespace CalculationEngine
 				if(!IsSwitchWithoutSCADA(gid) || !markedSwitchStates.TryRemove(gid, out _))
 					return false;
 
-				graph = new TopologyGraph(containers, analogInputs, discreteInputs, markedSwitchStates);
 				lineEnergization = graph.CalculateLineEnergization();
 				loadFlowResults = graph.CalculateLoadFlow();
 			}
@@ -265,6 +263,7 @@ namespace CalculationEngine
 			{
 				List<long> analogs;
 				List<long> discretes;
+				bool update = false;
 
 				if(gids == null)
 				{
@@ -282,14 +281,28 @@ namespace CalculationEngine
 						switch(ModelCodeHelper.GetTypeFromGID(gid))
 						{
 							case DMSType.Analog:
-								if(measurementsOfInterest.Contains(gid))
-									analogs.Add(gid);
-								break;
+							{
+								analogs.Add(gid);
+
+								IdentifiedObject io;
+								containers[DMSType.Analog].TryGetValue(gid, out io);
+
+								if(IsMeasurementOfInterest(io))
+									update = true;
+							}
+							break;
 
 							case DMSType.Discrete:
-								if(measurementsOfInterest.Contains(gid))
-									discretes.Add(gid);
-								break;
+							{
+								discretes.Add(gid);
+
+								IdentifiedObject io;
+								containers[DMSType.Discrete].TryGetValue(gid, out io);
+
+								if(IsMeasurementOfInterest(io))
+									update = true;
+							}
+							break;
 						}
 					}
 				}
@@ -327,7 +340,6 @@ namespace CalculationEngine
 
 				try
 				{
-					graph = new TopologyGraph(containers, analogInputs, discreteInputs, markedSwitchStates);
 					lineEnergization = graph.CalculateLineEnergization();
 					loadFlowResults = graph.CalculateLoadFlow();
 					publish = true;
@@ -355,27 +367,18 @@ namespace CalculationEngine
 
 		List<long> GetAnalogGIDsOfInterest()
 		{
-			return new List<long>();
+			return new List<long>(containers[DMSType.Analog].Keys);
 		}
 
 		List<long> GetDiscreteGIDsOfInterest()
 		{
-			List<long> gids = new List<long>();
-
-			foreach(IdentifiedObject discrete in containers[DMSType.Discrete].Values)
-			{
-				if(IsMeasurementOfInterest(discrete))
-				{
-					gids.Add(discrete.GID);
-				}
-			}
-
-			return gids;
+			return new List<long>(containers[DMSType.Discrete].Keys);
 		}
 
 		bool IsMeasurementOfInterest(IdentifiedObject io)
 		{
-			return ModelCodeHelper.GetTypeFromGID(io.GID) == DMSType.Discrete && ((Discrete)io).MeasurementType == MeasurementType.SwitchState;
+			Discrete d;
+			return ModelCodeHelper.GetTypeFromGID(io.GID) == DMSType.Discrete && (d = io as Discrete) != null && d.MeasurementType == MeasurementType.SwitchState;
 		}
 
 		public List<Tuple<long, List<Tuple<long, long>>, List<Tuple<long, long>>>> GetLineEnergization()

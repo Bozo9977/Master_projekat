@@ -35,6 +35,8 @@ namespace SCADASim
 		ReaderWriterLockSlim modelLock;
 		DuplexClient<ISubscribing, IPubSubClient> client;
 		List<Tuple<Recloser, long, long, int>> reclosers;
+		List<DailyLoadProfile> loadProfiles;
+		Dictionary<long, EnergyConsumer> energyConsumers;
 
 		public Simulator()
 		{
@@ -48,6 +50,8 @@ namespace SCADASim
 			modelLock = new ReaderWriterLockSlim();
 			client = new DuplexClient<ISubscribing, IPubSubClient>("callbackEndpoint", this);
 			reclosers = new List<Tuple<Recloser, long, long, int>>();
+			loadProfiles = DailyLoadProfile.LoadFromXML("Daily_load_profiles.xml");
+			energyConsumers = new Dictionary<long, EnergyConsumer>();
 		}
 
 		public bool SetDiscreteInput(int address, int value)
@@ -268,6 +272,7 @@ namespace SCADASim
 			{
 				analogs = download.Analogs;
 				discretes = download.Discretes;
+				energyConsumers = download.EnergyConsumers;
 				this.readWriteMeasurementAddresses = readWriteMeasurementAddresses;
 				this.reclosers = reclosers;
 			}
@@ -318,24 +323,50 @@ namespace SCADASim
 					}
 				}
 
-				foreach(KeyValuePair<long, Analog> a in analogs)
+				DateTime now = DateTime.Now;
+
+				foreach(Analog a in analogs.Values)
 				{
-					if(a.Value.Direction != SignalDirection.Read)
+					if(a.Direction != SignalDirection.Read)
 						continue;
 
-					float newValue = a.Value.NormalValue + ((float)r.NextDouble() * 10 - 5);
-					SetAnalogInput(a.Value.BaseAddress, newValue);
+					float newValue = float.NaN;
+					
+					if(ModelCodeHelper.GetTypeFromGID(a.PowerSystemResource) == DMSType.EnergyConsumer)
+					{
+						newValue = GetConsumerPowerValue(now, a);
+					}
+
+					if(float.IsNaN(newValue))
+						newValue = a.NormalValue;
+
+					SetAnalogInput(a.BaseAddress, newValue);
 				}
 
-				foreach(KeyValuePair<long, Discrete> d in discretes)
+				foreach(Discrete d in discretes.Values)
 				{
-					if(d.Value.Direction != SignalDirection.Read)
+					if(d.Direction != SignalDirection.Read)
 						continue;
 
-					int newValue = d.Value.NormalValue + (r.Next(11) - 5);
-					SetDiscreteInput(d.Value.BaseAddress, newValue);
+					int newValue = d.NormalValue + (r.Next(11) - 5);
+					SetDiscreteInput(d.BaseAddress, newValue);
 				}
 			}
+		}
+
+		float GetConsumerPowerValue(DateTime t, Analog a)
+		{
+			EnergyConsumer ec;
+
+			if((a.MeasurementType != MeasurementType.ActivePower && a.MeasurementType != MeasurementType.ReactivePower) || !energyConsumers.TryGetValue(a.PowerSystemResource, out ec))
+				return float.NaN;
+
+			DailyLoadProfile loadProfile = loadProfiles.Find(x => x.ConsumerClass == ec.ConsumerClass);
+
+			if(loadProfile == null)
+				return float.NaN;
+
+			return loadProfile.Get(t.Hour, t.Minute) * (a.MeasurementType == MeasurementType.ActivePower ? ec.PFixed : ec.QFixed);
 		}
 
 		void StartSimulation()

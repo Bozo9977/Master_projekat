@@ -1,4 +1,5 @@
-﻿using Common.PubSub;
+﻿using Common;
+using Common.PubSub;
 using Common.WCF;
 using System;
 using System.ServiceModel;
@@ -27,7 +28,7 @@ namespace CalculationEngine
 
 			Console.WriteLine("Downloaded network model from NMS.");
 
-			TopologyModel model = new TopologyModel();
+			TopologyModel model = new TopologyModel(DailyLoadProfile.LoadFromXML("Daily_load_profiles.xml"));
 
 			if(!model.ApplyUpdate(download))
 				return;

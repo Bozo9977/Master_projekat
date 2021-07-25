@@ -558,13 +558,16 @@ namespace GUI
 
 		string GetLoadFlowItemText(double r, double i, string unit)
 		{
-			if(Math.Abs(r) > million || Math.Abs(i) > million)
+			double absR = Math.Abs(r);
+			double absI = Math.Abs(i);
+
+			if(absR > million || absI > million)
 			{
 				r /= million;
 				i /= million;
 				unit = " M" + unit;
 			}
-			else if(Math.Abs(r) > thousand || Math.Abs(i) > thousand)
+			else if(absR > thousand || absI > thousand)
 			{
 				r /= thousand;
 				i /= thousand;
@@ -575,7 +578,7 @@ namespace GUI
 				unit = " " + unit;
 			}
 
-			return r.ToString("0.0") + (i < 0 ? "" : "+") + i.ToString("0.0") + unit;
+			return r.ToString("N1") + (i < 0 ? "-" : "+") + Math.Abs(i).ToString("N1") + unit;
 		}
 
 		double ComplexLength(double x, double y)
