@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Common.GDA
 {
@@ -22,7 +19,9 @@ namespace Common.GDA
 		ACLineSegment = 0x000C,
 		Breaker = 0x000D,
 		Recloser = 0x000E,
-		Disconnector = 0x000F
+		Disconnector = 0x000F,
+		SwitchingSchedule = 0x0010,
+		SwitchingStep = 0x0011,
 	}
 
 	[Flags]
@@ -108,6 +107,7 @@ namespace Common.GDA
 
 		SWITCH = 0x1111600000000000,
 		SWITCH_NORMALOPEN = 0x1111600000000101,
+		SWITCH_SWITCHINGSTEPS = 0x1111600000000219,
 
 		PROTECTEDSWITCH = 0x1111610000000000,
 
@@ -116,6 +116,17 @@ namespace Common.GDA
 		RECLOSER = 0x11116120000E0000,
 
 		DISCONNECTOR = 0x11116200000F0000,
+
+		DOCUMENT = 0x1600000000000000,
+
+		SWITCHINGSCHEDULE = 0x1600000000100000,
+		SWITCHINGSCHEDULE_SWITCHINGSTEPS = 0x1600000000100119,
+
+		SWITCHINGSTEP = 0x1700000000110000,
+		SWITCHINGSTEP_SWITCHINGSCHEDULE = 0x1700000000110109,
+		SWITCHINGSTEP_SWITCH = 0x1700000000110209,
+		SWITCHINGSTEP_OPEN = 0x1700000000110301,
+		SWITCHINGSTEP_INDEX = 0x1700000000110403,
 	}
 
 	public enum MeasurementType { ActivePower, Other, ReactivePower, SwitchState, TapChangerPosition, VoltageI, VoltageR }
@@ -124,7 +135,7 @@ namespace Common.GDA
 
 	public class ModelResourcesDesc
 	{
-		public static readonly DMSType[] TypeIdsInInsertOrder = { DMSType.ConnectivityNode, DMSType.BaseVoltage, DMSType.EnergyConsumer, DMSType.ACLineSegment, DMSType.Disconnector, DMSType.Breaker, DMSType.Recloser, DMSType.DistributionGenerator, DMSType.PowerTransformer, DMSType.TransformerWinding, DMSType.RatioTapChanger, DMSType.EnergySource, DMSType.Terminal, DMSType.Analog, DMSType.Discrete };
+		public static readonly DMSType[] TypeIdsInInsertOrder = { DMSType.ConnectivityNode, DMSType.BaseVoltage, DMSType.EnergyConsumer, DMSType.ACLineSegment, DMSType.Disconnector, DMSType.Breaker, DMSType.Recloser, DMSType.DistributionGenerator, DMSType.PowerTransformer, DMSType.TransformerWinding, DMSType.RatioTapChanger, DMSType.EnergySource, DMSType.Terminal, DMSType.Analog, DMSType.Discrete, DMSType.SwitchingSchedule, DMSType.SwitchingStep };
 
 		public static Dictionary<DMSType, List<ModelCode>> GetTypeToPropertiesMap()
 		{

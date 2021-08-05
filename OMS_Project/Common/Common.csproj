@@ -74,6 +74,7 @@
     <Compile Include="DataModel\Disconnector.cs" />
     <Compile Include="DataModel\Discrete.cs" />
     <Compile Include="DataModel\DistributionGenerator.cs" />
+    <Compile Include="DataModel\Document.cs" />
     <Compile Include="DataModel\EnergyConsumer.cs" />
     <Compile Include="DataModel\EnergySource.cs" />
     <Compile Include="DataModel\Equipment.cs" />
@@ -85,6 +86,8 @@
     <Compile Include="DataModel\RatioTapChanger.cs" />
     <Compile Include="DataModel\Recloser.cs" />
     <Compile Include="DataModel\Switch.cs" />
+    <Compile Include="DataModel\SwitchingSchedule.cs" />
+    <Compile Include="DataModel\SwitchingStep.cs" />
     <Compile Include="DataModel\TapChanger.cs" />
     <Compile Include="DataModel\Terminal.cs" />
     <Compile Include="DataModel\TransformerWinding.cs" />

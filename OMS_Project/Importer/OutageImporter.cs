@@ -3,9 +3,6 @@ using Common.GDA;
 using FTN;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Importer
 {
@@ -125,6 +122,14 @@ namespace Importer
 
 				case DMSType.TransformerWinding:
 					PopulateTransformerWindingProperties((TransformerWinding)idc, rd);
+					break;
+
+				case DMSType.SwitchingSchedule:
+					PopulateSwitchingScheduleProperties((SwitchingSchedule)idc, rd);
+					break;
+
+				case DMSType.SwitchingStep:
+					PopulateSwitchingStepProperties((SwitchingStep)idc, rd);
 					break;
 			}
 		}
@@ -349,6 +354,33 @@ namespace Importer
 		void PopulateDisconnectorProperties(Disconnector x, ResourceDescription rd)
 		{
 			PopulateSwitchProperties(x, rd);
+		}
+
+		void PopulateDocumentProperties(Document x, ResourceDescription rd)
+		{
+			PopulateIdentifiedObjectProperties(x, rd);
+		}
+
+		void PopulateSwitchingScheduleProperties(SwitchingSchedule x, ResourceDescription rd)
+		{
+			PopulateDocumentProperties(x, rd);
+		}
+
+		void PopulateSwitchingStepProperties(SwitchingStep x, ResourceDescription rd)
+		{
+			PopulateIdentifiedObjectProperties(x, rd);
+
+			if(x.SwitchingScheduleHasValue)
+				rd.AddProperty(new ReferenceProperty(ModelCode.SWITCHINGSTEP_SWITCHINGSCHEDULE, GetGID(x.SwitchingSchedule.ID)));
+
+			if(x.SwitchHasValue)
+				rd.AddProperty(new ReferenceProperty(ModelCode.SWITCHINGSTEP_SWITCH, GetGID(x.Switch.ID)));
+
+			if(x.OpenHasValue)
+				rd.AddProperty(new BoolProperty(ModelCode.SWITCHINGSTEP_OPEN, x.Open));
+
+			if(x.IndexHasValue)
+				rd.AddProperty(new Int32Property(ModelCode.SWITCHINGSTEP_INDEX, x.Index));
 		}
 	}
 }

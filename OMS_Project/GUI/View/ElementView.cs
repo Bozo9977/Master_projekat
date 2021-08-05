@@ -50,8 +50,11 @@ namespace GUI.View
 		ElementView InitView()
 		{
 			DMSType type = ModelCodeHelper.GetTypeFromGID(GID);
-			ModelCode mc = dmsTypeToModelCodeMap[type];
+			ModelCode mc;
 			ElementView v;
+
+			if(!dmsTypeToModelCodeMap.TryGetValue(type, out mc))
+				return null;
 
 			if(ModelCodeHelper.ModelCodeClassIsSubClassOf(mc, ModelCode.SWITCH))
 			{
@@ -68,6 +71,10 @@ namespace GUI.View
 			else if(type == DMSType.Discrete || type == DMSType.Analog)
 			{
 				v = new MeasurementView(GID, PubSub);
+			}
+			else if(type == DMSType.SwitchingSchedule)
+			{
+				v = new SwitchingScheduleView(GID, PubSub);
 			}
 			else
 			{

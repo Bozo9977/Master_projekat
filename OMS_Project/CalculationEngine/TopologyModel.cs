@@ -307,9 +307,6 @@ namespace CalculationEngine
 					}
 				}
 
-				if(analogs.Count <= 0 && discretes.Count <= 0)
-					return;
-
 				List<KeyValuePair<long, float>> analogValues = null;
 				List<KeyValuePair<long, int>> discreteValues = null;
 
@@ -335,6 +332,9 @@ namespace CalculationEngine
 					KeyValuePair<long, int> tuple = discreteValues[i];
 					discreteInputs[tuple.Key] = tuple.Value;
 				}
+
+				if(lineEnergization != null && !update)
+					return;
 
 				rwLock.EnterWriteLock();
 
@@ -378,7 +378,7 @@ namespace CalculationEngine
 		bool IsMeasurementOfInterest(IdentifiedObject io)
 		{
 			Discrete d;
-			return ModelCodeHelper.GetTypeFromGID(io.GID) == DMSType.Discrete && (d = io as Discrete) != null && d.MeasurementType == MeasurementType.SwitchState;
+			return (d = io as Discrete) != null && d.MeasurementType == MeasurementType.SwitchState;
 		}
 
 		public List<Tuple<long, List<Tuple<long, long>>, List<Tuple<long, long>>>> GetLineEnergization()

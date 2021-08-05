@@ -1,34 +1,46 @@
 ﻿using Common.GDA;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Common.DataModel
 {
-	public abstract class Switch : ConductingEquipment
+	public class SwitchingScheduleDBModel
 	{
-		public bool NormalOpen { get; protected set; }
+		[Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
+		public long GID { get; set; }
+		public string MRID { get; set; }
+		public string Name { get; set; }
+	}
+
+	public class SwitchingSchedule : Document
+	{
 		public List<long> SwitchingSteps { get; private set; }
 
-		public Switch()
+		public SwitchingSchedule()
 		{
 			SwitchingSteps = new List<long>();
 		}
 
-		public Switch(Switch s) : base(s)
+		public SwitchingSchedule(SwitchingSchedule ss) : base(ss)
 		{
-			NormalOpen = s.NormalOpen;
-			SwitchingSteps = new List<long>(s.SwitchingSteps);
+			SwitchingSteps = new List<long>(ss.SwitchingSteps);
+		}
+
+		public SwitchingSchedule(SwitchingScheduleDBModel entity)
+		{
+			GID = entity.GID;
+			MRID = entity.MRID;
+			Name = entity.Name;
+			SwitchingSteps = new List<long>();
 		}
 
 		public override bool HasProperty(ModelCode p)
 		{
 			switch(p)
 			{
-				case ModelCode.SWITCH_NORMALOPEN:
-				case ModelCode.SWITCH_SWITCHINGSTEPS:
+				case ModelCode.SWITCHINGSCHEDULE_SWITCHINGSTEPS:
 					return true;
 			}
 
@@ -39,11 +51,8 @@ namespace Common.DataModel
 		{
 			switch(p)
 			{
-				case ModelCode.SWITCH_NORMALOPEN:
-					return new BoolProperty(ModelCode.SWITCH_NORMALOPEN, NormalOpen);
-
-				case ModelCode.SWITCH_SWITCHINGSTEPS:
-					return new ReferencesProperty(ModelCode.SWITCH_SWITCHINGSTEPS, SwitchingSteps);
+				case ModelCode.SWITCHINGSCHEDULE_SWITCHINGSTEPS:
+					return new ReferencesProperty(ModelCode.SWITCHINGSCHEDULE_SWITCHINGSTEPS, SwitchingSteps);
 			}
 
 			return base.GetProperty(p);
@@ -56,11 +65,7 @@ namespace Common.DataModel
 
 			switch(p.Id)
 			{
-				case ModelCode.SWITCH_NORMALOPEN:
-					NormalOpen = ((BoolProperty)p).Value;
-					return true;
-
-				case ModelCode.SWITCH_SWITCHINGSTEPS:
+				case ModelCode.SWITCHINGSCHEDULE_SWITCHINGSTEPS:
 					if(force)
 					{
 						SwitchingSteps = ((ReferencesProperty)p).Value;
@@ -76,7 +81,7 @@ namespace Common.DataModel
 		{
 			switch(sourceProperty)
 			{
-				case ModelCode.SWITCHINGSTEP_SWITCH:
+				case ModelCode.SWITCHINGSTEP_SWITCHINGSCHEDULE:
 					if(SwitchingSteps.Contains(sourceGID))
 						return false;
 
@@ -91,7 +96,7 @@ namespace Common.DataModel
 		{
 			switch(sourceProperty)
 			{
-				case ModelCode.SWITCHINGSTEP_SWITCH:
+				case ModelCode.SWITCHINGSTEP_SWITCHINGSCHEDULE:
 					return SwitchingSteps.Remove(sourceGID);
 			}
 
@@ -100,13 +105,31 @@ namespace Common.DataModel
 
 		public override void GetTargetReferences(Dictionary<ModelCode, List<long>> dst)
 		{
-			dst[ModelCode.SWITCH_SWITCHINGSTEPS] = new List<long>(SwitchingSteps);
+			dst[ModelCode.SWITCHINGSCHEDULE_SWITCHINGSTEPS] = new List<long>(SwitchingSteps);
 			base.GetTargetReferences(dst);
 		}
 
 		public override bool IsReferenced()
 		{
 			return SwitchingSteps.Count > 0 || base.IsReferenced();
+		}
+
+		public override IdentifiedObject Clone()
+		{
+			return new SwitchingSchedule(this);
+		}
+
+		public override object ToDBEntity()
+		{
+			return new SwitchingScheduleDBModel() { GID = GID, MRID = MRID, Name = Name };
+		}
+
+		public override void GetEntitiesToValidate(Func<long, IdentifiedObject> entityGetter, HashSet<long> dst)
+		{
+			foreach(long ss in SwitchingSteps)
+				dst.Add(ss);
+
+			base.GetEntitiesToValidate(entityGetter, dst);
 		}
 	}
 }

@@ -22,6 +22,8 @@ namespace NMS
 		public DbSet<TerminalDBModel> Terminals { get; set; }
 		public DbSet<TransformerWindingDBModel> TransformerWindings { get; set; }
 		public DbSet<ModelCounterDBModel> ModelCounters { get; set; }
+		public DbSet<SwitchingScheduleDBModel> SwitchingSchedules { get; set; }
+		public DbSet<SwitchingStepDBModel> SwitchingSteps { get; set; }
 
 		public DBContext()
 		{

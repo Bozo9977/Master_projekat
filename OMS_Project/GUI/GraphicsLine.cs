@@ -14,6 +14,7 @@ namespace GUI
 		public double Thickness { get; set; }
 		public Brush Fill { get; set; }
 		public IdentifiedObject IO { get { return null; } }
+		public double MinZoom { get { return double.MinValue; } }
 
 		public GraphicsLine(IElementLayout element1, IElementLayout element2, Brush fill)
 		{

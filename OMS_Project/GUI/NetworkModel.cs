@@ -176,7 +176,7 @@ namespace GUI
 			Dictionary<long, IdentifiedObject> container;
 
 			if(!containers.TryGetValue(type, out container))
-				return null;
+				return new long[0];
 
 			return container.Keys;
 		}
@@ -196,6 +196,31 @@ namespace GUI
 			IdentifiedObject io;
 			Dictionary<long, IdentifiedObject> container;
 			return containers.TryGetValue(ModelCodeHelper.GetTypeFromGID(gid), out container) && container.TryGetValue(gid, out io) ? io : null;
+		}
+
+		public long GetSwitchSignal(long gid)
+		{
+			Switch sw = Get(gid) as Switch;
+
+			if(sw == null)
+				return 0;
+
+			for(int j = 0; j < sw.Measurements.Count; ++j)
+			{
+				long measGID = sw.Measurements[j];
+
+				if(ModelCodeHelper.GetTypeFromGID(measGID) != DMSType.Discrete)
+					continue;
+
+				Discrete d = Get(measGID) as Discrete;
+
+				if(d == null || d.MeasurementType != MeasurementType.SwitchState)
+					continue;
+
+				return measGID;
+			}
+
+			return 0;
 		}
 	}
 }

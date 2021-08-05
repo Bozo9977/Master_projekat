@@ -55,7 +55,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ElementsWindow.xaml.cs">
+      <DependentUpon>ElementsWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="GraphicsText.cs" />
+    <Compile Include="IdentifiedWindow.cs" />
     <Compile Include="LoadFlowDownload.cs" />
     <Compile Include="MarkedSwitchesDownload.cs" />
     <Compile Include="Topology.cs" />
@@ -74,9 +78,16 @@
     <Compile Include="View\MeasurementsView.cs" />
     <Compile Include="View\MeasurementView.cs" />
     <Compile Include="View\PropertiesView.cs" />
+    <Compile Include="View\SwitchingSchedulesView.cs" />
+    <Compile Include="View\SwitchingScheduleView.cs" />
+    <Compile Include="View\SwitchingStepsView.cs" />
     <Compile Include="View\SwitchStateView.cs" />
     <Compile Include="View\SwitchView.cs" />
     <Compile Include="View\View.cs" />
+    <Page Include="ElementsWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="ElementWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

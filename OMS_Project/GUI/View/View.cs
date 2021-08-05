@@ -26,6 +26,11 @@ namespace GUI.View
 			tb.MouseLeftButtonUp += (x, y) => action();
 			return tb;
 		}
+
+		protected TextBox CreateLabel(string text)
+		{
+			return new TextBox() { Text = text, IsReadOnly = true, TextWrapping = TextWrapping.Wrap, BorderThickness = new Thickness(0) };
+		}
 	}
 
 	public class NullView : View

@@ -12,6 +12,9 @@
 				<MenuItem Header="_Refresh" Click="menuItemRefresh_Click"/>
 				<MenuItem Header="E_xit" Click="menuItemExit_Click"/>
 			</MenuItem>
+			<MenuItem Header="_Documents">
+				<MenuItem Header="_Switching schedules" Click="menuItemSwitchingSchedules_Click"/>
+			</MenuItem>
 		</Menu>
 		<Canvas x:Name="canvas" Background="White" SizeChanged="canvas_SizeChanged" Loaded="canvas_Loaded" ClipToBounds="True" Focusable="True" LostKeyboardFocus="Window_LostKeyboardFocus" KeyDown="Window_KeyDown" KeyUp="Window_KeyUp" MouseLeftButtonDown="canvas_MouseLeftButtonDown"/>
 	</DockPanel>

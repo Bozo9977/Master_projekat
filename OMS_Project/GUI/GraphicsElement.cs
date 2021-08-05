@@ -9,6 +9,7 @@ namespace GUI
 	{
 		Rect AABB { get; }
 		IdentifiedObject IO { get; }
+		double MinZoom { get; }
 
 		UIElement[] Draw(ViewTransform vt);
 	}
@@ -23,6 +24,7 @@ namespace GUI
 		public IElementLayout Element { get; private set; }
 		public IdentifiedObject IO { get { return Element == null ? null : Element.IO; } }
 		public Brush Fill { get; private set; }
+		public double MinZoom { get { return 0.006; } }
 
 		public GraphicsElement(IElementLayout element, Brush fill)
 		{

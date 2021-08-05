@@ -91,7 +91,7 @@ namespace GUI.View
 					continue;
 
 				measGrid.RowDefinitions.Add(new RowDefinition());
-				TextBlock mridTextBlock = CreateHyperlink(meas.MRID, () => new ElementWindow(measGID, pubSub) { Owner = Application.Current.MainWindow }.Show());
+				TextBlock mridTextBlock = CreateHyperlink(meas.MRID, () => new ElementWindow(measGID, pubSub).Show());
 				AddToGrid(measGrid, mridTextBlock, row, 0);
 				AddToGrid(measGrid, new TextBlock() { Text = meas.MeasurementType.ToString() }, row, 2);
 

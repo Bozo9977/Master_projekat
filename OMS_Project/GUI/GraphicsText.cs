@@ -15,6 +15,7 @@ namespace GUI
 		public Brush Background { get; private set; }
 		public GraphicsElement Element { get; private set; }
 		public double FontSize { get; set; }
+		public double MinZoom { get { return 0.03; } }
 
 		public GraphicsText(double x, double y, string text, Brush foreground, Brush background, GraphicsElement element, double fontSize)
 		{

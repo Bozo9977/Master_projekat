@@ -33,7 +33,7 @@ namespace NMS
 				if(!client.Call<bool>(tm => tm.StartEnlist(), out ok) || !ok)   //TM.StartEnlist()
 				{
 					client.Disconnect();
-					return new UpdateResult(ResultType.Failure);
+					return new UpdateResult(ResultType.Failure, "Cannot start enlist.");
 				}
 
 				NetworkModel tModel = new NetworkModel(model);
@@ -43,7 +43,7 @@ namespace NMS
 				{
 					client.Call<bool>(tm => tm.EndEnlist(false), out ok);   //TM.EndEnlist(false)
 					client.Disconnect();
-					return new UpdateResult(ResultType.Failure);
+					return new UpdateResult(ResultType.Failure, "Cannot update model.");
 				}
 
 				lock(modelLock)
@@ -60,7 +60,7 @@ namespace NMS
 
 					client.Call<bool>(tm => tm.EndEnlist(false), out ok);   //TM.EndEnlist(false)
 					client.Disconnect();
-					return new UpdateResult(ResultType.Failure);
+					return new UpdateResult(ResultType.Failure, "Cannot enlist.");
 				}
 
 				{
@@ -78,7 +78,7 @@ namespace NMS
 
 						client.Call<bool>(tm => tm.EndEnlist(false), out ok);   //TM.EndEnlist(false)
 						client.Disconnect();
-						return new UpdateResult(ResultType.Failure);
+						return new UpdateResult(ResultType.Failure, "Cannot contact SCADA.");
 					}
 
 					scadaClient.Disconnect();
@@ -99,7 +99,7 @@ namespace NMS
 
 						client.Call<bool>(tm => tm.EndEnlist(false), out ok);   //TM.EndEnlist(false)
 						client.Disconnect();
-						return new UpdateResult(ResultType.Failure);
+						return new UpdateResult(ResultType.Failure, "Cannot contact CE.");
 					}
 
 					ceClient.Disconnect();
@@ -113,7 +113,7 @@ namespace NMS
 					}
 
 					client.Disconnect();
-					return new UpdateResult(ResultType.Failure);
+					return new UpdateResult(ResultType.Failure, "Cannot end enlist.");
 				}
 
 				client.Disconnect();
@@ -139,7 +139,7 @@ namespace NMS
 					pubClient.Disconnect();
 				}
 
-				return success ? new UpdateResult(ResultType.Success, null, result.Item1, result.Item2, result.Item3) : new UpdateResult(ResultType.Failure);
+				return success ? new UpdateResult(ResultType.Success, null, result.Item1, result.Item2, result.Item3) : new UpdateResult(ResultType.Failure, "Model not committed.");
 			}
 		}
 

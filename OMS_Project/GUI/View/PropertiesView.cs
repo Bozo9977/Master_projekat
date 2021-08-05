@@ -96,24 +96,44 @@ namespace GUI.View
 				switch(p.Type)
 				{
 					case PropertyType.Bool:
-						element = new TextBlock() { Text = ((BoolProperty)p).Value.ToString(), TextAlignment = TextAlignment.Right };
-						break;
+					{
+						TextBox tb = CreateLabel(((BoolProperty)p).Value.ToString());
+						tb.TextAlignment = TextAlignment.Right;
+						element = tb;
+					}
+					break;
 
 					case PropertyType.Enum:
-						element = new TextBlock() { Text = ((EnumProperty)p).Value.ToString(), TextAlignment = TextAlignment.Right };
-						break;
+					{
+						TextBox tb = CreateLabel(((EnumProperty)p).Value.ToString());
+						tb.TextAlignment = TextAlignment.Right;
+						element = tb;
+					}
+					break;
 
 					case PropertyType.Float:
-						element = new TextBlock() { Text = ((FloatProperty)p).Value.ToString(), TextAlignment = TextAlignment.Right };
-						break;
+					{
+						TextBox tb = CreateLabel(((FloatProperty)p).Value.ToString());
+						tb.TextAlignment = TextAlignment.Right;
+						element = tb;
+					}
+					break;
 
 					case PropertyType.Int32:
-						element = new TextBlock() { Text = ((Int32Property)p).Value.ToString(), TextAlignment = TextAlignment.Right };
-						break;
+					{
+						TextBox tb = CreateLabel(((Int32Property)p).Value.ToString());
+						tb.TextAlignment = TextAlignment.Right;
+						element = tb;
+					}
+					break;
 
 					case PropertyType.Int64:
-						element = new TextBlock() { Text = ((Int64Property)p).Value.ToString(), TextAlignment = TextAlignment.Right };
-						break;
+					{
+						TextBox tb = CreateLabel(((Int64Property)p).Value.ToString());
+						tb.TextAlignment = TextAlignment.Right;
+						element = tb;
+					}
+					break;
 
 					case PropertyType.Reference:
 					{
@@ -121,7 +141,7 @@ namespace GUI.View
 
 						if(value != 0)
 						{
-							TextBlock tb = CreateHyperlink(value.ToString(), () => new ElementWindow(value, pubSub) { Owner = Application.Current.MainWindow }.Show());
+							TextBlock tb = CreateHyperlink(value.ToString(), () => new ElementWindow(value, pubSub).Show());
 							tb.TextAlignment = TextAlignment.Right;
 							element = tb;
 						}
@@ -133,8 +153,12 @@ namespace GUI.View
 					break;
 
 					case PropertyType.String:
-						element = new TextBlock(){ Text = ((StringProperty)p).Value.ToString(), TextAlignment = TextAlignment.Right };
-						break;
+					{
+						TextBox tb = CreateLabel(((StringProperty)p).Value.ToString());
+						tb.TextAlignment = TextAlignment.Right;
+						element = tb;
+					}
+					break;
 
 					case PropertyType.ReferenceVector:
 					{
@@ -144,7 +168,7 @@ namespace GUI.View
 						for(int j = 0; j < values.Count; ++j)
 						{
 							long value = values[j];
-							TextBlock tb = CreateHyperlink(value.ToString(), () => new ElementWindow(value, pubSub) { Owner = Application.Current.MainWindow }.Show());
+							TextBlock tb = CreateHyperlink(value.ToString(), () => new ElementWindow(value, pubSub).Show());
 							tb.TextAlignment = TextAlignment.Right;
 							sp.Children.Add(tb);
 						}

@@ -74,9 +74,12 @@ namespace Common.DataModel
 				case DMSType.TransformerWinding:
 					io = new TransformerWinding();
 					break;
-
-				default:
-					return null;
+				case DMSType.SwitchingSchedule:
+					io = new SwitchingSchedule();
+					break;
+				case DMSType.SwitchingStep:
+					io = new SwitchingStep();
+					break;
 			}
 
 			io.GID = rd.Id;
@@ -121,6 +124,10 @@ namespace Common.DataModel
 					return new Terminal((TerminalDBModel)entity);
 				case DMSType.TransformerWinding:
 					return new TransformerWinding((TransformerWindingDBModel)entity);
+				case DMSType.SwitchingSchedule:
+					return new SwitchingSchedule((SwitchingScheduleDBModel)entity);
+				case DMSType.SwitchingStep:
+					return new SwitchingStep((SwitchingStepDBModel)entity);
 			}
 
 			return null;

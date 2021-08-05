@@ -27,5 +27,22 @@ namespace GUI
 		{
 			Dispatcher.BeginInvoke(new Action<EObservableMessageType>(view.Update), message.Type);
 		}
+
+		public new void Show()
+		{
+			foreach(Window w in Application.Current.MainWindow.OwnedWindows)
+			{
+				ElementWindow ew = w as ElementWindow;
+
+				if(ew != null && ew.GID == GID)
+				{
+					ew.Focus();
+					return;
+				}
+			}
+
+			Owner = Application.Current.MainWindow;
+			base.Show();
+		}
 	}
 }

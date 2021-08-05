@@ -1,4 +1,6 @@
 ﻿using Common;
+using Common.GDA;
+using GUI.View;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -29,7 +31,7 @@ namespace GUI
 		bool shouldRedraw;
 
 		NetworkModelDrawing drawing;
-		PubSubClient client;
+		PubSubClient pubSub;
 		Sequence<IGraphicsElement> elements;
 
 		public MainWindow()
@@ -42,11 +44,11 @@ namespace GUI
 			timer = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(40) };
 			timer.Tick += Timer_Tick;
 			
-			client = new PubSubClient();
-			drawing = new NetworkModelDrawing() { NetworkModel = client.Model, Topology = client.Topology, Measurements = client.Measurements };
-			client.Subscribe(this);
-			client.Reconnect();
-			client.Download();
+			pubSub = new PubSubClient();
+			drawing = new NetworkModelDrawing() { NetworkModel = pubSub.Model, Topology = pubSub.Topology, Measurements = pubSub.Measurements };
+			pubSub.Subscribe(this);
+			pubSub.Reconnect();
+			pubSub.Download();
 
 			canvas.Focus();
 		}
@@ -236,7 +238,7 @@ namespace GUI
 			elements.Reset();
 			while(elements.Next(out element))
 			{
-				if(!element.AABB.IntersectsWith(canvasPos))
+				if(element.MinZoom > zoom || !element.AABB.IntersectsWith(canvasPos))
 					continue;
 
 				UIElement[] shapes = element.Draw(vt);
@@ -272,7 +274,7 @@ namespace GUI
 
 		void Exit()
 		{
-			client.Disconnect();
+			pubSub.Disconnect();
 		}
 
 		public void Notify(ObservableMessage message)
@@ -299,20 +301,20 @@ namespace GUI
 
 		private void menuItemRefresh_Click(object sender, RoutedEventArgs e)
 		{
-			client.Reconnect();
-			client.Download();
+			pubSub.Reconnect();
+			pubSub.Download();
 		}
 
 		void UpdateModel()
 		{
-			drawing.NetworkModel = client.Model;
+			drawing.NetworkModel = pubSub.Model;
 			Redraw();
 			Logger.Instance.Log(ELogLevel.INFO, "Model updated.");
 		}
 
 		void UpdateTopology()
 		{
-			drawing.Topology = client.Topology;
+			drawing.Topology = pubSub.Topology;
 			Redraw();
 			Logger.Instance.Log(ELogLevel.INFO, "Topology updated.");
 		}
@@ -359,7 +361,12 @@ namespace GUI
 			if(selected == null)
 				return;
 
-			new ElementWindow(selected.IO.GID, client) { Owner = this }.Show();
+			new ElementWindow(selected.IO.GID, pubSub).Show();
+		}
+
+		private void menuItemSwitchingSchedules_Click(object sender, RoutedEventArgs e)
+		{
+			new ElementsWindow(DMSType.SwitchingSchedule, pubSub).Show();
 		}
 	}
 }

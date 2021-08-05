@@ -12,7 +12,7 @@ namespace NMS
 
 		public NMSEFDatabase()
 		{
-			tables = new IEFTable[] { new EFTable<ModelCounterDBModel>(), new EFTable<AnalogDBModel>(), new EFTable<DiscreteDBModel>(), new EFTable<ConnectivityNodeDBModel>(), new EFTable<TerminalDBModel>(), new EFTable<BaseVoltageDBModel>(), new EFTable<PowerTransformerDBModel>(), new EFTable<TransformerWindingDBModel>(), new EFTable<RatioTapChangerDBModel>(), new EFTable<EnergySourceDBModel>(), new EFTable<DistributionGeneratorDBModel>(), new EFTable<EnergyConsumerDBModel>(), new EFTable<ACLineSegmentDBModel>(), new EFTable<BreakerDBModel>(), new EFTable<RecloserDBModel>(), new EFTable<DisconnectorDBModel>() };
+			tables = new IEFTable[] { new EFTable<ModelCounterDBModel>(), new EFTable<AnalogDBModel>(), new EFTable<DiscreteDBModel>(), new EFTable<ConnectivityNodeDBModel>(), new EFTable<TerminalDBModel>(), new EFTable<BaseVoltageDBModel>(), new EFTable<PowerTransformerDBModel>(), new EFTable<TransformerWindingDBModel>(), new EFTable<RatioTapChangerDBModel>(), new EFTable<EnergySourceDBModel>(), new EFTable<DistributionGeneratorDBModel>(), new EFTable<EnergyConsumerDBModel>(), new EFTable<ACLineSegmentDBModel>(), new EFTable<BreakerDBModel>(), new EFTable<RecloserDBModel>(), new EFTable<DisconnectorDBModel>(), new EFTable<SwitchingScheduleDBModel>(), new EFTable<SwitchingStepDBModel>() };
 		}
 
 		public List<IdentifiedObject> GetList(DMSType type)

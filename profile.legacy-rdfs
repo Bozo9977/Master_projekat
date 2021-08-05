@@ -593,4 +593,83 @@
 	 <rdfs:label>ReactivePower</rdfs:label>
 	 <rdf:type rdf:resource="#MeasurementType"/>
   </rdf:Description>
+  <rdf:Description rdf:about="#Package_IEC61968">
+    <cims:belongsToCategory rdf:resource="#Package_Class_Model"/>
+    <rdfs:label>IEC61968</rdfs:label>
+    <rdf:type rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#ClassCategory"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="#Package_Common">
+    <cims:belongsToCategory rdf:resource="#Package_IEC61968"/>
+    <rdfs:label>Common</rdfs:label>
+    <rdf:type rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#ClassCategory"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="#Package_Informative">
+    <cims:belongsToCategory rdf:resource="#Package_IEC61968"/>
+    <rdfs:label>Informative</rdfs:label>
+    <rdf:type rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#ClassCategory"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="#Package_InfOperations">
+    <cims:belongsToCategory rdf:resource="#Package_Informative"/>
+    <rdfs:label>InfOperations</rdfs:label>
+    <rdf:type rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#ClassCategory"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="#Document">
+    <rdfs:subClassOf rdf:resource="#IdentifiedObject"/>
+    <cims:belongsToCategory rdf:resource="#Package_Common"/>
+    <cims:stereotype rdf:resource="http://langdale.com.au/2005/UML#byreference"/>
+    <rdfs:label>Document</rdfs:label>
+    <rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="#SwitchingSchedule">
+    <rdfs:subClassOf rdf:resource="#Document"/>
+    <cims:belongsToCategory rdf:resource="#Package_InfOperations"/>
+	<cims:stereotype rdf:resource="http://langdale.com.au/2005/UML#concrete"/>
+    <cims:stereotype rdf:resource="http://langdale.com.au/2005/UML#byreference"/>
+    <rdfs:label>SwitchingSchedule</rdfs:label>
+    <rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="#SwitchingStep">
+    <rdfs:subClassOf rdf:resource="#IdentifiedObject"/>
+    <cims:belongsToCategory rdf:resource="#Package_InfOperations"/>
+	<cims:stereotype rdf:resource="http://langdale.com.au/2005/UML#concrete"/>
+    <cims:stereotype rdf:resource="http://langdale.com.au/2005/UML#byreference"/>
+    <rdfs:label>SwitchingStep</rdfs:label>
+    <rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="#SwitchingStep.SwitchingSchedule">
+    <cims:stereotype rdf:resource="http://langdale.com.au/2005/UML#byreference"/>
+    <cims:stereotype rdf:resource="http://langdale.com.au/2005/UML#ofAggregate"/>
+    <rdfs:label>SwitchingSchedule</rdfs:label>
+    <rdfs:range rdf:resource="#SwitchingSchedule"/>
+    <rdfs:domain rdf:resource="#SwitchingStep"/>
+    <cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="#SwitchingStep.Switch">
+    <cims:stereotype rdf:resource="http://langdale.com.au/2005/UML#byreference"/>
+	<cims:stereotype rdf:resource="http://langdale.com.au/2005/UML#oms"/>
+    <rdfs:label>Switch</rdfs:label>
+    <rdfs:range rdf:resource="#Switch"/>
+    <rdfs:domain rdf:resource="#SwitchingStep"/>
+    <cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="#SwitchingStep.open">
+    <cims:stereotype rdf:resource="http://langdale.com.au/2005/UML#attribute"/>
+	<cims:stereotype rdf:resource="http://langdale.com.au/2005/UML#oms"/>
+    <rdfs:label>open</rdfs:label>
+    <cims:dataType rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+    <rdfs:domain rdf:resource="#SwitchingStep"/>
+    <cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="#SwitchingStep.index">
+	<cims:stereotype rdf:resource="http://langdale.com.au/2005/UML#attribute"/>
+	<cims:stereotype rdf:resource="http://langdale.com.au/2005/UML#oms"/>
+	<rdfs:label>index</rdfs:label>
+	<cims:dataType rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+	<rdfs:domain rdf:resource="#SwitchingStep"/>
+	<cims:multiplicity rdf:resource="http://iec.ch/TC57/1999/rdf-schema-extensions-19990926#M:1"/>
+	<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+  </rdf:Description>
 </rdf:RDF>
