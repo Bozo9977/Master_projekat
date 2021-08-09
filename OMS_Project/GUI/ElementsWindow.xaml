@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:GUI"
         mc:Ignorable="d"
         Title="Elements" Height="480" Width="480">
-	<ScrollViewer>
+	<ScrollViewer VerticalScrollBarVisibility="Auto">
 		<StackPanel x:Name="panel"/>
 	</ScrollViewer>
 </Window>

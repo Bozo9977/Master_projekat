@@ -228,69 +228,106 @@ namespace SCADASim
 			if(!download.Download())
 				return false;
 			
+			List<Pair<int, float>> setAnalogValues = new List<Pair<int, float>>();
+			List<Pair<int, int>> setDiscreteValues = new List<Pair<int, int>>();
 			HashSet<int> readWriteMeasurementAddresses = new HashSet<int>();
 
-			foreach(Analog a in download.Analogs.Values)
+			modelLock.EnterUpgradeableReadLock();
+
+			try
 			{
-				if(a.Direction == SignalDirection.ReadWrite)
-					readWriteMeasurementAddresses.Add(a.BaseAddress);
-			}
-
-			foreach(Discrete d in download.Discretes.Values)
-			{
-				if(d.Direction == SignalDirection.ReadWrite)
-					readWriteMeasurementAddresses.Add(d.BaseAddress);
-			}
-
-			List<Tuple<Recloser, long, long, int>> reclosers = new List<Tuple<Recloser, long, long, int>>(download.Reclosers.Count);
-
-			foreach(Recloser r in download.Reclosers.Values)
-			{
-				int address = -1;
-				int i;
-
-				for(i = 0; i < r.Measurements.Count; ++i)
+				foreach(Analog a in download.Analogs.Values)
 				{
-					Discrete d;
-					
-					if(!download.Discretes.TryGetValue(r.Measurements[i], out d) || d.MeasurementType != MeasurementType.SwitchState || d.Direction == SignalDirection.Write)
-						continue;
+					if(a.Direction == SignalDirection.ReadWrite)
+					{
+						readWriteMeasurementAddresses.Add(a.BaseAddress);
 
-					address = d.BaseAddress;
-					break;
+						Analog oldAnalog;
+
+						if(!analogs.TryGetValue(a.GID, out oldAnalog) || !AreAnalogsEqual(oldAnalog, a))
+							setAnalogValues.Add(new Pair<int, float>(a.BaseAddress, a.NormalValue));
+					}
 				}
 
-				Terminal t1, t2;
+				foreach(Discrete d in download.Discretes.Values)
+				{
+					if(d.Direction == SignalDirection.ReadWrite)
+					{
+						readWriteMeasurementAddresses.Add(d.BaseAddress);
 
-				if(r.Terminals.Count != 2 || !download.Terminals.TryGetValue(r.Terminals[0], out t1) || !download.Terminals.TryGetValue(r.Terminals[1], out t2))
-					continue;
+						Discrete oldDiscrete;
 
-				reclosers.Add(new Tuple<Recloser, long, long, int>(r, t1.ConnectivityNode, t2.ConnectivityNode, address));
+						if(!discretes.TryGetValue(d.GID, out oldDiscrete) || !AreDiscretesEqual(oldDiscrete, d))
+							setDiscreteValues.Add(new Pair<int, int>(d.BaseAddress, d.NormalValue));
+					}
+				}
+
+				List<Tuple<Recloser, long, long, int>> reclosers = new List<Tuple<Recloser, long, long, int>>(download.Reclosers.Count);
+
+				foreach(Recloser r in download.Reclosers.Values)
+				{
+					int address = -1;
+					int i;
+
+					for(i = 0; i < r.Measurements.Count; ++i)
+					{
+						Discrete d;
+					
+						if(!download.Discretes.TryGetValue(r.Measurements[i], out d) || d.MeasurementType != MeasurementType.SwitchState || d.Direction == SignalDirection.Write)
+							continue;
+
+						address = d.BaseAddress;
+						break;
+					}
+
+					Terminal t1, t2;
+
+					if(r.Terminals.Count != 2 || !download.Terminals.TryGetValue(r.Terminals[0], out t1) || !download.Terminals.TryGetValue(r.Terminals[1], out t2))
+						continue;
+
+					reclosers.Add(new Tuple<Recloser, long, long, int>(r, t1.ConnectivityNode, t2.ConnectivityNode, address));
+				}
+
+				modelLock.EnterWriteLock();
+				{
+					analogs = download.Analogs;
+					discretes = download.Discretes;
+					energyConsumers = download.EnergyConsumers;
+					this.readWriteMeasurementAddresses = readWriteMeasurementAddresses;
+					this.reclosers = reclosers;
+				}
+				modelLock.ExitWriteLock();
+			}
+			catch(Exception e)
+			{
+				return false;
+			}
+			finally
+			{
+				modelLock.ExitUpgradeableReadLock();
 			}
 
-			modelLock.EnterWriteLock();
+			foreach(Pair<int, float> value in setAnalogValues)
 			{
-				analogs = download.Analogs;
-				discretes = download.Discretes;
-				energyConsumers = download.EnergyConsumers;
-				this.readWriteMeasurementAddresses = readWriteMeasurementAddresses;
-				this.reclosers = reclosers;
-			}
-			modelLock.ExitWriteLock();
-
-			foreach(Analog a in download.Analogs.Values)
-			{
-				if(a.Direction == SignalDirection.ReadWrite)
-					SetAnalogInput(a.BaseAddress, a.NormalValue);
+				SetAnalogInput(value.First, value.Second);
 			}
 
-			foreach(Discrete d in download.Discretes.Values)
+			foreach(Pair<int, int> value in setDiscreteValues)
 			{
-				if(d.Direction == SignalDirection.ReadWrite)
-					SetDiscreteInput(d.BaseAddress, d.NormalValue);
+				SetDiscreteInput(value.First, value.Second);
 			}
 
 			return true;
+		}
+
+		bool AreAnalogsEqual(Analog a1, Analog a2)
+		{
+			return a1.GID == a2.GID && a1.BaseAddress == a2.BaseAddress && a1.Direction == a2.Direction && a1.MeasurementType == a2.MeasurementType && a1.NormalValue == a2.NormalValue && a1.PowerSystemResource == a2.PowerSystemResource;
+		}
+
+		bool AreDiscretesEqual(Discrete d1, Discrete d2)
+		{
+			return d1.GID == d2.GID && d1.BaseAddress == d2.BaseAddress && d1.Direction == d2.Direction && d1.MeasurementType == d2.MeasurementType && d1.NormalValue == d2.NormalValue && d1.PowerSystemResource == d2.PowerSystemResource;
 		}
 
 		void Simulation()

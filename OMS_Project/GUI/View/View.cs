@@ -12,6 +12,8 @@ namespace GUI.View
 		public abstract void Update(EObservableMessageType msg);
 		public abstract void Update();
 
+		public virtual string Title { get { return null; } }
+
 		protected UIElement AddToGrid(Grid grid, UIElement element, int row, int column)
 		{
 			grid.Children.Add(element);

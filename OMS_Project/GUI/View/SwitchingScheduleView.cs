@@ -74,12 +74,12 @@ namespace GUI.View
 
 			AddToGrid(grid, new TextBlock() { Text = "Index", TextAlignment = TextAlignment.Left, VerticalAlignment = VerticalAlignment.Center }, 0, 0);
 
-			TextBox tbIndex = new TextBox() { TextAlignment = TextAlignment.Right, VerticalContentAlignment = VerticalAlignment.Center };
+			TextBox tbIndex = new TextBox() { VerticalContentAlignment = VerticalAlignment.Center };
 			AddToGrid(grid, tbIndex, 0, 1);
 
 			AddToGrid(grid, new TextBlock() { Text = "Switch GID", TextAlignment = TextAlignment.Left, VerticalAlignment = VerticalAlignment.Center }, 1, 0);
 
-			TextBox tbSwitch = new TextBox() { TextAlignment = TextAlignment.Right, VerticalContentAlignment = VerticalAlignment.Center };
+			TextBox tbSwitch = new TextBox() { VerticalContentAlignment = VerticalAlignment.Center };
 
 			AddToGrid(grid, tbSwitch, 1, 1);
 			AddToGrid(grid, new TextBlock() { Text = "Action", TextAlignment = TextAlignment.Left, VerticalAlignment = VerticalAlignment.Center }, 2, 0);
@@ -127,7 +127,7 @@ namespace GUI.View
 			btnSave.Click += (x, y) => SaveSwitchingSchedule();
 			btnPanel.Children.Add(btnSave);
 
-			Button btnExecute = new Button() { Content = "Execute", Margin = new Thickness(2), Padding = new Thickness(4, 1, 4, 1) };
+			Button btnExecute = new Button() { Content = "Execute...", Margin = new Thickness(2), Padding = new Thickness(4, 1, 4, 1) };
 			btnExecute.Click += (x, y) => Execute();
 			btnPanel.Children.Add(btnExecute);
 
@@ -147,40 +147,7 @@ namespace GUI.View
 
 		void Execute()
 		{
-			List<Pair<SwitchingStep, long>> steps = new List<Pair<SwitchingStep, long>>(io.SwitchingSteps.Count);
-
-			foreach(long gid in io.SwitchingSteps)
-			{
-				SwitchingStep step = PubSub.Model.Get(gid) as SwitchingStep;
-
-				if(step == null)
-					return;
-
-				steps.Add(new Pair<SwitchingStep, long>(step, PubSub.Model.GetSwitchSignal(step.Switch)));
-			}
-
-			Client<ICalculationEngineServiceContract> clientCE = new Client<ICalculationEngineServiceContract>("endpointCE");
-			clientCE.Connect();
-
-			Client<ISCADAServiceContract> clientSCADA = new Client<ISCADAServiceContract>("endpointSCADA");
-			clientSCADA.Connect();
-
-			foreach(Pair<SwitchingStep, long> step in steps)
-			{
-				if(step.Second != 0)
-				{
-					if(!clientSCADA.Call<bool>(scada => { scada.CommandDiscrete(new List<long>() { step.Second }, new List<int>() { step.First.Open ? 1 : 0 }); return true; }, out _))
-						break;
-				}
-				else
-				{
-					if(!clientCE.Call<bool>(ce =>  ce.MarkSwitchState(step.First.Switch, step.First.Open), out _))
-						break;
-				}
-			}
-
-			clientSCADA.Disconnect();
-			clientCE.Disconnect();
+			new MiscWindow(new SwitchingExecutionView(GID, PubSub), PubSub).ShowDialog();
 		}
 
 		void DeleteSelectedSteps()

@@ -1,5 +1,6 @@
-﻿using Common.DataModel;
-using Common.GDA;
+﻿using Common.CalculationEngine;
+using Common.DataModel;
+using Common.SCADA;
 using Common.WCF;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,28 +10,29 @@ using System.Windows.Media;
 
 namespace GUI.View
 {
-	class SwitchingStepsView : View
+	class SwitchingExecutionView : View
 	{
+		enum EStepState { Pending, Next, Succeeded, Failed }
+
 		class SwitchingStepInternal
 		{
-			public long SwitchingSchedule { get; private set; }
+			public EStepState State { get; set; }
 			public long Switch { get; private set; }
 			public bool Open { get; private set; }
-			public int Index { get; set; }
-			public string Auto { get; private set; }
-			public CheckBox CheckBox { get; private set; }
+			public int Index { get; private set; }
+			public long SwitchSignal { get; private set; }
+			public bool Auto { get { return SwitchSignal > 0; } }
 
-			public SwitchingStepInternal(long switchingSchedule, long sw, bool open, int index, string auto, CheckBox checkBox)
+			public SwitchingStepInternal(long sw, bool open, int index, long switchSignal)
 			{
-				SwitchingSchedule = switchingSchedule;
 				Switch = sw;
 				Open = open;
 				Index = index;
-				Auto = auto;
-				CheckBox = checkBox;
+				State = EStepState.Pending;
+				SwitchSignal = switchSignal;
 			}
 
-			public SwitchingStepInternal(SwitchingStep step, string auto, CheckBox checkBox) : this(step.SwitchingSchedule, step.Switch, step.Open, step.Index, auto, checkBox)
+			public SwitchingStepInternal(SwitchingStep step, long switchSignal) : this(step.Switch, step.Open, step.Index, switchSignal)
 			{ }
 		}
 
@@ -39,6 +41,7 @@ namespace GUI.View
 		bool initialized;
 		long gid;
 		PubSubClient pubSub;
+		int nextStep = 0;
 
 		public override UIElement Element
 		{
@@ -51,11 +54,16 @@ namespace GUI.View
 			}
 		}
 
-		public SwitchingStepsView(long gid, PubSubClient pubSub) : base()
+		public override string Title { get { return "SwitchingSchedule " + gid + " execution"; } }
+
+		public SwitchingExecutionView(long gid, PubSubClient pubSub) : base()
 		{
 			this.gid = gid;
 			this.pubSub = pubSub;
 			panel = new StackPanel();
+
+			SwitchingSchedule ss = pubSub.Model.Get(gid) as SwitchingSchedule;
+			steps = GetSteps(ss);
 		}
 
 		public override void Update(EObservableMessageType msg)
@@ -66,10 +74,6 @@ namespace GUI.View
 
 		public override void Update()
 		{
-			SwitchingSchedule ss = pubSub.Model.Get(gid) as SwitchingSchedule;
-
-			steps = GetSteps(ss);
-
 			if(!initialized)
 			{
 				panel.Children.Add(CreateHeading());
@@ -78,34 +82,6 @@ namespace GUI.View
 			}
 
 			UpdateStepsPanel(panel.Children[1] as StackPanel, steps);
-		}
-
-		string GetSwitchAutomatic(long gid)
-		{
-			Switch sw = pubSub.Model.Get(gid) as Switch;
-
-			if(sw == null)
-				return "N/A";
-
-			bool hasSCADA = false;
-
-			for(int j = 0; j < sw.Measurements.Count; ++j)
-			{
-				long measGID = sw.Measurements[j];
-
-				if(ModelCodeHelper.GetTypeFromGID(measGID) != DMSType.Discrete)
-					continue;
-
-				Discrete d = pubSub.Model.Get(measGID) as Discrete;
-
-				if(d == null || d.MeasurementType != MeasurementType.SwitchState)
-					continue;
-
-				hasSCADA = true;
-				break;
-			}
-
-			return hasSCADA.ToString();
 		}
 
 		List<SwitchingStepInternal> GetSteps(SwitchingSchedule ss)
@@ -122,8 +98,11 @@ namespace GUI.View
 				if(step == null)
 					continue;
 
-				steps.Add(new SwitchingStepInternal(step, GetSwitchAutomatic(step.Switch), new CheckBox()));
+				steps.Add(new SwitchingStepInternal(step, pubSub.Model.GetSwitchSignal(step.Switch)));
 			}
+
+			if(steps.Count > 0)
+				steps[0].State = EStepState.Next;
 
 			return steps;
 		}
@@ -149,7 +128,7 @@ namespace GUI.View
 			grid.ColumnDefinitions.Add(new ColumnDefinition() { MinWidth = 0 });
 			grid.RowDefinitions.Add(new RowDefinition());
 
-			AddToGrid(grid, new TextBlock() { Text = "Selected", FontWeight = FontWeights.Bold, HorizontalAlignment = HorizontalAlignment.Center }, 0, 0);
+			AddToGrid(grid, new TextBlock() { Text = "State", FontWeight = FontWeights.Bold, HorizontalAlignment = HorizontalAlignment.Center }, 0, 0);
 			AddToGrid(grid, new TextBlock() { Text = "Index", FontWeight = FontWeights.Bold, HorizontalAlignment = HorizontalAlignment.Center }, 0, 2);
 			AddToGrid(grid, new TextBlock() { Text = "Switch", FontWeight = FontWeights.Bold, HorizontalAlignment = HorizontalAlignment.Center }, 0, 4);
 			AddToGrid(grid, new TextBlock() { Text = "Action", FontWeight = FontWeights.Bold, HorizontalAlignment = HorizontalAlignment.Center }, 0, 6);
@@ -164,103 +143,6 @@ namespace GUI.View
 			stepsPanel.Children.Add(border);
 
 			return stepsPanel;
-		}
-
-		public bool Save()
-		{
-			Delta delta = new Delta();
-
-			for(int i = 0; i < steps.Count; ++i)
-			{
-				SwitchingStepInternal step = steps[i];
-				ResourceDescription rd = new ResourceDescription(ModelCodeHelper.CreateGID(0, DMSType.SwitchingStep, -(i + 1)));
-				string name = "SwitchingStep_" + gid + "_" + i;
-
-				rd.AddProperty(new StringProperty(ModelCode.IDENTIFIEDOBJECT_MRID, name));
-				rd.AddProperty(new StringProperty(ModelCode.IDENTIFIEDOBJECT_NAME, name));
-				rd.AddProperty(new ReferenceProperty(ModelCode.SWITCHINGSTEP_SWITCHINGSCHEDULE, gid));
-				rd.AddProperty(new ReferenceProperty(ModelCode.SWITCHINGSTEP_SWITCH, step.Switch));
-				rd.AddProperty(new BoolProperty(ModelCode.SWITCHINGSTEP_OPEN, step.Open));
-				rd.AddProperty(new Int32Property(ModelCode.SWITCHINGSTEP_INDEX, i));
-
-				delta.InsertOperations.Add(rd);
-			}
-
-			Client<INetworkModelGDAContract> clientNMS = new Client<INetworkModelGDAContract>("endpointNMS");
-			clientNMS.Connect();
-
-			UpdateResult result;
-
-			clientNMS.Call<UpdateResult>(
-			nms => 
-			{
-				int iterator = nms.GetRelatedValues(gid, new List<ModelCode>(), new Association(ModelCode.SWITCHINGSCHEDULE_SWITCHINGSTEPS, ModelCode.SWITCHINGSTEP, false), false);
-				
-				if(iterator < 0)
-					return null;
-
-				List<ResourceDescription> rds;
-
-				do
-				{
-					rds = nms.IteratorNext(1024, iterator, false);
-
-					if(rds == null)
-						break;
-
-					delta.DeleteOperations.AddRange(rds);
-				}
-				while(rds.Count >= 1024);
-
-				return nms.ApplyUpdate(delta);
-			}, out result);
-
-			clientNMS.Disconnect();
-			
-			if(result == null || result.Result != ResultType.Success)
-			{
-				return false;
-			}
-
-			Update();
-			return true;
-		}
-
-		public bool Add(int idx, long swGID, bool o)
-		{
-			if(steps == null)
-				return false;
-
-			if(idx > steps.Count)
-				idx = steps.Count;
-			else if (idx < 0)
-				idx = 0;
-
-			steps.Insert(idx, new SwitchingStepInternal(gid, swGID, o, idx, GetSwitchAutomatic(swGID), new CheckBox()));
-
-			for(int i = idx + 1; i < steps.Count; ++i)
-			{
-				++steps[i].Index;
-			}
-
-			UpdateStepsPanel(panel.Children[1] as StackPanel, steps);
-			return true;
-		}
-
-		public void DeleteSelected()
-		{
-			for(int i = 0; i < steps.Count; ++i)
-			{
-				SwitchingStepInternal step = steps[i];
-
-				if(step.CheckBox.IsChecked == true)
-				{
-					steps.RemoveAt(i);
-					--i;
-				}
-			}
-
-			UpdateStepsPanel(panel.Children[1] as StackPanel, steps);
 		}
 
 		void UpdateStepsPanel(StackPanel stepsPanel, IEnumerable<SwitchingStepInternal> steps)
@@ -287,11 +169,15 @@ namespace GUI.View
 
 				stepsGrid.RowDefinitions.Add(new RowDefinition());
 
-				AddToGrid(stepsGrid, step.CheckBox, row, 0);
-				AddToGrid(stepsGrid, new TextBlock() { Text = step.Index.ToString() }, row, 2);
-				AddToGrid(stepsGrid, CreateHyperlink(step.Switch.ToString(), () => new ElementWindow(step.Switch, pubSub).Show()), row, 4);
-				AddToGrid(stepsGrid, new TextBlock() { Text = step.Open ? "Open" : "Close" }, row, 6);
-				AddToGrid(stepsGrid, new TextBlock() { Text = step.Auto }, row, 8);
+				AddToGrid(stepsGrid, CreateStateCell(step), row, 0);
+				AddToGrid(stepsGrid, new TextBlock() { Text = step.Index.ToString(), VerticalAlignment = VerticalAlignment.Center }, row, 2);
+
+				TextBlock swLink = CreateHyperlink(step.Switch.ToString(), () => new ElementWindow(step.Switch, pubSub).Show());
+				swLink.VerticalAlignment = VerticalAlignment.Center;
+
+				AddToGrid(stepsGrid, swLink, row, 4);
+				AddToGrid(stepsGrid, new TextBlock() { Text = step.Open ? "Open" : "Close", VerticalAlignment = VerticalAlignment.Center }, row, 6);
+				AddToGrid(stepsGrid, new TextBlock() { Text = step.Auto.ToString(), VerticalAlignment = VerticalAlignment.Center }, row, 8);
 			}
 
 			int splitterRowSpan = int.MaxValue;
@@ -309,6 +195,52 @@ namespace GUI.View
 			Grid.SetRowSpan(stepsGrid.Children[8], splitterRowSpan);
 
 			stepsGrid.RowDefinitions.Last().Height = new GridLength(1, GridUnitType.Star);
+		}
+
+		UIElement CreateStateCell(SwitchingStepInternal step)
+		{
+			if(step.State != EStepState.Next)
+				return new TextBlock() { Text = step.State.ToString(), VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
+
+			Button btn = new Button() { Content = step.Auto ? "Command" : "Confirm" };
+			btn.Click += (x, y) => ExecuteStep();
+
+			return btn;
+		}
+
+		void ExecuteStep()
+		{
+			if(nextStep < 0 || nextStep >= steps.Count)
+				return;
+
+			SwitchingStepInternal step = steps[nextStep];
+			bool success = false;
+
+			if(step.Auto)
+			{
+				Client<ISCADAServiceContract> clientSCADA = new Client<ISCADAServiceContract>("endpointSCADA");
+				clientSCADA.Connect();
+				clientSCADA.Call<bool>(scada => { scada.CommandDiscrete(new List<long>() { step.SwitchSignal }, new List<int>() { step.Open ? 1 : 0 }); return true; }, out success);
+				clientSCADA.Disconnect();
+			}
+			else
+			{
+				Client<ICalculationEngineServiceContract> clientCE = new Client<ICalculationEngineServiceContract>("endpointCE");
+				clientCE.Connect();
+				clientCE.Call<bool>(ce => ce.MarkSwitchState(step.Switch, step.Open), out success);
+				clientCE.Disconnect();
+			}
+
+			step.State = success ? EStepState.Succeeded : EStepState.Failed;
+
+			++nextStep;
+
+			if(nextStep < steps.Count)
+			{
+				steps[nextStep].State = EStepState.Next;
+			}
+
+			UpdateStepsPanel(panel.Children[1] as StackPanel, steps);
 		}
 	}
 }
